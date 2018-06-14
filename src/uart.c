@@ -1,7 +1,14 @@
 #include "uart.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 UART_HandleTypeDef UartHandle1;
 UART_HandleTypeDef UartHandle2;
+
+static xQueueHandle uart1Queue = 0;
+static xQueueHandle uart2Queue = 0;
 
 uint8_t uart1_tx_ok = 1;
 uint8_t uart2_tx_ok = 1;
@@ -52,13 +59,44 @@ int uart1_read(uint8_t* buf, uint8_t len) {
 	return HAL_UART_Receive(&UartHandle1, buf, len, USART1_TIMEOUT);
 }
 
-void uart1_send_data(uint32_t size, uint8_t* data) {
+void uart1_send_data(uint8_t* data, uint32_t size) {
 	uint32_t i = 0;
 
 	for (i=0;i<size;i++) {
 	    while (!(USART1->SR & USART_FLAG_TXE));
 	    USART1->DR = (data[i] & 0x00FF);
 	 }
+}
+
+uint32_t uart1_enque_data(uint8_t* data, uint32_t size) {
+  uint32_t i = 0;
+  for (i=0;i<size;i++) {
+    if (xQueueSend(uart1Queue, data+i, 10) == errQUEUE_FULL) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+void uart1_task(void* _params) {
+  uint8_t data = 0;
+
+  if (_params != 0) { }
+
+  uart1Queue = xQueueCreate(UART1_QUEUE_SIZE, sizeof(uint8_t));
+  if (uart1Queue == 0)
+    return;
+
+  while (1) {
+    if (pdTRUE == xQueueReceive(uart1Queue, &data, 10)) {
+      HAL_UART_Transmit(&UartHandle1, &data, 1, USART1_TIMEOUT);
+    }
+    else {
+      vTaskDelay(10/portTICK_RATE_MS);
+    }
+  }
+
+  vTaskDelete(NULL);
 }
 
 int uart2_init(void) {
@@ -110,7 +148,7 @@ int uart2_read_it(uint8_t* buf, uint8_t len) {
 	return HAL_UART_Receive_IT(&UartHandle2, buf, len);
 }
 
-void uart2_send_data(uint32_t size, uint8_t* data) {
+void uart2_send_data(uint8_t* data, uint32_t size) {
 	uint32_t i = 0;
 
 	for (i=0;i<size;i++) {
@@ -126,4 +164,35 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle) {
 	else if (UartHandle->Instance == USART2) {
 		uart2_tx_ok = 1;
 	}
+}
+
+uint32_t uart2_enque_data(uint8_t* data, uint32_t size) {
+  uint32_t i = 0;
+  for (i=0;i<size;i++) {
+    if (xQueueSend(uart2Queue, data+i, 10) == errQUEUE_FULL) {
+      return i;
+    }
+  }
+  return 0;
+}
+
+void uart2_task(void* _params) {
+  uint8_t data = 0;
+
+  if (_params != 0) { }
+
+  uart2Queue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
+  if (uart2Queue == 0)
+    return;
+
+  while (1) {
+    if (pdTRUE == xQueueReceive(uart2Queue, &data, 10)) {
+      HAL_UART_Transmit(&UartHandle2, &data, 1, USART2_TIMEOUT);
+    }
+    else {
+      vTaskDelay(10/portTICK_RATE_MS);
+    }
+  }
+
+  vTaskDelete(NULL);
 }

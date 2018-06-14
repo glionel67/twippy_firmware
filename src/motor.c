@@ -391,3 +391,36 @@ void test_motor12(void) {
 		HAL_Delay(5);
 	}
 }
+
+void motor_test_task(void* _params) {
+	int ret = 0;
+
+	ret = init_motors();
+	if (ret != 0) {
+		uint8_t str[] = "init_motors error\r\n";
+		print_msg(str);
+		Error_Handler();
+	}
+
+	ret = init_adc_motors();
+	if (ret != 0) {
+		uint8_t str[] = "init_adc_motors error\r\n";
+		print_msg(str);
+		Error_Handler();
+	}
+
+	while (1) {
+		
+	}
+}
+
+void motor_task(void* _params) {
+	int ret = 0;
+
+	ret = init_motors();
+	ret = init_adc_motors();
+
+	while (1) {
+
+	}
+}

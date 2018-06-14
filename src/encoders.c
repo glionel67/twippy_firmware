@@ -1,3 +1,9 @@
+#include <string.h>
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 #include "encoders.h"
 #include "main.h"
 
@@ -10,7 +16,7 @@ TIM_Encoder_InitTypeDef enc2;
 
 static const int32_t gear_ratio = 50;
 static const int32_t ppt = 64; // Encoder resolution (Number of point per turn)
-static const int32_t ct_to_rpm = (60000/64); // = 60000/64
+//static const int32_t ct_to_rpm = (60000/64); // = 60000/64
 
 static int32_t enc1_sum = 0, enc2_sum = 0;
 static int32_t enc1_diff = 0, enc2_diff = 0;
@@ -21,6 +27,8 @@ static int32_t enc1_rpm = 0, enc2_rpm = 0;
 static uint32_t t1_old = 0, t2_old = 0;
 static uint32_t t1_now = 0, t2_now = 0;
 static uint32_t dt = 0;
+
+static xQueueHandle encoderQueue = 0;
 
 
 int init_encoders(void) {
@@ -195,4 +203,63 @@ void enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, int32_t* cts2, int32_t* r
 
     (*rpm1) = (int16_t)enc1_rpm;
     (*rpm2) = (int16_t)enc2_rpm;
+}
+
+void enc_test_task(void* _params) {
+	int ret = 0;
+	uint32_t ticks = 0;
+	int32_t enc1 = 0, enc2 = 0;
+	char data[50] = { 0, };
+
+	if (_params != 0) { }
+
+	ret = init_encoders();
+	if (ret != 0) {
+		char str[] = "init_encoders error\n";
+		print_msg((uint8_t*)str, strlen(str));
+		Error_Handler();
+	}
+	else {
+		char str[] = "encoders: OK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+	}
+
+    while (1) {
+		enc1 = enc1_get_counts();
+		enc2 = enc2_get_counts();
+		ticks = HAL_GetTick();
+		sprintf(data, "%lu,enc1=%ld,enc2=%ld\r\n", ticks, enc1, enc2);
+		print_msg((uint8_t*)data, strlen(data));
+		vTaskDelay(500/portTICK_RATE_MS);
+	}
+
+	vTaskDelete(NULL);
+}
+
+void encoder_task(void* _params) {
+	int ret = 0;
+	Encoders_t enc;
+
+	if (_params != 0) { }
+
+	ret = init_encoders();
+	if (ret != 0) {
+		char str[] = "init_encoders error\n";
+		print_msg((uint8_t*)str, strlen(str));
+		Error_Handler();
+	}
+
+  encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
+  if (encoderQueue == 0)
+    return;
+
+	while (1) {
+		xQueueOverwrite(encoderQueue, &enc);
+	}
+
+	vTaskDelete(NULL);
+}
+
+int encoder_read_data(Encoders_t* enc) {
+  return (pdTRUE == xQueueReceive(encoderQueue, enc, 0));
 }

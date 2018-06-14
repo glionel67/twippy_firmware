@@ -1,7 +1,9 @@
+// Includes
 #include "main.h"
 #include "gpio.h"
 #include "uart.h"
-//#include "encoders.h"
+#include "encoders.h"
+#include "usTimer.h"
 //#include "motor.h"
 //#include "adc.h"
 
@@ -17,24 +19,30 @@
 //#include "semphr.h"
 
 // Defines
-#define DATASIZE      100
+#define DATASIZE 100
 
 // Global variables
-static xQueueHandle  myQueue = 0;
+static xQueueHandle myQueue = 0;
 
 
 // Function prototypes
 void SystemClock_Config(void);
-void Error_Handler(void);
 void myTask(void* _params);
 void myTask2(void* _params);
+void encTestTask(void* _params);
+void motorTestTask(void* _params);
+void adcTestTask(void* _params);
+void imuTestTask(void* _params);
 
+// ---------------------------------------------------------------------------//
+// --- Main
+// ---------------------------------------------------------------------------//
 int main(void) {
   int ret = 0;
-  uint8_t data[DATASIZE] = { 0, };
   uint8_t welcomeMsg[] = "Hello World!\n";
-  int32_t enc1 = 0, enc2 = 0;
-  uint32_t ticks = 0;
+  //uint8_t data[DATASIZE] = { 0, };
+  //int32_t enc1 = 0, enc2 = 0;
+  //uint32_t ticks = 0;
 
   //SystemInit();
   //NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
@@ -71,54 +79,33 @@ int main(void) {
   uart1_write(welcomeMsg, sizeof(welcomeMsg));
   uart2_write(welcomeMsg, sizeof(welcomeMsg));
 
-  /*
-  ret = init_encoders();
+  ret = init_us_timer();
   if (ret != 0) {
-    uint8_t str[] = "init_encoders error\r\n";
-    uart1_write(str, sizeof(str));
-    uart2_write(str, sizeof(str));
     Error_Handler();
   }
-  ret = init_motors();
-  if (ret != 0) {
-    uint8_t str[] = "init_motors error\r\n";
-    uart1_write(str, sizeof(str));
-    uart2_write(str, sizeof(str));
-    Error_Handler();
-  }
-  ret = init_adc_motors();
-  if (ret != 0) {
-    uint8_t str[] = "init_adc_motors error\r\n";
-    uart1_write(str, sizeof(str));
-    uart2_write(str, sizeof(str));
-    Error_Handler();
-  }
-  */
 
-
-/*
-
-    while(1) {
-      //enc1 = enc1_get_counts();
-      //enc2 = enc2_get_counts();
-      ticks = HAL_GetTick();
-      sprintf((char*)data, "%lu,enc1=%ld,enc2=%ld\n", ticks, enc1, enc2);
-      uart1_write(data, sizeof(data));
-      uart2_write(data, sizeof(data));
-      memset(data, '\0', DATASIZE);
-      
-      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-      HAL_Delay(1000);
-    }
-*/
+  test_us_timer();
+  test_us_timer();
+  test_us_timer();
 
   myQueue = xQueueCreate(1, sizeof(uint32_t));
 
   // Create FreeRTOS tasks
+  if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
+    2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
+    goto hell;
+  if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
+    2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
+    goto hell;
+
   if (!(pdPASS == xTaskCreate(myTask, (const char*)"task1",
     2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
     goto hell;
   if (!(pdPASS == xTaskCreate(myTask2, (const char*)"task2",
+    2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
+    goto hell;
+
+  if (!(pdPASS == xTaskCreate(enc_test_task, (const char*)"enc_test_task",
     2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
     goto hell;
 
@@ -184,6 +171,25 @@ void Error_Handler(void) {
   }
 }
 
+void print_msg(uint8_t* _msg, uint8_t _len) {
+
+  uint8_t end = 0;
+  while (_msg[end] != '\n')
+    end++;
+  _len = end+1;
+
+  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
+    //uart1_enque_data(_msg, (uint32_t)_len);
+    //uart2_enque_data(_msg, (uint32_t)_len);
+    uart1_send_data(_msg, _len);
+    uart2_send_data(_msg, _len);
+  }
+  else {
+    uart1_send_data(_msg, _len);
+    uart2_send_data(_msg, _len);
+  }
+}
+
 // void HAL_Delay(volatile uint32_t Delay) {
 //   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
 //     uint32_t tickstart = HAL_GetTick();
@@ -204,16 +210,16 @@ void myTask(void* _params) {
   char data[DATASIZE] = { 0, };
   uint32_t ticks = 0;
 
-  sprintf(data, "myTask\n");
-  uart1_write((uint8_t*)data, strlen(data));
-  uart2_write((uint8_t*)data, strlen(data));
+  if (_params != 0) { }
+
+  sprintf(data, "myTask\r\n");
+  print_msg((uint8_t*)data, 20);
   memset(data, '\0', strlen(data));
 
   while (1) {
     ticks = HAL_GetTick();
-    sprintf(data, "myTask: %lu\n", ticks);
-    uart1_write((uint8_t*)data, strlen(data));
-    uart2_write((uint8_t*)data, strlen(data));
+    sprintf(data, "myTask: %lu\r\n", ticks);
+    //print_msg((uint8_t*)data, 20);
     memset(data, '\0', strlen(data));
     xQueueOverwrite(myQueue, &ticks);
     vTaskDelay(1000/portTICK_RATE_MS);
@@ -227,9 +233,10 @@ void myTask2(void* _params) {
   char data[DATASIZE] = { 0, };
   uint32_t ticks = 0;
 
-  sprintf(data, "myTask2\n");
-  uart1_write((uint8_t*)data, strlen(data));
-  uart2_write((uint8_t*)data, strlen(data));
+  if (_params != 0) { }
+
+  sprintf(data, "myTask2\r\n");
+  print_msg((uint8_t*)data, 20);
   memset(data, '\0', strlen(data));
   while (1) {
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
@@ -237,9 +244,8 @@ void myTask2(void* _params) {
     vTaskDelay(200/portTICK_RATE_MS);
 
     if (pdTRUE == xQueueReceive(myQueue, &ticks, 0)) {
-      sprintf(data, "myTask2 received: %lu\n", ticks);
-      uart1_write((uint8_t*)data, strlen(data));
-      uart2_write((uint8_t*)data, strlen(data));
+      sprintf(data, "myTask2: %lu\r\n", ticks);
+      //print_msg((uint8_t*)data, 20);
       memset(data, '\0', strlen(data));
     }
   }

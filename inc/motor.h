@@ -36,3 +36,7 @@ void test_motor1(void);
 void test_motor2(void);
 void test_motor12(void);
 
+void motor_test_task(void* _params);
+
+void motor_task(void* _params);
+

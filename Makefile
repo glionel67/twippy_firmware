@@ -1,5 +1,5 @@
 # Makefile for stm32f446
-PROJECT_NAME = stm32f446
+PROJECT_NAME = twippy_firmware
 
 ### JTAG and environment configuration ###
 OPENOCD ?= openocd
@@ -55,7 +55,7 @@ HAL_MODULES+= pwr pwr_ex
 HAL_MODULES+= gpio
 #HAL_MODULES+= pcd pcd_ex
 HAL_MODULES+= dma
-#HAL_MODULES+= tim tim_ex
+HAL_MODULES+= tim tim_ex
 #HAL_MODULES+= i2c i2c_ex
 #HAL_MODULES+= spi
 HAL_MODULES+= uart usart
@@ -88,9 +88,10 @@ PROJECT_SRCS+= stm32f4xx_it.c
 PROJECT_SRCS+= gpio.c
 PROJECT_SRCS+= uart.c
 #PROJECT_SRCS+= adc.c
-#PROJECT_SRCS+= encoders.c
+PROJECT_SRCS+= encoders.c
 #PROJECT_SRCS+= motor.c
 #PROJECT_SRCS+= syscall.c
+PROJECT_SRCS+= usTimer.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)

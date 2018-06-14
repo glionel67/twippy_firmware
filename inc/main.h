@@ -14,7 +14,7 @@
 #define USART1_RX_PIN                 GPIO_PIN_10
 #define USART1_GPIO_AF                GPIO_AF7_USART1
 #define USART1_BAUDRATE         115200 //9600
-#define USART1_TIMEOUT          1000
+#define USART1_TIMEOUT          100
 
 /******************************************************************************/
 /* Definition for USART2  */
@@ -25,7 +25,7 @@
 #define USART2_RX_PIN                 GPIO_PIN_3
 #define USART2_GPIO_AF                GPIO_AF7_USART2
 #define USART2_BAUDRATE         115200 //9600
-#define USART2_TIMEOUT          1000
+#define USART2_TIMEOUT          100
 
 /******************************************************************************/
 /* Definition for encoders */
@@ -124,3 +124,7 @@
 #define IMOT_RATIO_DEN            165
 
 #define IMOT_MAX                1600 // [mA]
+
+
+void Error_Handler(void);
+void print_msg(uint8_t* _msg, uint8_t _len);
