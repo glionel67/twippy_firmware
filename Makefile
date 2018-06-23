@@ -57,7 +57,7 @@ HAL_MODULES+= gpio
 HAL_MODULES+= dma
 HAL_MODULES+= tim tim_ex
 #HAL_MODULES+= i2c i2c_ex
-#HAL_MODULES+= spi
+HAL_MODULES+= spi
 HAL_MODULES+= uart usart
 #HAL_MODULES+= adc
 #HAL_MODULES+= flash
@@ -92,6 +92,9 @@ PROJECT_SRCS+= encoders.c
 #PROJECT_SRCS+= motor.c
 #PROJECT_SRCS+= syscall.c
 PROJECT_SRCS+= usTimer.c
+PROJECT_SRCS+= spi.c
+PROJECT_SRCS+= imu.c
+PROJECT_SRCS+= mpu9250.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)
@@ -140,7 +143,7 @@ CFLAGS = $(MCFLAGS) $(STFLAGS)
 ifeq ($(DEBUG), 1)
   CFLAGS+= -O0 -g3 -DDEBUG
 else
-  CFLAGS+= -Os -g3#-Werror
+  CFLAGS+= -Os -g3 -Werror
 endif
 CFLAGS+= -DBOARD_REV_$(REV) -DVERSION_$(VERSION)
 CFLAGS+= $(INCLUDES)
@@ -149,14 +152,14 @@ CFLAGS+= -Wall -Wextra -Warray-bounds -Wmissing-braces
 #CFLAGS+= -Wno-pointer-sign
 #CFLAGS+= -Wdouble-promotion # Prevent promoting floats to doubles
 #CFLAGS+= -ggdb
-#CFLAGS+= -fno-strict-aliasing
+CFLAGS+= -fno-strict-aliasing $(C_PROFILE)
 #CFLAGS+= -fno-math-errno
 #CFLAGS+= -fno-builtin
-#CFLAGS+= -std=gnu11#-std=c99
+CFLAGS+= -std=gnu11 #-std=c99
 # Compiler flags to generate dependency files:
-#CFLAGS+= -MD -MP -MF $(BIN_DIR)/dep/$(@).d -MQ $(@)
+//CFLAGS+= -MD -MP -MF $(BIN_DIR)/dep/$(@).d -MQ $(@)
 #Permits to remove un-used functions and global variables from output file
-#CFLAGS+= -ffunction-sections -fdata-sections
+CFLAGS+= -ffunction-sections -fdata-sections
 
 # Assembler flags
 ASFLAGS = $(MCFLAGS) #$(INCLUDES)
@@ -170,7 +173,7 @@ LDFLAGS+= $(MCFLAGS)
 LDFLAGS+= $(LIBS_INCS)
 LDFLAGS+= $(LIBS_LINK)
 #LDFLAGS+= -nostartfiles
-#LDFLAGS+= --specs=nano.specs
+#LDFLAGS+= --specs=nano.specs -mcpu=cortex-m4 -mthumb
 LDFLAGS+= --specs=nosys.specs
 #LDFLAGS+= --specs=rdimon.specs
 #LDFLAGS+= -lm

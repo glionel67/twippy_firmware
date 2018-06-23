@@ -125,6 +125,30 @@
 
 #define IMOT_MAX                1600 // [mA]
 
+/******************************************************************************/
+/* Definition for SPI1 (IMU MPU9250) */
+/******************************************************************************/
+#define SPI1_IMU SPI1
+#define SPI1_CLK_ENABLE() __HAL_RCC_SPI1_CLK_ENABLE()
+
+#define SPI1_GPIO_PORT GPIOA
+#define SPI1_GPIO_AF GPIO_AF5_SPI1
+#define SPI1_GPIO_CLK_ENALBE() __HAL_RCC_GPIOA_CLK_ENABLE()
+#define SPI1_SS_PIN GPIO_PIN_4
+#define SPI1_CLK_PIN GPIO_PIN_5
+#define SPI1_MISO_PIN GPIO_PIN_6
+#define SPI1_MOSI_PIN GPIO_PIN_7
+
+#define SPI1_TIMEOUT 100
+
+#define IMU_INT_CLK_ENABLE() __HAL_RCC_GPIOB_CLK_ENABLE()
+#define IMU_INT_GPIO GPIOB
+#define IMU_INT_PIN GPIO_PIN_2
+#define IMU_INT_IRQ EXTI2_IRQn
+
+
+#define NOK 0
+#define OK 1
 
 void Error_Handler(void);
 void print_msg(uint8_t* _msg, uint8_t _len);

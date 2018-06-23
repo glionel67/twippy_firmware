@@ -96,11 +96,12 @@ void test_us_timer(void) {
   HAL_Delay(40);
   stop = get_us_time();
   dt = (stop - start) / 1000;
-  sprintf(data, "40ms <-> cnt=%ld, start=%ld, stop=%ld\n", dt, (uint32_t)start, (uint32_t)stop);
+  sprintf(data, "40ms <-> cnt=%ld, start=%ld, stop=%ld\r\n", dt, (uint32_t)start, (uint32_t)stop);
   print_msg((uint8_t*)data, 60);
 }
 
-void TIM6_DAC_IRQHandler(void) {
+void __attribute__((used)) TIM6_DAC_IRQHandler(void) {
   __HAL_TIM_CLEAR_IT(&TimHandle6, TIM_IT_UPDATE);
   usTime += 65535;
+  //__sync_fetch_and_add(&usTime, 65535);
 }

@@ -19,5 +19,5 @@ git clone https://github.com/texane/stlink.git
 cd stlink
 make release
 cd build/Release/
-./st-flash write .../bin/twippy_firmware.bin 0x8000000
+./st-flash write ../bin/twippy_firmware.bin 0x8000000
 

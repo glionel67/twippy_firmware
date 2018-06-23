@@ -4,6 +4,7 @@
 #include "uart.h"
 #include "encoders.h"
 #include "usTimer.h"
+#include "imu.h"
 //#include "motor.h"
 //#include "adc.h"
 
@@ -39,7 +40,7 @@ void imuTestTask(void* _params);
 // ---------------------------------------------------------------------------//
 int main(void) {
   int ret = 0;
-  uint8_t welcomeMsg[] = "Hello World!\n";
+  uint8_t welcomeMsg[] = "Hello World!\r\n";
   //uint8_t data[DATASIZE] = { 0, };
   //int32_t enc1 = 0, enc2 = 0;
   //uint32_t ticks = 0;
@@ -58,14 +59,8 @@ int main(void) {
     Error_Handler();
   }
 
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  HAL_Delay(500);
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  HAL_Delay(500);
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  HAL_Delay(500);
-  HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  HAL_Delay(500);
+  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+  HAL_Delay(2000);
 
   ret = uart1_init();
   if (ret != 0) {
@@ -85,8 +80,6 @@ int main(void) {
   }
 
   test_us_timer();
-  test_us_timer();
-  test_us_timer();
 
   myQueue = xQueueCreate(1, sizeof(uint32_t));
 
@@ -105,7 +98,11 @@ int main(void) {
     2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
     goto hell;
 
-  if (!(pdPASS == xTaskCreate(enc_test_task, (const char*)"enc_test_task",
+  //if (!(pdPASS == xTaskCreate(enc_test_task, (const char*)"enc_test_task",
+  //  2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
+  //  goto hell;
+
+  if (!(pdPASS == xTaskCreate(imu_test_task, (const char*)"imu_test_task",
     2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
     goto hell;
 
@@ -155,15 +152,15 @@ void SystemClock_Config(void) {
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4; // To have a 45 MHz clock
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1; // To have a 90 MHz clock
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
     Error_Handler();
   }
 }
 
 void Error_Handler(void) {
-  uint8_t errorMsg[] = "ERROR!\n";
+  uint8_t errorMsg[] = "ERROR!\r\n";
   while (1) {
     uart1_write(errorMsg, sizeof(errorMsg));
     uart2_write(errorMsg, sizeof(errorMsg));

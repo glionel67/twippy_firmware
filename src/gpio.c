@@ -26,13 +26,13 @@ int init_gpios(void) {
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 	// Init LED D13 on PA5
-	__HAL_RCC_GPIOA_CLK_ENABLE();
-	GPIO_InitStruct.Pin = GPIO_PIN_5;
-	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+	//__HAL_RCC_GPIOA_CLK_ENABLE();
+	//GPIO_InitStruct.Pin = GPIO_PIN_5;
+	//GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	//GPIO_InitStruct.Pull = GPIO_PULLUP;
+	//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	//HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
 	// USART1
 	USART1_GPIO_CLK_ENABLE();
@@ -99,6 +99,37 @@ int init_gpios(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Pin = M1_EN_PIN | M2_EN_PIN;
 	HAL_GPIO_Init(MOTORS_GPIO, &GPIO_InitStruct);
+
+	// IMU MPU9250 SPI1
+	SPI1_GPIO_CLK_ENALBE();
+	// SPI SCK/MISO/MOSI GPIO pin configuration
+	GPIO_InitStruct.Pin       = SPI1_CLK_PIN | SPI1_MISO_PIN | SPI1_MOSI_PIN;
+	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Pull      = GPIO_NOPULL;
+	GPIO_InitStruct.Alternate = SPI1_GPIO_AF;
+	HAL_GPIO_Init(SPI1_GPIO_PORT, &GPIO_InitStruct);
+
+	// SPI1 SS pin setup
+	GPIO_InitStruct.Pin       = SPI1_SS_PIN;
+	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	HAL_GPIO_Init(SPI1_GPIO_PORT, &GPIO_InitStruct);
+	// Set CS high
+	HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+
+	// IMU interrupt pin configuration
+	IMU_INT_CLK_ENABLE();
+	GPIO_InitStruct.Pin   = IMU_INT_PIN;
+	GPIO_InitStruct.Mode  = GPIO_MODE_IT_RISING;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+	HAL_GPIO_Init(IMU_INT_GPIO, &GPIO_InitStruct);
+	
+	//HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+	//HAL_NVIC_SetPriority(IMU_INT_IRQ, 1, 0);
+	//HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
 	return 0;
 }

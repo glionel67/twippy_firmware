@@ -1,3 +1,9 @@
+#include <string.h>
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+
 #include "motor.h"
 #include "main.h"
 
@@ -395,32 +401,51 @@ void test_motor12(void) {
 void motor_test_task(void* _params) {
 	int ret = 0;
 
+	if (_params != 0) { }
+
 	ret = init_motors();
 	if (ret != 0) {
-		uint8_t str[] = "init_motors error\r\n";
-		print_msg(str);
+		char str[] = "init_motors error\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		Error_Handler();
 	}
 
 	ret = init_adc_motors();
 	if (ret != 0) {
-		uint8_t str[] = "init_adc_motors error\r\n";
-		print_msg(str);
+		char str[] = "init_adc_motors error\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		Error_Handler();
 	}
 
 	while (1) {
 		
 	}
+
+	vTaskDelete(NULL);
 }
 
 void motor_task(void* _params) {
 	int ret = 0;
 
+	if (_params != 0) { }
+
 	ret = init_motors();
+	if (ret != 0) {
+		char str[] = "init_motors error\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		Error_Handler();
+	}
+
 	ret = init_adc_motors();
+	if (ret != 0) {
+		char str[] = "init_adc_motors error\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		Error_Handler();
+	}
 
 	while (1) {
 
 	}
+
+	vTaskDelete(NULL);
 }

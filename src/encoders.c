@@ -249,9 +249,12 @@ void encoder_task(void* _params) {
 		Error_Handler();
 	}
 
-  encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
-  if (encoderQueue == 0)
-    return;
+	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
+	if (encoderQueue == 0) {
+		char str[] = "encoderQueue creation error\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		Error_Handler();
+	}
 
 	while (1) {
 		xQueueOverwrite(encoderQueue, &enc);
