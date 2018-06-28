@@ -124,12 +124,12 @@ int init_gpios(void) {
 	GPIO_InitStruct.Pin   = IMU_INT_PIN;
 	GPIO_InitStruct.Mode  = GPIO_MODE_IT_RISING;
 	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
-	GPIO_InitStruct.Pull  = GPIO_PULLDOWN;
+	GPIO_InitStruct.Pull  = GPIO_PULLDOWN; // GPIO_NOPULL
 	HAL_GPIO_Init(IMU_INT_GPIO, &GPIO_InitStruct);
 	
-	//HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-	//HAL_NVIC_SetPriority(IMU_INT_IRQ, 1, 0);
-	//HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
+    // Activate IMU INT PIN
+    //HAL_NVIC_SetPriority(IMU_INT_IRQ, 5, 0);
+    //HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
 	return 0;
 }

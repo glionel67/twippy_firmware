@@ -369,5 +369,7 @@ void mpu9250_set_gyro_deg_per_lsb(Mpu9250_t* mpu9250, uint8_t range);
 
 void mpu9250_reset(Mpu9250_t* mpu9250);
 
+uint8_t write_and_check_register(uint8_t reg, uint8_t data);
+
 #endif // __MPU9250_H__
 

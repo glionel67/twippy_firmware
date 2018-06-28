@@ -3,7 +3,7 @@
 
 SPI_HandleTypeDef Spi1Handle;
 
-int spi1_init(void) {
+uint8_t spi1_init(void) {
   
   // Enable SPI clock
   SPI1_CLK_ENABLE();
@@ -23,10 +23,10 @@ int spi1_init(void) {
   Spi1Handle.Init.TIMode            = SPI_TIMODE_DISABLE;
 
   if (HAL_SPI_Init(&Spi1Handle) != HAL_OK) {
-      return -1;
+      return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 void spi1_deInit(void) {
@@ -43,7 +43,7 @@ void spi1_deInit(void) {
   HAL_SPI_DeInit(&Spi1Handle);
 }
 
-int spi1_set_speed(uint32_t baudratePrescaler) {
+uint8_t spi1_set_speed(uint32_t baudratePrescaler) {
   HAL_SPI_DeInit(&Spi1Handle);
 
   // Enable SPI clock
@@ -64,63 +64,74 @@ int spi1_set_speed(uint32_t baudratePrescaler) {
   Spi1Handle.Init.TIMode            = SPI_TIMODE_DISABLE;
 
   if (HAL_SPI_Init(&Spi1Handle) != HAL_OK) {
-      return -1;
+      return 0;
   }
 
-  return 0;
+  return 1;
 }
 
 uint8_t write_byte_spi1(uint8_t reg, uint8_t data) {
-    reg &= ~SPI_READ_WRITE_BIT;
+  uint8_t tx[2] = {reg, data};
 
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
-    if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    if (HAL_SPI_Transmit(&Spi1Handle, &data, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
 
-    return 1;
+  if (HAL_SPI_Transmit(&Spi1Handle, tx, 2, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+  
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+
+  return 1;
 }
 
 
 uint8_t read_byte_spi1(uint8_t reg, uint8_t* data) {
-    reg |= SPI_READ_WRITE_BIT;
+  reg |= SPI_READ_WRITE_BIT;
 
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
-    if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    if (HAL_SPI_Receive(&Spi1Handle, data, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+  uint8_t tx[2] = {reg | SPI_READ_WRITE_BIT, 0};
+  uint8_t rx[2] = {0, 0};
 
-    return 1;
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
+
+  if (HAL_SPI_TransmitReceive(&Spi1Handle, tx, rx, 2, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+  data[0] = rx[1];
+
+  //if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
+  //    return 0;
+  //if (HAL_SPI_Receive(&Spi1Handle, data, 1, SPI1_TIMEOUT) != HAL_OK)
+  //    return 0;
+  
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+
+  return 1;
 }
 
 
 uint8_t write_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
-    reg &= ~SPI_READ_WRITE_BIT;
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
 
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
-    if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    if (HAL_SPI_Transmit(&Spi1Handle, data, length, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+  if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+  if (HAL_SPI_Transmit(&Spi1Handle, data, length, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+  
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
 
-    return 1;
+  return 1;
 }
 
 
 uint8_t read_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
-    reg |= SPI_READ_WRITE_BIT;
+  reg |= SPI_READ_WRITE_BIT;
 
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
-    if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    if (HAL_SPI_Receive(&Spi1Handle, data, length, SPI1_TIMEOUT) != HAL_OK)
-        return 0;
-    HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
 
-    return 1;
+  if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+  if (HAL_SPI_Receive(&Spi1Handle, data, length, SPI1_TIMEOUT) != HAL_OK)
+    return 0;
+
+  HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
+
+  return 1;
 }

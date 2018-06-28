@@ -46,11 +46,9 @@ int init_us_timer(void) {
     }
 
     // Set timer IRQ priority
-    //HAL_NVIC_SetPriority(TIM6_IRQn, 2, 0);
-    HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 2 ,0U);
+    HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 1 ,0U);
 
     // Enable timer IRQ
-    //HAL_NVIC_EnableIRQ(TIM6_IRQn);
     HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
     // Start the timer in interrupt mode

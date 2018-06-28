@@ -3,6 +3,7 @@
 #include "main.h"
 
 #include <math.h>
+#include <string.h>
 
 #ifdef M_PI
 #define PI ((float)M_PI)
@@ -20,55 +21,7 @@ uint8_t mpu9250_init(Mpu9250_t* mpu9250) {
     uint8_t ret = 0;
     uint8_t i = 0, j = 0;
 
-    if (mpu9250->isImuInit) {
-        return 1; 
-    }
-
     HAL_Delay(50); // For the IMU to init. after power up
-
-    for (i=0;i<N_TRIES;i++) {
-        write_byte_spi1(USER_CTRL, 0x30);
-        HAL_Delay(1); // 1 ms
-        
-        // Software reset
-        write_byte_spi1(PWR_MGMT_1, 0x80);
-        HAL_Delay(100); // 100 ms
-        
-        write_byte_spi1(USER_CTRL, 0x30);
-        write_byte_spi1(PWR_MGMT_1, 0x01); // Wake-up chip
-        HAL_Delay(1); // 1 ms
-        
-        // Check if device has woken up
-        ret = mpu9250_check_devId(mpu9250);
-        if (ret) {
-            break;
-        }
-    }
-    if (i >= N_TRIES) {
-        mpu9250->isImuInit = 0;
-        return 0;
-    }
-
-    write_byte_spi1(PWR_MGMT_2, 0x00); // Enable Gyro XYZ and Accelero XYZ
-
-    mpu9250_set_smplrtFreq(mpu9250, IMU_UPDATE_FREQ);
-
-    write_byte_spi1(CONFIG, 0x01); // DLPF_CFG = 1 (Fs=1KHz)
-    write_byte_spi1(GYRO_CONFIG, 0x10); // +/-1000dps,  FCHOICE_B = 0b00 (== FCHOICE=0b11) (Fs=1KHz)
-    write_byte_spi1(ACCEL_CONFIG, 0x00); // ACCEL_FS_SEL = 00 (+/- 2g)
-    write_byte_spi1(ACCEL_CONFIG_2, 0x01); // accel_fchoice = 1 (== accel_fchoice_b = 0), A_DLPF_CFG = 0b001
-    write_byte_spi1(FIFO_EN, 0x00); // Disable all FIFO
-    write_byte_spi1(INT_PIN_CFG, 0x10); // Bypass mode disabled + INT_ANYRD_2CLEAR + INT active high + push-pull + in pulse width of 50 us
-    write_byte_spi1(INT_ENABLE, 0x01); // RAW_RDY_EN
-
-    mpu9250->isImuInit = 1;
-
-    // Magnetometer
-    ret = mpu9250_init_mag(mpu9250);
-    if (ret)
-        mpu9250->isMagInit = 1;
-    else
-        mpu9250->isMagInit = 0;
 
     // Init. mpu9250 structure
     mpu9250->a_gain = G_PER_LSB_2;
@@ -120,37 +73,114 @@ uint8_t mpu9250_init(Mpu9250_t* mpu9250) {
         }
     }
 
-    /*************************/
-    /*** Test data reading ***/
-    /*************************/
     for (i=0;i<N_TRIES;i++) {
-        ret = mpu9250_get_acc_gyro_mag_temp(mpu9250);
-        if (ret)
+        //ret = write_byte_spi1(USER_CTRL, 0x20);
+        //HAL_Delay(1); // 1 ms
+        
+        // Software reset
+        //mpu9250_reset(mpu9250);
+        
+        ret = write_byte_spi1(USER_CTRL, 0x20);
+        ret = write_and_check_register(USER_CTRL, 0x20);
+        HAL_Delay(1); // 1 ms
+        ret = write_byte_spi1(PWR_MGMT_1, 0x01); // Wake-up chip
+        ret = write_and_check_register(PWR_MGMT_1, 0x01);
+        HAL_Delay(200); // 200 ms
+        
+        // Check if device has woken up
+        ret = mpu9250_check_devId(mpu9250);
+        if (ret) {
             break;
+        }
     }
     if (i >= N_TRIES) {
         mpu9250->isImuInit = 0;
         return 0;
     }
 
+    ret = write_byte_spi1(PWR_MGMT_2, 0x00); // Enable Gyro XYZ and Accelero XYZ
+    ret = write_and_check_register(PWR_MGMT_2, 0x00);
+
+    mpu9250_set_smplrtFreq(mpu9250, IMU_UPDATE_FREQ);
+    ret = write_byte_spi1(SMPLRT_DIV, 0x01);
+    ret = write_and_check_register(SMPLRT_DIV, 0x01);
+
+    ret = write_byte_spi1(CONFIG, 0x01); // DLPF_CFG = 1 (Fs=1KHz)
+    ret = write_and_check_register(CONFIG, 0x01);
+    ret = write_byte_spi1(GYRO_CONFIG, 0x10); // +/-1000dps,  FCHOICE_B = 0b00 (== FCHOICE=0b11) (Fs=1KHz)
+    ret = write_and_check_register(GYRO_CONFIG, 0x10);
+    ret = write_byte_spi1(ACCEL_CONFIG, 0x00); // ACCEL_FS_SEL = 00 (+/- 2g)
+    ret = write_and_check_register(ACCEL_CONFIG, 0x00);
+    ret = write_byte_spi1(ACCEL_CONFIG_2, 0x01); // accel_fchoice = 1 (== accel_fchoice_b = 0), A_DLPF_CFG = 0b001
+    ret = write_and_check_register(ACCEL_CONFIG_2, 0x01);
+    ret = write_byte_spi1(FIFO_EN, 0x00); // Disable all FIFO
+    ret = write_and_check_register(FIFO_EN, 0x00);
+
+    mpu9250->isImuInit = 1;
+
+    // Magnetometer
+    ret = mpu9250_init_mag(mpu9250);
+    if (ret) {
+        mpu9250->isMagInit = 1;
+        char str[] = "mpu9250_init_mag OK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
+    else {
+        mpu9250->isMagInit = 0;
+        char str[] = "mpu9250_init_mag NOK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
+
+    // Test data reading
+    for (i=0;i<N_TRIES;i++) {
+        ret = mpu9250_get_acc_gyro_mag_temp(mpu9250);
+        if (ret) {
+            char str[] = "mpu9250_get_acc_gyro_mag_temp OK\r\n";
+            print_msg((uint8_t*)str, strlen(str));
+            //char data[100] = { 0, };
+            //sprintf(data, "ax=%3.3f,ay=%3.3f,az=%3.3f\r\n",
+            //    (float)mpu9250->a_raw[0], (float)mpu9250->a_raw[1], (float)mpu9250->a_raw[2]);
+            //print_msg((uint8_t*)data, strlen(data));
+            //sprintf(data, "gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
+            //    (float)mpu9250->g_raw[0], (float)mpu9250->g_raw[1], (float)mpu9250->g_raw[2]);
+            //print_msg((uint8_t*)data, strlen(data));
+            break;
+        }
+    }
+    if (i >= N_TRIES) {
+        char str[] = "mpu9250_get_acc_gyro_mag_temp NOK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+        mpu9250->isImuInit = 0;
+        return 0;
+    }
+
+    ret = write_byte_spi1(INT_PIN_CFG, 0x10); // Bypass mode disabled + INT_ANYRD_2CLEAR + INT active high + push-pull + in pulse width of 50 us
+    ret = write_and_check_register(INT_PIN_CFG, 0x10);
+    ret = write_byte_spi1(INT_ENABLE, 0x01); // RAW_RDY_EN*
+    ret = write_and_check_register(INT_ENABLE, 0x01);
+
     return 1;
 }
 
 uint8_t mpu9250_write_byte_mag(uint8_t _reg, uint8_t _data) {
     uint8_t status = 0, n = 0;
+    uint8_t ret = 0;
 
-    write_byte_spi1(USER_CTRL, 0x30);
-    write_byte_spi1(I2C_MST_CTRL, 0x0D); // Set I2C_MST_CLK at 400 kHz = 13 = 0x0D
-    //write_byte_spi1(I2C_MST_DELAY_CTRL, 0x10); // Trigger slave 4 actions at each sample
-    write_byte_spi1(I2C_SLV4_ADDR, AK8963_I2C_ADDRESS);
-    write_byte_spi1(I2C_SLV4_REG, _reg);
-    write_byte_spi1(I2C_SLV4_DO, _data); // Write dummy
-    write_byte_spi1(I2C_SLV4_CTRL, 0x80); // I2C_SLV4_EN
+    ret = write_byte_spi1(USER_CTRL, 0x20);
+    ret = write_byte_spi1(I2C_MST_CTRL, 0x0D); // Set I2C_MST_CLK at 400 kHz = 13 = 0x0D
+    //ret = write_byte_spi1(I2C_MST_DELAY_CTRL, 0x10); // Trigger slave 4 actions at each sample
+    ret = write_byte_spi1(I2C_SLV4_ADDR, AK8963_I2C_ADDRESS);
+    ret = write_byte_spi1(I2C_SLV4_REG, _reg);
+    ret = write_byte_spi1(I2C_SLV4_DO, _data); // Write dummy
+    ret = write_byte_spi1(I2C_SLV4_CTRL, 0x80); // I2C_SLV4_EN
 
-    read_byte_spi1(I2C_MST_STATUS, &status);
-    while (!(status & 0x40) && n < N_TRIES) {
+    ret = read_byte_spi1(I2C_MST_STATUS, &status);
+    while (!(status & 0x40) && n < N_TRIES && ret) {
+        char str[20] = {0, };
         HAL_Delay(1);
-        read_byte_spi1(I2C_MST_STATUS, &status);
+        ret = read_byte_spi1(I2C_MST_STATUS, &status);
+        sprintf(str, "status=0x%02X\r\n", status);
+        print_msg((uint8_t*)str, strlen(str));
         n++;
     }
 
@@ -163,7 +193,7 @@ uint8_t mpu9250_write_byte_mag(uint8_t _reg, uint8_t _data) {
 uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data) {
     uint8_t status = 0, n = 0;
 
-    write_byte_spi1(USER_CTRL, 0x30);
+    write_byte_spi1(USER_CTRL, 0x20);
     write_byte_spi1(I2C_MST_CTRL, 0x0D); // Set I2C_MST_CLK at 400 kHz = 13 = 0x0D
     //write_byte_spi1(I2C_MST_DELAY_CTRL, 0x10); // Trigger slave 4 actions at each sample
     write_byte_spi1(I2C_SLV4_ADDR, AK8963_I2C_ADDRESS | 0x80);
@@ -173,8 +203,11 @@ uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data) {
 
     read_byte_spi1(I2C_MST_STATUS, &status);
     while (!(status & 0x40) && n < N_TRIES) {
+        char str[20] = {0, };
         HAL_Delay(1);
         read_byte_spi1(I2C_MST_STATUS, &status);
+        sprintf(str, "status=0x%02X\r\n", status);
+        print_msg((uint8_t*)str, strlen(str));
         n++;
     }
 
@@ -194,8 +227,11 @@ uint8_t mpu9250_init_mag(Mpu9250_t* mpu9250) {
     // Check mag Who am i via external sensor registers
     for (i=0;i<N_TRIES;i++) {
         ret = mpu9250_check_mag_devId(mpu9250);
-        if (ret)
+        if (ret) {
+            char str[] = "mpu9250_check_mag_devId OK\r\n";
+            print_msg((uint8_t*)str, strlen(str));
             break;
+        }
     }
     if (i >= N_TRIES) {
         return 0;
@@ -307,10 +343,9 @@ uint8_t mpu9250_get_acc_gyro_mag_temp(Mpu9250_t* mpu9250) {
             mpu9250->isImuInit = 0;
             mpu9250->isMagInit = 0;
         }
-        ret = 0;
     }
 
-    return 1;
+    return ret;
 }
 
 uint8_t mpu9250_close(Mpu9250_t* mpu9250) {
@@ -533,12 +568,15 @@ uint8_t mpu9250_getIntStatus(void) {
 
 uint8_t mpu9250_check_devId(Mpu9250_t* mpu9250) {
     uint8_t whoAmI = 0;
+    char str[20] = {0, };
 
     if (mpu9250 == 0)
         return 0;
 
     // Look for device ID
     read_byte_spi1(WHO_AM_I, &whoAmI);
+    sprintf(str, "whoAmI imu=0x%X\r\n", whoAmI);
+    print_msg((uint8_t*)str, strlen(str));
     
     // Verify with the default value
     if (whoAmI == WHO_AM_I_ID || whoAmI == WHO_AM_I_ID2) {
@@ -551,12 +589,19 @@ uint8_t mpu9250_check_devId(Mpu9250_t* mpu9250) {
 
 uint8_t mpu9250_check_mag_devId(Mpu9250_t* mpu9250) {
     uint8_t whoAmI = 0;
+    char str[20] = {0, };
 
-    if (mpu9250 == 0)
+    if (mpu9250 == NULL) {
+        char str[] = "mpu9250 == 0\r\n";
+        print_msg((uint8_t*)str, strlen(str));
         return 0;
+    }
 
     // Look for device ID
     mpu9250_read_byte_mag(WIA, &whoAmI);
+        
+    sprintf(str, "whoAmI mag=0x%X\r\n", whoAmI);
+    print_msg((uint8_t*)str, strlen(str));
 
     // Verify with the default value
     if (whoAmI > 0x40 && whoAmI < 0x80) {
@@ -586,7 +631,7 @@ void mpu9250_set_smplrtFreq(Mpu9250_t* mpu9250, uint16_t _freq) {
         return;
     }
 
-    div = (uint8_t)(1000/_freq - 1);
+    div = (uint8_t)((1000/_freq) - 1);
     write_byte_spi1(SMPLRT_DIV, div);
 
     freq = 1000.f / (1.f + div);
@@ -655,7 +700,28 @@ void mpu9250_set_gyro_deg_per_lsb(Mpu9250_t* mpu9250, uint8_t range) {
 }
 
 void mpu9250_reset(Mpu9250_t* mpu9250) {
-    if (mpu9250 == 0)
+    if (mpu9250 == NULL)
         return;
     write_byte_spi1(PWR_MGMT_1, 0x80);
+    HAL_Delay(50);
+}
+
+uint8_t write_and_check_register(uint8_t reg, uint8_t data) {
+    uint8_t ret = 0;
+    uint8_t rx = 0;
+    char str[50] = {0, };
+    ret = write_byte_spi1(reg, data);
+    if (!ret)
+        return 0;
+
+    HAL_Delay(10);
+    
+    ret = read_byte_spi1(reg, &rx);
+    if (!ret)
+        return 0;
+
+    sprintf(str, "reg=0x%02X: in=0x%02X, out=0x%02X\r\n", reg, data, rx);
+    print_msg((uint8_t*)str, strlen(str));
+
+    return 1;
 }

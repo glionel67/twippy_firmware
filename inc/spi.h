@@ -12,9 +12,9 @@
 
 #define SPI_READ_WRITE_BIT 0x80
 
-int spi1_init(void);
+uint8_t spi1_init(void);
 void spi1_deInit(void);
-int spi1_set_speed(uint32_t baudratePrescaler);
+uint8_t spi1_set_speed(uint32_t baudratePrescaler);
 
 uint8_t write_byte_spi1(uint8_t reg, uint8_t data);
 uint8_t read_byte_spi1(uint8_t reg, uint8_t* data);

@@ -84,8 +84,10 @@ void uart1_task(void* _params) {
   if (_params != 0) { }
 
   uart1Queue = xQueueCreate(UART1_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart1Queue == 0)
+  if (uart1Queue == 0) {
+    vTaskDelete(NULL);
     return;
+  }
 
   while (1) {
     if (pdTRUE == xQueueReceive(uart1Queue, &data, 10)) {
@@ -182,8 +184,10 @@ void uart2_task(void* _params) {
   if (_params != 0) { }
 
   uart2Queue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart2Queue == 0)
+  if (uart2Queue == 0) {
+    vTaskDelete(NULL);
     return;
+  }
 
   while (1) {
     if (pdTRUE == xQueueReceive(uart2Queue, &data, 10)) {

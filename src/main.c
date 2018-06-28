@@ -2,6 +2,7 @@
 #include "main.h"
 #include "gpio.h"
 #include "uart.h"
+#include "spi.h"
 #include "encoders.h"
 #include "usTimer.h"
 #include "imu.h"
@@ -45,11 +46,7 @@ int main(void) {
   //int32_t enc1 = 0, enc2 = 0;
   //uint32_t ticks = 0;
 
-  //SystemInit();
-  //NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
   HAL_Init();
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-  //HAL_NVIC_SetPriority(SysTick_IRQn, TickPriority, 0U);
 
   // Configure system clock to 180 MHz
   SystemClock_Config();
@@ -58,9 +55,6 @@ int main(void) {
   if (ret != 0) {
     Error_Handler();
   }
-
-  //HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-  HAL_Delay(2000);
 
   ret = uart1_init();
   if (ret != 0) {
@@ -74,9 +68,26 @@ int main(void) {
   uart1_write(welcomeMsg, sizeof(welcomeMsg));
   uart2_write(welcomeMsg, sizeof(welcomeMsg));
 
+  ret = spi1_init();
+  if (!ret) {
+    char str[] = "spi1_init error\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "spi1_init OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
   ret = init_us_timer();
   if (ret != 0) {
+    char str[] = "init_us_timer error\r\n";
+    print_msg((uint8_t*)str, strlen(str));
     Error_Handler();
+  }
+  else {
+    char str[] = "init_us_timer OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
   }
 
   test_us_timer();
@@ -85,26 +96,37 @@ int main(void) {
 
   // Create FreeRTOS tasks
   if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
-    2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
+    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create uart1_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
+  }
+
   if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
-    2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
+    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create uart2_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
+  }
+
 
   if (!(pdPASS == xTaskCreate(myTask, (const char*)"task1",
-    2*configMINIMAL_STACK_SIZE, NULL, 1, NULL)))
+    2*configMINIMAL_STACK_SIZE, NULL, 3, NULL)))
     goto hell;
   if (!(pdPASS == xTaskCreate(myTask2, (const char*)"task2",
-    2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
+    2*configMINIMAL_STACK_SIZE, NULL, 3, NULL)))
     goto hell;
 
   //if (!(pdPASS == xTaskCreate(enc_test_task, (const char*)"enc_test_task",
-  //  2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
+  //  ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
   //  goto hell;
 
   if (!(pdPASS == xTaskCreate(imu_test_task, (const char*)"imu_test_task",
-    2*configMINIMAL_STACK_SIZE, NULL, 2, NULL)))
+    IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create imu_test_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
+  }
 
   vTaskStartScheduler();
 
@@ -242,7 +264,7 @@ void myTask2(void* _params) {
 
     if (pdTRUE == xQueueReceive(myQueue, &ticks, 0)) {
       sprintf(data, "myTask2: %lu\r\n", ticks);
-      //print_msg((uint8_t*)data, 20);
+      print_msg((uint8_t*)data, 20);
       memset(data, '\0', strlen(data));
     }
   }

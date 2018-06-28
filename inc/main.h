@@ -150,5 +150,22 @@
 #define NOK 0
 #define OK 1
 
+/******************************************************************************/
+/* FreeRTOS task priorities */
+/******************************************************************************/
+#define IMU_TASK_PRIORITY 1
+#define UART_TASK_PRIORITY 2
+#define ENCODER_TASK_PRIORITY 3
+
+/******************************************************************************/
+/* FreeRTOS task stack size */
+/******************************************************************************/
+#define IMU_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+#define UART_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+#define ENCODER_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+
+/******************************************************************************/
+/* Function prototypes */
+/******************************************************************************/
 void Error_Handler(void);
 void print_msg(uint8_t* _msg, uint8_t _len);
