@@ -2,7 +2,7 @@
 
 #include "main.h"
 
-int init_gpios(void) {
+uint8_t init_gpios(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	// Configure all unused GPIO port pins in Analog Input mode (floating input
@@ -24,15 +24,6 @@ int init_gpios(void) {
 	HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
-
-	// Init LED D13 on PA5
-	//__HAL_RCC_GPIOA_CLK_ENABLE();
-	//GPIO_InitStruct.Pin = GPIO_PIN_5;
-	//GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-	//GPIO_InitStruct.Pull = GPIO_PULLUP;
-	//GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	//HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
 
 	// USART1
 	USART1_GPIO_CLK_ENABLE();
@@ -131,5 +122,5 @@ int init_gpios(void) {
     //HAL_NVIC_SetPriority(IMU_INT_IRQ, 5, 0);
     //HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
-	return 0;
+	return 1;
 }

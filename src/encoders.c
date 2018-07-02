@@ -6,6 +6,9 @@
 
 #include "encoders.h"
 #include "main.h"
+#include "usTimer.h"
+
+#define DEBUB_MODULE "encoders"
 
 // Timer handler declaration
 TIM_HandleTypeDef TimHandleEnc1;
@@ -33,6 +36,17 @@ static xQueueHandle encoderQueue = 0;
 
 int init_encoders(void) {
 	int ret = 0;
+
+	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
+	if (encoderQueue == 0) {
+		char str[] = "encoderQueue creation NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		return -1;
+	}
+    else {
+        char str[] = "encoderQueue creation OK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
 
 	// Init. encoders timers
 	// TIM3
@@ -206,23 +220,11 @@ void enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, int32_t* cts2, int32_t* r
 }
 
 void enc_test_task(void* _params) {
-	int ret = 0;
 	uint32_t ticks = 0;
 	int32_t enc1 = 0, enc2 = 0;
 	char data[50] = { 0, };
 
 	if (_params != 0) { }
-
-	ret = init_encoders();
-	if (ret != 0) {
-		char str[] = "init_encoders error\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-	else {
-		char str[] = "encoders: OK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
-	}
 
     while (1) {
 		enc1 = enc1_get_counts();
@@ -236,28 +238,15 @@ void enc_test_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
+// TODO ...
 void encoder_task(void* _params) {
-	int ret = 0;
-	Encoders_t enc;
+	Encoders_t encoders;
 
 	if (_params != 0) { }
 
-	ret = init_encoders();
-	if (ret != 0) {
-		char str[] = "init_encoders error\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-
-	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
-	if (encoderQueue == 0) {
-		char str[] = "encoderQueue creation error\r\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-
 	while (1) {
-		xQueueOverwrite(encoderQueue, &enc);
+		encoders.timestamp = (float)get_us_time() * (float)1e-6;
+		xQueueOverwrite(encoderQueue, &encoders);
 	}
 
 	vTaskDelete(NULL);

@@ -2,4 +2,4 @@
 
 #include <stdint.h>
 
-int init_gpios(void);
+uint8_t init_gpios(void);

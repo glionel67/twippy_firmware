@@ -8,24 +8,26 @@
 /******************************************************************************/
 /* Definition for USART1  */
 /******************************************************************************/
-#define USART1_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART1_GPIO_PORT        GPIOA
-#define USART1_TX_PIN                 GPIO_PIN_9
-#define USART1_RX_PIN                 GPIO_PIN_10
-#define USART1_GPIO_AF                GPIO_AF7_USART1
-#define USART1_BAUDRATE         115200 //9600
-#define USART1_TIMEOUT          100
+#define USART1_GPIO_CLK_ENABLE()    __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART1_GPIO_PORT            GPIOA
+#define USART1_TX_PIN               GPIO_PIN_9
+#define USART1_RX_PIN               GPIO_PIN_10
+#define USART1_GPIO_AF              GPIO_AF7_USART1
+#define USART1_BAUDRATE             115200 //9600
+#define USART1_TIMEOUT              100 // [ms]
+#define USART1_IRQ                  USART1_IRQn
 
 /******************************************************************************/
 /* Definition for USART2  */
 /******************************************************************************/
-#define USART2_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USART2_GPIO_PORT                GPIOA
-#define USART2_TX_PIN                 GPIO_PIN_2
-#define USART2_RX_PIN                 GPIO_PIN_3
-#define USART2_GPIO_AF                GPIO_AF7_USART2
-#define USART2_BAUDRATE         115200 //9600
-#define USART2_TIMEOUT          100
+#define USART2_GPIO_CLK_ENABLE()    __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART2_GPIO_PORT            GPIOA
+#define USART2_TX_PIN               GPIO_PIN_2
+#define USART2_RX_PIN               GPIO_PIN_3
+#define USART2_GPIO_AF              GPIO_AF7_USART2
+#define USART2_BAUDRATE             115200 //9600
+#define USART2_TIMEOUT              100 // [ms]
+#define USART2_IRQ                  USART2_IRQn
 
 /******************************************************************************/
 /* Definition for encoders */
@@ -139,7 +141,7 @@
 #define SPI1_MISO_PIN GPIO_PIN_6
 #define SPI1_MOSI_PIN GPIO_PIN_7
 
-#define SPI1_TIMEOUT 100
+#define SPI1_TIMEOUT 10
 
 #define IMU_INT_CLK_ENABLE() __HAL_RCC_GPIOB_CLK_ENABLE()
 #define IMU_INT_GPIO GPIOB
@@ -150,19 +152,6 @@
 #define NOK 0
 #define OK 1
 
-/******************************************************************************/
-/* FreeRTOS task priorities */
-/******************************************************************************/
-#define IMU_TASK_PRIORITY 1
-#define UART_TASK_PRIORITY 2
-#define ENCODER_TASK_PRIORITY 3
-
-/******************************************************************************/
-/* FreeRTOS task stack size */
-/******************************************************************************/
-#define IMU_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
-#define UART_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
-#define ENCODER_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
 
 /******************************************************************************/
 /* Function prototypes */

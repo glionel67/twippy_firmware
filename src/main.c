@@ -1,11 +1,14 @@
 // Includes
 #include "main.h"
+#include "config.h"
 #include "gpio.h"
-#include "uart.h"
+#include "uart1.h"
+#include "uart2.h"
 #include "spi.h"
 #include "encoders.h"
 #include "usTimer.h"
 #include "imu.h"
+#include "ahrs.h"
 //#include "motor.h"
 //#include "adc.h"
 
@@ -41,7 +44,7 @@ void imuTestTask(void* _params);
 // ---------------------------------------------------------------------------//
 int main(void) {
   int ret = 0;
-  uint8_t welcomeMsg[] = "Hello World!\r\n";
+  uint8_t welcomeMsg[] = "\r\n--- Hello Twippy! ---\r\n";
   //uint8_t data[DATASIZE] = { 0, };
   //int32_t enc1 = 0, enc2 = 0;
   //uint32_t ticks = 0;
@@ -51,11 +54,17 @@ int main(void) {
   // Configure system clock to 180 MHz
   SystemClock_Config();
 
+  // ------------------------------------------------------------------------ //
+  // --- Init GPIO
+  // ------------------------------------------------------------------------ //
   ret = init_gpios();
-  if (ret != 0) {
+  if (!ret) {
     Error_Handler();
   }
 
+  // ------------------------------------------------------------------------ //
+  // --- Init UART
+  // ------------------------------------------------------------------------ //
   ret = uart1_init();
   if (ret != 0) {
     Error_Handler();
@@ -65,12 +74,15 @@ int main(void) {
     Error_Handler();
   }
   
-  uart1_write(welcomeMsg, sizeof(welcomeMsg));
-  uart2_write(welcomeMsg, sizeof(welcomeMsg));
+  //UART1_WRITE(welcomeMsg, sizeof(welcomeMsg));
+  UART2_WRITE(welcomeMsg, sizeof(welcomeMsg));
 
+  // ------------------------------------------------------------------------ //
+  // --- Init SPI
+  // ------------------------------------------------------------------------ //
   ret = spi1_init();
   if (!ret) {
-    char str[] = "spi1_init error\r\n";
+    char str[] = "spi1_init NOK\r\n";
     print_msg((uint8_t*)str, strlen(str));
     Error_Handler();
   }
@@ -79,9 +91,12 @@ int main(void) {
     print_msg((uint8_t*)str, strlen(str));
   }
 
+  // ------------------------------------------------------------------------ //
+  // --- Init microsecond timer
+  // ------------------------------------------------------------------------ //
   ret = init_us_timer();
   if (ret != 0) {
-    char str[] = "init_us_timer error\r\n";
+    char str[] = "init_us_timer NOK\r\n";
     print_msg((uint8_t*)str, strlen(str));
     Error_Handler();
   }
@@ -91,6 +106,35 @@ int main(void) {
   }
 
   test_us_timer();
+
+  // ------------------------------------------------------------------------ //
+  // --- Init encoder
+  // ------------------------------------------------------------------------ //
+  ret = init_encoders();
+  if (ret != 0) {
+    char str[] = "init_encoders NOK\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "init_encoders OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
+  // ------------------------------------------------------------------------ //
+  // --- Init IMU
+  // ------------------------------------------------------------------------ //
+  ret = init_imu();
+  if (!ret) {
+    char str[] = "init_imu NOK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "init_imu OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
 
   myQueue = xQueueCreate(1, sizeof(uint32_t));
 
@@ -111,10 +155,10 @@ int main(void) {
 
 
   if (!(pdPASS == xTaskCreate(myTask, (const char*)"task1",
-    2*configMINIMAL_STACK_SIZE, NULL, 3, NULL)))
+    2*configMINIMAL_STACK_SIZE, NULL, 0, NULL)))
     goto hell;
   if (!(pdPASS == xTaskCreate(myTask2, (const char*)"task2",
-    2*configMINIMAL_STACK_SIZE, NULL, 3, NULL)))
+    2*configMINIMAL_STACK_SIZE, NULL, 0, NULL)))
     goto hell;
 
   //if (!(pdPASS == xTaskCreate(enc_test_task, (const char*)"enc_test_task",
@@ -128,12 +172,19 @@ int main(void) {
     goto hell;
   }
 
+  if (!(pdPASS == xTaskCreate(ahrs_task, (const char*)"ahrs_task",
+    AHRS_TASK_STACK_SIZE, NULL, AHRS_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create imu_test_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+
+
   vTaskStartScheduler();
 
   while (1) {
     char msg[] = "Error: should not reach here!\n";
-    uart1_write((uint8_t*)msg, strlen(msg));
-    uart2_write((uint8_t*)msg, strlen(msg));
+    print_msg((uint8_t*)msg, strlen(msg));
     HAL_Delay(1000);
   }
 
@@ -183,10 +234,22 @@ void SystemClock_Config(void) {
 
 void Error_Handler(void) {
   uint8_t errorMsg[] = "ERROR!\r\n";
+  GPIO_InitTypeDef GPIO_InitStruct;
+
+  // Init LED D13 on PA5
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+
   while (1) {
-    uart1_write(errorMsg, sizeof(errorMsg));
-    uart2_write(errorMsg, sizeof(errorMsg));
+    //UART1_WRITE(errorMsg, sizeof(errorMsg));
+    UART2_WRITE(errorMsg, sizeof(errorMsg));
     HAL_Delay(1000);
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
   }
 }
 
@@ -198,14 +261,14 @@ void print_msg(uint8_t* _msg, uint8_t _len) {
   _len = end+1;
 
   if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
-    //uart1_enque_data(_msg, (uint32_t)_len);
-    //uart2_enque_data(_msg, (uint32_t)_len);
-    uart1_send_data(_msg, _len);
-    uart2_send_data(_msg, _len);
+    //uart1_enque_data(_msg, _len);
+    //uart2_enque_data(_msg, _len);
+    //UART1_WRITE(_msg, _len);
+    UART2_WRITE(_msg, _len);
   }
   else {
-    uart1_send_data(_msg, _len);
-    uart2_send_data(_msg, _len);
+    //UART1_WRITE(_msg, _len);
+    UART2_WRITE(_msg, _len);
   }
 }
 

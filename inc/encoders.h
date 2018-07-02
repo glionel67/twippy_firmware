@@ -6,7 +6,8 @@
 #define ENCODER_QUEUE_SIZE 1
 
 typedef struct Encoders_s {
-    uint32_t timestamp;
+    //uint32_t timestamp;
+    float timestamp;
     uint32_t tick1;
     uint32_t tick2;
     int32_t rpm1;

@@ -335,6 +335,10 @@ uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data);
 
 uint8_t mpu9250_get_acc_gyro_mag_temp(Mpu9250_t* mpu9250);
 
+uint8_t mpu9250_read_data_register(Mpu9250_t* mpu9250);
+
+void mpu9250_extract_data_register(Mpu9250_t* mpu9250);
+
 uint8_t mpu9250_close(Mpu9250_t* mpu9250);
 
 uint8_t mpu9250_static_calibration(Mpu9250_t* mpu9250);

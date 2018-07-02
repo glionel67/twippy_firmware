@@ -86,7 +86,8 @@ FREERTOS_SRCS+= freeRtosUtils.c
 PROJECT_SRCS = main.c
 PROJECT_SRCS+= stm32f4xx_it.c
 PROJECT_SRCS+= gpio.c
-PROJECT_SRCS+= uart.c
+PROJECT_SRCS+= uart1.c
+PROJECT_SRCS+= uart2.c
 #PROJECT_SRCS+= adc.c
 PROJECT_SRCS+= encoders.c
 #PROJECT_SRCS+= motor.c
@@ -95,6 +96,7 @@ PROJECT_SRCS+= usTimer.c
 PROJECT_SRCS+= spi.c
 PROJECT_SRCS+= imu.c
 PROJECT_SRCS+= mpu9250.c
+PROJECT_SRCS+= ahrs.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)
@@ -157,7 +159,7 @@ CFLAGS+= -fno-strict-aliasing $(C_PROFILE)
 #CFLAGS+= -fno-builtin
 CFLAGS+= -std=gnu11 #-std=c99
 # Compiler flags to generate dependency files:
-//CFLAGS+= -MD -MP -MF $(BIN_DIR)/dep/$(@).d -MQ $(@)
+#CFLAGS+= -MD -MP -MF $(BIN_DIR)/dep/$(@).d -MQ $(@)
 #Permits to remove un-used functions and global variables from output file
 CFLAGS+= -ffunction-sections -fdata-sections
 
@@ -176,7 +178,7 @@ LDFLAGS+= $(LIBS_LINK)
 #LDFLAGS+= --specs=nano.specs -mcpu=cortex-m4 -mthumb
 LDFLAGS+= --specs=nosys.specs
 #LDFLAGS+= --specs=rdimon.specs
-#LDFLAGS+= -lm
+LDFLAGS+= -lm
 #LDFLAGS+= -lc
 #LDFLAGS+= -Wl,-Map=$(BIN_DIR)/$(PROJECT_NAME).map,--cref,--gc-sections
 
