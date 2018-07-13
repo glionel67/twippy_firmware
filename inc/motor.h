@@ -2,8 +2,31 @@
 
 #include <stdint.h>
 
-#define MOTORS_PWM_PRESCALER	0
-#define MOTORS_PWM_PERIOD		((64000000/20000)-1) // =1599=(64MHz/40kHz) - 1
+enum {
+    MOTOR1=0, MOTOR2, N_MOTORS
+} Motors_e;
+
+#define LEFT_MOTOR (MOTOR1)
+#define RIGHT_MOTOR (MOTOR2)
+
+#define FORWARD_DIR (1)
+#define REVERSE_DIR (0)
+
+#define BRAKE_ON (1)
+#define BRAKE_OFF (0)
+
+#define MOTORS_PWM_PRESCALER 0
+#define MOTORS_PWM_PERIOD ((90000000/20000)-1) // =4500=(90MHz/20kHz) - 1 = 4499
+
+
+typedef struct Motor_s {
+    uint8_t direction; // = FORWARD_DIR or REVERSE_DIR
+    uint16_t pwm;
+    float dutyCycle; // Between 0-100 %
+    uint8_t brake; // = BRAKE_ON or BRAKE_OFF
+    float current; //
+    uint8_t fault; // 0 = no, 1 = yes
+} Motor_t;
 
 int init_motors(void);
 

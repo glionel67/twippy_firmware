@@ -3,7 +3,7 @@
 #include "stm32f4xx_hal.h"
 //#include <stdio.h>
 
-#define N_MOTORS          2
+//#define N_MOTORS          2
 
 /******************************************************************************/
 /* Definition for USART1  */
@@ -80,27 +80,26 @@
 /******************************************************************************/
 /* Definition for PWM motor (TIM)  */
 /******************************************************************************/
-#define TIM_PWM_MOTORS            TIM1
-#define TIM_PWM_MOTORS_CLK_ENABLE()           __HAL_RCC_TIM1_CLK_ENABLE()
-#define TIM_PWM_MOTORS_GPIO_CLK()    __HAL_RCC_GPIOA_CLK_ENABLE()
-#define TIM_PWM_MOTORS_GPIO_PORT      GPIOA
-#define TIM_PWM_MOTOR1_PIN        GPIO_PIN_8
-#define TIM_PWM_MOTOR2_PIN        GPIO_PIN_11
+#define TIM_PWM_MOTORS              TIM1
+#define TIM_PWM_MOTORS_CLK_ENABLE() __HAL_RCC_TIM1_CLK_ENABLE()
+#define TIM_PWM_MOTORS_GPIO_CLK()   __HAL_RCC_GPIOA_CLK_ENABLE()
+#define TIM_PWM_MOTORS_GPIO_PORT    GPIOA
+#define TIM_PWM_MOTOR1_PIN          GPIO_PIN_8
+#define TIM_PWM_MOTOR2_PIN          GPIO_PIN_11
 #define TIM_PWM_MOTOR1_CHANNEL      TIM_CHANNEL_1
-#define TIM_PWM_MOTOR2_CHANNEL        TIM_CHANNEL_4
+#define TIM_PWM_MOTOR2_CHANNEL      TIM_CHANNEL_4
 
 /******************************************************************************/
 /* Definition for motor DIR+BRAKE */
 /******************************************************************************/
-#define MOTORS_GPIO         GPIOC
-#define MOTORS_GPIO_CLK_ENABLE()  __HAL_RCC_GPIOC_CLK_ENABLE()
-
-#define M1_INA_PIN          GPIO_PIN_0
-#define M1_INB_PIN          GPIO_PIN_1
-#define M1_EN_PIN         GPIO_PIN_2
-#define M2_INA_PIN          GPIO_PIN_3
-#define M2_INB_PIN          GPIO_PIN_4
-#define M2_EN_PIN         GPIO_PIN_5
+#define MOTORS_GPIO                 GPIOC
+#define MOTORS_GPIO_CLK_ENABLE()    __HAL_RCC_GPIOC_CLK_ENABLE()
+#define M1_INA_PIN                  GPIO_PIN_0
+#define M1_INB_PIN                  GPIO_PIN_1
+#define M1_EN_PIN                   GPIO_PIN_2
+#define M2_INA_PIN                  GPIO_PIN_3
+#define M2_INB_PIN                  GPIO_PIN_4
+#define M2_EN_PIN                   GPIO_PIN_5
 
 /******************************************************************************/
 /* Definition for ADC1 (IMOT) */

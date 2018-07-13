@@ -32,8 +32,8 @@ int init_motors(void) {
 	TimHandleMotors.Instance = TIM_PWM_MOTORS;
 	TimHandleMotors.Init.Prescaler = MOTORS_PWM_PRESCALER;
 	TimHandleMotors.Init.Period = MOTORS_PWM_PERIOD;
-	TimHandleMotors.Init.ClockDivision = 0;
-	TimHandleMotors.Init.CounterMode = TIM_COUNTERMODE_UP;
+	TimHandleMotors.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+	TimHandleMotors.Init.CounterMode = TIM_COUNTERMODE_UP; // TIM_COUNTERMODE_CENTERALIGNED1,2,3
 	TimHandleMotors.Init.RepetitionCounter = 0;
 	ret = HAL_TIM_PWM_Init(&TimHandleMotors);
 	if (ret != HAL_OK) {
@@ -121,6 +121,9 @@ int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
 	return 0;
 }
 
+// pulse_length = ((TIM_Period + 1) * DutyCycle) / 100 - 1
+// where DutyCycle is in percent, between 0 and 100% 
+// 25% duty cycle:     pulse_length = ((8399 + 1) * 25) / 100 - 1 = 2099
 int set_dc_pwm1(float _dc) {
 	dcMotors[0] = _dc;
 	pwmMotors[0] = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);

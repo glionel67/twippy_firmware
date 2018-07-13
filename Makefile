@@ -97,6 +97,8 @@ PROJECT_SRCS+= spi.c
 PROJECT_SRCS+= imu.c
 PROJECT_SRCS+= mpu9250.c
 PROJECT_SRCS+= ahrs.c
+PROJECT_SRCS+= pid_controller.c
+PROJECT_SRCS+= balance_control.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)
