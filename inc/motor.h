@@ -16,17 +16,26 @@ enum {
 #define BRAKE_OFF (0)
 
 #define MOTORS_PWM_PRESCALER 0
-#define MOTORS_PWM_PERIOD ((90000000/20000)-1) // =4500=(90MHz/20kHz) - 1 = 4499
+#define MOTORS_PWM_PERIOD ((180000000/20000)-1) // (180MHz/20kHz) - 1 = 8999 vs (180MHz/40kHz) - 1 = 4499
+
+#define MOTOR_QUEUE_SIZE 1
 
 
 typedef struct Motor_s {
     uint8_t direction; // = FORWARD_DIR or REVERSE_DIR
     uint16_t pwm;
+    //uint16_t dutyCyclei; // Between 0-MOTORS_PWM_PERIOD <-> 0-100 % 
     float dutyCycle; // Between 0-100 %
-    uint8_t brake; // = BRAKE_ON or BRAKE_OFF
-    float current; //
+    //uint8_t brake; // = BRAKE_ON or BRAKE_OFF
+    //uint16_t currenti; // [mA]
+    float current; // [A]
     uint8_t fault; // 0 = no, 1 = yes
 } Motor_t;
+
+typedef struct Motors_s {
+    float timestamp; // [s]
+    Motor_t motors[N_MOTORS];
+} Motors_t;
 
 int init_motors(void);
 
@@ -63,3 +72,4 @@ void motor_test_task(void* _params);
 
 void motor_task(void* _params);
 
+int motor_read_data(Motors_t* mot);

@@ -6,6 +6,7 @@
 
 #include "motor.h"
 #include "main.h"
+#include "usTimer.h"
 
 // Timer handler declaration
 TIM_HandleTypeDef TimHandleMotors;
@@ -13,19 +14,26 @@ TIM_HandleTypeDef TimHandleMotors;
 // Timer Output Compare Configuration Structure declaration
 static TIM_OC_InitTypeDef sConfigMotors;
 
-uint8_t dirMotors[N_MOTORS] = { 0, };
-uint16_t pwmMotors[N_MOTORS] = { 0, };
-float dcMotors[N_MOTORS] = { 0, };
+
+static Motors_t motors;
+
+static xQueueHandle motorsQueue = 0;
 
 int init_motors(void) {
 	int ret = 0;
-	uint8_t i = 0;
 
-	for (i = 0; i < N_MOTORS; i++) {
-		pwmMotors[i] = 0;
-		dcMotors[i] = 0;
-		dirMotors[i] = 0;
+	memset((void*)&motors, 0, sizeof(Motors_t));
+
+	motorsQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motors_t));
+	if (motorsQueue == 0) {
+		char str[] = "init_motors: motorsQueue creation NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		return -1;
 	}
+    else {
+        char str[] = "init_motors: motorsQueue creation OK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
 
 	// PWM motors
 	TIM_PWM_MOTORS_CLK_ENABLE();
@@ -37,6 +45,8 @@ int init_motors(void) {
 	TimHandleMotors.Init.RepetitionCounter = 0;
 	ret = HAL_TIM_PWM_Init(&TimHandleMotors);
 	if (ret != HAL_OK) {
+		char str[] = "init_motors: HAL_TIM_PWM_Init NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 
@@ -50,12 +60,16 @@ int init_motors(void) {
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "init_motors: HAL_TIM_PWM_ConfigChannel NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors,
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "init_motors: HAL_TIM_PWM_Start NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 
@@ -64,15 +78,19 @@ int init_motors(void) {
 
 int set_pwm1(uint16_t _pwm) {
 	int ret = 0;
-	pwmMotors[0] = _pwm;
+	motors.motors[MOTOR1].pwm = _pwm;
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "set_pwm1: HAL_TIM_PWM_ConfigChannel NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR1_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "set_pwm1: HAL_TIM_PWM_Start NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 	return 0;
@@ -80,15 +98,19 @@ int set_pwm1(uint16_t _pwm) {
 
 int set_pwm2(uint16_t _pwm) {
 	int ret = 0;
-	pwmMotors[1] = _pwm;
+	motors.motors[MOTOR2].pwm = _pwm;
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "set_pwm2: HAL_TIM_PWM_ConfigChannel NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
+		char str[] = "set_pwm2: HAL_TIM_PWM_Start NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
 	return 0;
@@ -96,7 +118,7 @@ int set_pwm2(uint16_t _pwm) {
 
 int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
 	int ret = 0;
-	pwmMotors[0] = _pwm1;
+	motors.motors[MOTOR1].pwm = _pwm1;
 	sConfigMotors.Pulse = _pwm1;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL);
@@ -107,7 +129,7 @@ int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
 	if (ret != HAL_OK) {
 		return -1;
 	}
-	pwmMotors[1] = _pwm2;
+	motors.motors[MOTOR2].pwm = _pwm2;
 	sConfigMotors.Pulse = _pwm2;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR2_CHANNEL);
@@ -125,15 +147,15 @@ int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
 // where DutyCycle is in percent, between 0 and 100% 
 // 25% duty cycle:     pulse_length = ((8399 + 1) * 25) / 100 - 1 = 2099
 int set_dc_pwm1(float _dc) {
-	dcMotors[0] = _dc;
-	pwmMotors[0] = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
-	return set_pwm1(pwmMotors[0]);
+	motors.motors[MOTOR1].dutyCycle = _dc;
+	motors.motors[MOTOR1].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
+	return set_pwm1(motors.motors[MOTOR1].pwm);
 }
 
 int set_dc_pwm2(float _dc) {
-	dcMotors[1] = _dc;
-	pwmMotors[1] = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
-	return set_pwm2(pwmMotors[1]);
+	motors.motors[MOTOR2].dutyCycle = _dc;
+	motors.motors[MOTOR2].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
+	return set_pwm2(motors.motors[MOTOR2].pwm);
 }
 
 int set_dc_pwm12(float _dc1, float _dc2) {
@@ -147,31 +169,27 @@ int set_dc_pwm12(float _dc1, float _dc2) {
 int set_m1_speed(int32_t _speed) {
 	int ret = 0;
 
-	if (_speed < 0) {
+	if (_speed == 0) {
+		motors.motors[MOTOR1].direction = FORWARD_DIR; // Assume forward
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0); // Make the motor coast no
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0); // matter which direction it is spinning.
+	}
+	else if (_speed < 0) {
 		_speed = -_speed; // Make speed a positive quantity
-		dirMotors[0] = 0; // reverse
+		motors.motors[MOTOR1].direction = REVERSE_DIR; // reverse
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0);
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 1);
 	}
 	else {
-		dirMotors[0] = 1; // forward
+		motors.motors[MOTOR1].direction = FORWARD_DIR; // forward
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 1);
+		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0);
 	}
 
 	if (_speed > MOTORS_PWM_PERIOD) // Max PWM dutycycle
 		_speed = MOTORS_PWM_PERIOD;
 
-	if (_speed == 0) {
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0); // Make the motor coast no
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0); // matter which direction it is spinning.
-	}
-	else if (dirMotors[0] == 0) { // reverse
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0);
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 1);
-	}
-	else {
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 1);
-		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0);
-	}
-
-	pwmMotors[0] = (uint16_t)_speed;
+	motors.motors[MOTOR1].pwm = (uint16_t)_speed;
 	sConfigMotors.Pulse = (uint16_t)_speed;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL);
@@ -188,31 +206,28 @@ int set_m1_speed(int32_t _speed) {
 int set_m2_speed(int32_t _speed) {
 	int ret = 0;
 
-	if (_speed < 0) {
+	if (_speed == 0) {
+		motors.motors[MOTOR2].direction = FORWARD_DIR; // Assume forward
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0); // Make the motor coast no
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0); // matter which direction it is spinning.
+	}
+	else if (_speed < 0) {
 		_speed = -_speed; // Make speed a positive quantity
-		dirMotors[1] = 0; // reverse
+		motors.motors[MOTOR2].direction = REVERSE_DIR; // reverse
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0);
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 1);
 	}
 	else {
-		dirMotors[1] = 1; // forward
+		motors.motors[MOTOR2].direction = FORWARD_DIR; // forward
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 1);
+		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0);
 	}
 
 	if (_speed > MOTORS_PWM_PERIOD) // Max PWM dutycycle
 		_speed = MOTORS_PWM_PERIOD;
 
-	if (_speed == 0) {
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0); // Make the motor coast no
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0); // matter which direction it is spinning.
-	}
-	else if (dirMotors[1] == 0) { // reverse
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0);
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 1);
-	}
-	else {
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 1);
-		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0);
-	}
 
-	pwmMotors[1] = (uint16_t)_speed;
+	motors.motors[MOTOR2].pwm = (uint16_t)_speed;
 	sConfigMotors.Pulse = (uint16_t)_speed;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR2_CHANNEL);
@@ -279,11 +294,13 @@ int set_m2_brake(int32_t _brake) {
 }
 
 uint8_t get_m1_fault(void) {
-	return !HAL_GPIO_ReadPin(MOTORS_GPIO, M1_EN_PIN); // 1 = fault
+	motors.motors[MOTOR1].fault = !HAL_GPIO_ReadPin(MOTORS_GPIO, M1_EN_PIN); // 1 = fault
+	return motors.motors[MOTOR1].fault;
 }
 
 uint8_t get_m2_fault(void) {
-	return !HAL_GPIO_ReadPin(MOTORS_GPIO, M2_EN_PIN); // 1 = fault
+	motors.motors[MOTOR2].fault = !HAL_GPIO_ReadPin(MOTORS_GPIO, M2_EN_PIN); // 1 = fault
+	return motors.motors[MOTOR2].fault;
 }
 
 void brake_motor1(void) {
@@ -304,38 +321,46 @@ void brake_motor12(void) {
 }
 
 void set_dir_motor1(uint8_t _sens) {
-	if (_sens == 1) {
+	if (_sens == FORWARD_DIR) {
+		motors.motors[MOTOR1].direction = FORWARD_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 1);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0);
 	} else {
+		motors.motors[MOTOR1].direction = REVERSE_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 1);
 	}
 }
 
 void set_dir_motor2(uint8_t _sens) {
-	if (_sens == 1) {
+	if (_sens == FORWARD_DIR) {
+		motors.motors[MOTOR2].direction = FORWARD_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 1);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0);
 	} else {
+		motors.motors[MOTOR2].direction = REVERSE_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 1);
 	}
 }
 
 void set_dir_motor12(uint8_t _sens1, uint8_t _sens2) {
-	if (_sens1 == 1) {
+	if (_sens1 == FORWARD_DIR) {
+		motors.motors[MOTOR1].direction = FORWARD_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 1);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0);
 	} else {
+		motors.motors[MOTOR1].direction = REVERSE_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 1);
 	}
 
-	if (_sens2 == 1) {
+	if (_sens2 == FORWARD_DIR) {
+		motors.motors[MOTOR2].direction = FORWARD_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 1);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0);
 	} else {
+		motors.motors[MOTOR2].direction = REVERSE_DIR;
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0);
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 1);
 	}
@@ -402,53 +427,56 @@ void test_motor12(void) {
 }
 
 void motor_test_task(void* _params) {
-	int ret = 0;
+	//int ret = 0;
+	int32_t i = 0;
+	uint8_t dir = FORWARD_DIR;
 
 	if (_params != 0) { }
 
-	ret = init_motors();
-	if (ret != 0) {
-		char str[] = "init_motors error\r\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-
-	ret = init_adc_motors();
-	if (ret != 0) {
-		char str[] = "init_adc_motors error\r\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-
 	while (1) {
+		if (dir == FORWARD_DIR)
+			i++;
+		else
+			i--;
+
+		if (i >= MOTORS_PWM_PERIOD-1) 
+			dir = REVERSE_DIR;
+		else if (i <= -MOTORS_PWM_PERIOD+1)
+			dir = FORWARD_DIR;
 		
+		set_m1_speed(i);
+		set_m2_speed(i);
+
+		motors.timestamp = (float)get_us_time() * (float)1e-6;
+		xQueueOverwrite(motorsQueue, &motors);
+
+		vTaskDelay(5/portTICK_RATE_MS);
 	}
 
 	vTaskDelete(NULL);
 }
 
 void motor_task(void* _params) {
-	int ret = 0;
+	//int ret = 0;
 
 	if (_params != 0) { }
 
-	ret = init_motors();
-	if (ret != 0) {
-		char str[] = "init_motors error\r\n";
-		print_msg((uint8_t*)str, strlen(str));
-		Error_Handler();
-	}
-
+	/*
 	ret = init_adc_motors();
 	if (ret != 0) {
 		char str[] = "init_adc_motors error\r\n";
 		print_msg((uint8_t*)str, strlen(str));
 		Error_Handler();
 	}
-
+	*/
 	while (1) {
-
+		motors.timestamp = (float)get_us_time() * (float)1e-6;
+		xQueueOverwrite(motorsQueue, &motors);
 	}
 
 	vTaskDelete(NULL);
+}
+
+int motor_read_data(Motors_t* mot) {
+  return (pdTRUE == xQueueReceive(motorsQueue, mot, 0));
 }

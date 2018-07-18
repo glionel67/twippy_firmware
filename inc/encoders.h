@@ -2,16 +2,23 @@
 
 #include <stdint.h>
 
+#include "motor.h"
+
 
 #define ENCODER_QUEUE_SIZE 1
 
+#define ENCODER_MEASUREMENT_PERIOD_MS (20) // 20 ms <=> 50 Hz
+
+
+typedef struct Encoder_s {
+    int32_t tick;
+    int32_t rpm;
+} Encoder_t;
+
 typedef struct Encoders_s {
     //uint32_t timestamp;
-    float timestamp;
-    uint32_t tick1;
-    uint32_t tick2;
-    int32_t rpm1;
-    int32_t rpm2;
+    float timestamp; // [s]
+    Encoder_t encoders[N_MOTORS];
 } Encoders_t;
 
 
