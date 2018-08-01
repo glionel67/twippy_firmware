@@ -69,7 +69,14 @@ void test_motor2(void);
 void test_motor12(void);
 
 void motor_test_task(void* _params);
+void motor_ident_task(void* _params);
 
 void motor_task(void* _params);
 
 int motor_read_data(Motors_t* mot);
+
+int32_t voltageToPwm(float _volt);
+float getInputVoltage(void);
+float sinusoidSignal(float t);
+float squareSignal(float f, float t);
+float triangularSignal(float f, float t);

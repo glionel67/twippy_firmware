@@ -32,7 +32,7 @@ void ahrs_task(void* _params) {
     float pitch = 0.f;
     Quaternion_t quaternion;
     PitchAndRate_t pitchAndRate;
-    char data[100] = { 0, };
+    //char data[100] = { 0, };
 
     memset((void*)&quaternion, 0, sizeof(Quaternion_t));
     memset((void*)&pitchAndRate, 0, sizeof(PitchAndRate_t));
@@ -72,9 +72,9 @@ void ahrs_task(void* _params) {
             // Compute delta time
             dt = imu.timestamp - prevTs;
 
-            sprintf(data, "%s: t=%3.3f,ax=%3.3f,gx=%3.3f\r\n", DEBUG_MODULE,
-                    (float)imu.timestamp, (float)imu.a[0], (float)imu.g[0]);
-            print_msg((uint8_t*)data, strlen(data));
+            //sprintf(data, "%s: t=%3.3f,ax=%3.3f,gx=%3.3f\r\n", DEBUG_MODULE,
+            //        (float)imu.timestamp, (float)imu.a[0], (float)imu.g[0]);
+            //print_msg((uint8_t*)data, strlen(data));
             
             // Compute attitude
             //MadgwickAHRSupdate(imu.g[0], imu.g[1], imu.g[2], 
@@ -91,11 +91,11 @@ void ahrs_task(void* _params) {
             quaternion.q[QY] = q2;
             quaternion.q[QZ] = q3;
 
-            sprintf(data, "%s: t=%3.3f,qw=%3.3f,qx=%3.3f,qy=%3.3f,qz=%3.3f\r\n",
-                    DEBUG_MODULE, (float)quaternion.timestamp, 
-                    (float)quaternion.q[QW], (float)quaternion.q[QX],
-                    quaternion.q[QY], quaternion.q[QZ]);
-            print_msg((uint8_t*)data, strlen(data));
+            //sprintf(data, "%s: t=%3.3f,qw=%3.3f,qx=%3.3f,qy=%3.3f,qz=%3.3f\r\n",
+            //        DEBUG_MODULE, (float)quaternion.timestamp, 
+            //        (float)quaternion.q[QW], (float)quaternion.q[QX],
+            //        quaternion.q[QY], quaternion.q[QZ]);
+            //print_msg((uint8_t*)data, strlen(data));
 
 
             // Convert quaternion to pitch angle for balance control

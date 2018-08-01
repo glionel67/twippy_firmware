@@ -34,9 +34,9 @@
 Pid_t pidPitchRate;
 Pid_t pidPitch;
 
-static float pitchOutput;
+static float pitchOutput = 0;
 
-static uint8_t isInit;
+static uint8_t isInit = 0;
 
 uint8_t balance_control_init(const float dt) {
   if (isInit)

@@ -148,7 +148,7 @@ void imu_test_task(void* _params) {
                     // TODO: emergency stop ?!
                 }
             }
-            print_msg((uint8_t*)data, strlen(data));
+            //print_msg((uint8_t*)data, strlen(data));
         }
         vTaskDelay(200);
     }

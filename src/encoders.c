@@ -240,6 +240,7 @@ void enc_test_task(void* _params) {
 
 void encoder_task(void* _params) {
 	char data[50] = { 0, };
+	uint8_t count = 0;
 	Encoders_t encoders;
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS);
@@ -274,17 +275,30 @@ void encoder_task(void* _params) {
 	    num = (encoders.encoders[MOTOR2].tick* 60000) / ppt;
 	    encoders.encoders[MOTOR2].rpm = num / den;
 
+	    // Send encoder data
 		xQueueOverwrite(encoderQueue, &encoders);
-		sprintf(data, "%lu,tick1=%ld,tick2=%ld\r\n", t1_now, 
+
+		count++;
+		//if (count >= ENCODER_MEASUREMENT_PERIOD_MS/2) {
+		if (count >= 1) {
+			count = 0;
+			float inVolt = getInputVoltage();
+			sprintf(data, "%3.3f,%3.3f,%ld,%ld,%ld,%ld\r\n",
+				encoders.timestamp,
+				inVolt,
 				encoders.encoders[MOTOR1].tick,
-				encoders.encoders[MOTOR2].tick);
-		print_msg((uint8_t*)data, strlen(data));
+				encoders.encoders[MOTOR2].tick,
+				encoders.encoders[MOTOR1].rpm,
+				encoders.encoders[MOTOR2].rpm);
+			print_msg((uint8_t*)data, strlen(data));
+		}
+
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);
 	}
 
 	vTaskDelete(NULL);
 }
 
-int encoder_read_data(Encoders_t* enc) {
-  return (pdTRUE == xQueueReceive(encoderQueue, enc, 0));
+uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait) {
+  return (pdTRUE == xQueueReceive(encoderQueue, enc, xTicksToWait));
 }

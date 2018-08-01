@@ -4,6 +4,22 @@
 		"selected_items":
 		[
 			[
+				"in",
+				"int32_t"
+			],
+			[
+				"int",
+				"int16_t"
+			],
+			[
+				"motor",
+				"motorControls"
+			],
+			[
+				"MOTO",
+				"MOTOR1"
+			],
+			[
 				"Enc",
 				"Encoders_t"
 			],
@@ -46,10 +62,6 @@
 			[
 				"_",
 				"_len"
-			],
-			[
-				"int",
-				"int32_t"
 			],
 			[
 				"ua",
@@ -328,10 +340,6 @@
 				"push_back"
 			],
 			[
-				"in",
-				"inc\t#include \"…\""
-			],
-			[
 				"mst",
 				"mst2"
 			],
@@ -500,25 +508,16 @@
 			"file": "src/main.c",
 			"settings":
 			{
-				"buffer_size": 9773,
+				"buffer_size": 8316,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/config.h",
-			"settings":
-			{
-				"buffer_size": 940,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
 			}
 		},
 		{
 			"file": "inc/motor.h",
 			"settings":
 			{
-				"buffer_size": 1675,
+				"buffer_size": 1889,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -527,16 +526,7 @@
 			"file": "src/motor.c",
 			"settings":
 			{
-				"buffer_size": 12796,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/encoders.h",
-			"settings":
-			{
-				"buffer_size": 967,
+				"buffer_size": 13988,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -545,7 +535,16 @@
 			"file": "src/encoders.c",
 			"settings":
 			{
-				"buffer_size": 8163,
+				"buffer_size": 8492,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "inc/encoders.h",
+			"settings":
+			{
+				"buffer_size": 1019,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -589,30 +588,39 @@
 	],
 	"file_history":
 	[
+		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
+		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/src/imu.c",
+		"/home/user/Workspace/twippy_firmware/inc/config.h",
+		"/home/user/Workspace/twippy_firmware/src/motors_control.c",
+		"/home/user/Workspace/twippy_firmware/inc/motors_control.h",
+		"/home/user/Workspace/twippy_firmware/src/encoders.c",
+		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
+		"/home/user/Workspace/twippy_firmware/inc/motor.h",
+		"/home/user/Workspace/twippy_firmware/src/motor.c",
+		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
+		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
+		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
+		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
+		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
+		"/home/user/Workspace/twippy_firmware/src/gpio.c",
 		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
 		"/home/user/Workspace/twippy_firmware/inc/usTimer.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/stm32f446xx.h",
-		"/home/user/Workspace/twippy_firmware/src/gpio.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
-		"/home/user/Workspace/twippy_firmware/inc/main.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc_ex.h",
-		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
-		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
-		"/home/user/Workspace/twippy_firmware/src/encoders.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
-		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
 		"/home/user/Workspace/twippy_firmware/src/adc.c",
 		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
 		"/home/user/Workspace/twippy_firmware/src/balance_controller.c",
 		"/home/user/Workspace/twippy_firmware/inc/balance_controller.h",
-		"/home/user/Workspace/twippy_firmware/src/imu.c",
 		"/home/user/Workspace/twippy_firmware/inc/FreeRTOSConfig.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/task.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/FreeRTOS.h",
@@ -632,16 +640,12 @@
 		"/home/user/Workspace/twippy_firmware/src/spi.c",
 		"/home/user/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
-		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
-		"/home/user/Workspace/twippy_firmware/src/motor.c",
-		"/home/user/Workspace/twippy_firmware/inc/motor.h",
 		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
 		"/home/user/Workspace/twippy_firmware/inc/uart.h",
 		"/home/user/Workspace/twippy_firmware/src/uart.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_uart.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal.h",
 		"/home/user/Workspace/twippy_firmware/src/freeRtosUtils.c",
-		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
 		"/home/user/Workspace/twippy_firmware/README.md",
 		"/home/user/Workspace/catkin_ws/src/alfs/scripts/publish_global_pose.py",
 		"/home/user/Workspace/stm32f446/inc/uart.h",
@@ -711,12 +715,7 @@
 		"/home/user/Workspace/catkin_ws/src/alfs/scripts/alfs_control_publisher.py",
 		"/home/user/Workspace/catkin_ws2/src/icars/icars_map_localization/icars_mapping/src/TileMapLocalization.cpp",
 		"/home/user/Workspace/catkin_ws2/src/icars/icars_map_localization/icars_mapping/src/TileMapLocalization.h",
-		"/home/user/Workspace/catkin_ws/src/alfs/scripts/slider_publisher.py",
-		"/home/user/Workspace/RoboticsCode/EkfRoLoc3D/src/EkfRoLoc3D_test.cpp",
-		"/home/user/Workspace/catkin_ws/src/ekf_ro_loc_3d/launch/ekf_ro_loc_3d_test.launch",
-		"/home/user/Workspace/catkin_ws/src/ekf_ro_loc_3d/launch/ekf_ro_loc_3d_simu.launch",
-		"/home/user/Workspace/RoboticsCode/build/results.csv",
-		"/home/user/Workspace/RoboticsCode/EkfRoLoc3D/EkfRoLoc3D.sublime-project"
+		"/home/user/Workspace/catkin_ws/src/alfs/scripts/slider_publisher.py"
 	],
 	"find":
 	{
@@ -886,7 +885,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 3,
 			"sheets":
 			[
 				{
@@ -911,7 +910,7 @@
 							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1026.0,
+						"translation.y": 1134.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 5,
@@ -923,15 +922,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 9773,
+						"buffer_size": 8316,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4839,
-								4839
+								512,
+								512
 							]
 						],
 						"settings":
@@ -941,7 +940,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2862.0,
+						"translation.y": 432.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -949,75 +948,49 @@
 				},
 				{
 					"buffer": 2,
-					"file": "inc/config.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 940,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								914,
-								914
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
 					"file": "inc/motor.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1675,
+						"buffer_size": 1889,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								572,
-								572
+								1622,
+								1622
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 683.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 4,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 3,
 					"file": "src/motor.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12796,
+						"buffer_size": 13988,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								12199,
-								12199
+								12498,
+								12498
 							]
 						],
 						"settings":
@@ -1026,10 +999,39 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 7466.0,
+						"translation.y": 8899.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "src/encoders.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8492,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8043,
+								8043
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": -0.0,
+						"translation.y": 4482.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
@@ -1038,15 +1040,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 967,
+						"buffer_size": 1019,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								354,
-								354
+								958,
+								958
 							]
 						],
 						"settings":
@@ -1057,36 +1059,7 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "src/encoders.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8163,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6709,
-								6709
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 4368.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]

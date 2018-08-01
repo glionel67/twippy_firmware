@@ -32,12 +32,6 @@ static xQueueHandle myQueue = 0;
 
 // Function prototypes
 void SystemClock_Config(void);
-void myTask(void* _params);
-void myTask2(void* _params);
-void encTestTask(void* _params);
-void motorTestTask(void* _params);
-void adcTestTask(void* _params);
-void imuTestTask(void* _params);
 
 // ---------------------------------------------------------------------------//
 // --- Main
@@ -167,14 +161,6 @@ int main(void) {
     goto hell;
   }
 
-
-  if (!(pdPASS == xTaskCreate(myTask, (const char*)"task1",
-    2*configMINIMAL_STACK_SIZE, NULL, 0, NULL)))
-    goto hell;
-  if (!(pdPASS == xTaskCreate(myTask2, (const char*)"task2",
-    2*configMINIMAL_STACK_SIZE, NULL, 0, NULL)))
-    goto hell;
-
   if (!(pdPASS == xTaskCreate(encoder_task, (const char*)"encoder_task",
     ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
     goto hell;
@@ -193,14 +179,14 @@ int main(void) {
     goto hell;
   }
 
-  if (!(pdPASS == xTaskCreate(motor_test_task, (const char*)"motor_test_task",
+  if (!(pdPASS == xTaskCreate(motor_ident_task, (const char*)"motor_ident_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create motor_test_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
 
-
+  // Start FreeRTOS scheduler
   vTaskStartScheduler();
 
   while (1) {
@@ -307,51 +293,3 @@ void print_msg(uint8_t* _msg, uint8_t _len) {
 //   else
 //     vTaskDelay(Delay);
 // }
-
-
-void myTask(void* _params) {
-  char data[DATASIZE] = { 0, };
-  uint32_t ticks = 0;
-
-  if (_params != 0) { }
-
-  sprintf(data, "myTask\r\n");
-  print_msg((uint8_t*)data, 20);
-  memset(data, '\0', strlen(data));
-
-  while (1) {
-    ticks = HAL_GetTick();
-    sprintf(data, "myTask: %lu\r\n", ticks);
-    //print_msg((uint8_t*)data, 20);
-    memset(data, '\0', strlen(data));
-    xQueueOverwrite(myQueue, &ticks);
-    vTaskDelay(1000/portTICK_RATE_MS);
-    //HAL_Delay(1000);
-  }
-
-  vTaskDelete(NULL);
-}
-
-void myTask2(void* _params) {
-  char data[DATASIZE] = { 0, };
-  uint32_t ticks = 0;
-
-  if (_params != 0) { }
-
-  sprintf(data, "myTask2\r\n");
-  print_msg((uint8_t*)data, 20);
-  memset(data, '\0', strlen(data));
-  while (1) {
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    //HAL_Delay(200);
-    vTaskDelay(200/portTICK_RATE_MS);
-
-    if (pdTRUE == xQueueReceive(myQueue, &ticks, 0)) {
-      sprintf(data, "myTask2: %lu\r\n", ticks);
-      print_msg((uint8_t*)data, 20);
-      memset(data, '\0', strlen(data));
-    }
-  }
-
-  vTaskDelete(NULL);
-}

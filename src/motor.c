@@ -1,4 +1,5 @@
 #include <string.h>
+#include <math.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -7,17 +8,20 @@
 #include "motor.h"
 #include "main.h"
 #include "usTimer.h"
+#include "encoders.h"
 
 // Timer handler declaration
 TIM_HandleTypeDef TimHandleMotors;
 
 // Timer Output Compare Configuration Structure declaration
 static TIM_OC_InitTypeDef sConfigMotors;
-
-
 static Motors_t motors;
-
 static xQueueHandle motorsQueue = 0;
+static float inputVoltage = 0.f;
+
+float getInputVoltage(void) {
+	return inputVoltage;
+}
 
 int init_motors(void) {
 	int ret = 0;
@@ -456,6 +460,29 @@ void motor_test_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
+void motor_ident_task(void* _params) {
+	//uint8_t ret = 0;
+	float t = 0.f;
+	int32_t speed = 0;
+	Encoders_t encs;
+
+	if (_params != 0) { }
+
+	while (1) {
+		encoder_read_data(&encs, pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS));
+		t = (float)get_us_time() * (float)1e-6;
+		inputVoltage = triangularSignal(.25, t);
+		speed = voltageToPwm(inputVoltage);
+		set_m1_speed(speed);
+		set_m2_speed(speed);
+
+		motors.timestamp = t;
+		xQueueOverwrite(motorsQueue, &motors);
+	}
+
+	vTaskDelete(NULL);
+}
+
 void motor_task(void* _params) {
 	//int ret = 0;
 
@@ -479,4 +506,29 @@ void motor_task(void* _params) {
 
 int motor_read_data(Motors_t* mot) {
   return (pdTRUE == xQueueReceive(motorsQueue, mot, 0));
+}
+
+int32_t voltageToPwm(float _volt) {
+	float pwmf = (_volt * (float)MOTORS_PWM_PERIOD) / 12.f;
+	return (int32_t)round(pwmf);
+}
+
+float sinusoidSignal(float t) {
+	return 3.1f * (
+		sinf(2.f*M_PI*t) + sinf(2.f*M_PI*.1f*t) + 
+		sinf(2.f*M_PI*.2f*t) + sinf(2.f*M_PI*.3f*t) + 
+		sinf(2.f*M_PI*.4f*t) + sinf(2.f*M_PI*.5f*t));
+}
+
+float squareSignal(float f, float t) {
+	float voltage = sinf(2.f*M_PI*f*t);
+	if (voltage >= 0.f)
+		voltage = 12.f;
+	else
+		voltage = 0.;
+	return voltage;
+}
+
+float triangularSignal(float f, float t) {
+	return (2.f * 12.f / M_PI) * asinf(sinf(2.f*M_PI*f*t));
 }

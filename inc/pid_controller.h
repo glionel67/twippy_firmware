@@ -16,6 +16,15 @@ typedef struct Pid_s {
 	float rc; // Low-pass filter rc coefficient
 } Pid_t;
 
+typedef struct PidParams_s {
+    float kp;
+    float ki;
+    float kd;
+    float sat;
+    float isat;
+    float dt;
+} PidParams_t;
+
 void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _sat,
 		float _isat, float _dt);
 float pid_update(Pid_t* _pid, float _e, float _dt);

@@ -2,6 +2,8 @@
 
 #include <stdint.h>
 
+#include "FreeRTOS.h"
+
 #include "motor.h"
 
 
@@ -45,4 +47,4 @@ void enc_test_task(void* _params);
 
 void encoder_task(void* _params);
 
-int encoder_read_data(Encoders_t* enc);
+uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait);
