@@ -25,15 +25,20 @@ uint8_t ahrs_init(void) {
     return 1;
 }
 
+void ahrs_reset(void) {
+    q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
+}
+
 void ahrs_task(void* _params) {
     uint8_t ret = 0;
     float prevTs = 0., dt = 0.;
-    Imu9_t imu;
     float pitch = 0.f;
+    Imu6_t imu;
     Quaternion_t quaternion;
     PitchAndRate_t pitchAndRate;
     //char data[100] = { 0, };
 
+    memset((void*)&imu, 0, sizeof(Imu6_t));
     memset((void*)&quaternion, 0, sizeof(Quaternion_t));
     memset((void*)&pitchAndRate, 0, sizeof(PitchAndRate_t));
 
@@ -61,13 +66,11 @@ void ahrs_task(void* _params) {
     }
 
     // Wait for first IMU measurement
-    while (!imu_read_data(&imu)) {
-        vTaskDelay(2/portTICK_RATE_MS);
-    }
+    while (!imu_read_imu6_data(&imu, pdMS_TO_TICKS(IMU_MEASUREMENT_PERIOD_MS)));
     prevTs = imu.timestamp;
 
     while (1) {
-        ret = imu_read_data(&imu);
+        ret = imu_read_imu6_data(&imu, pdMS_TO_TICKS(AHRS_PERIOD_MS));
         if (ret) {
             // Compute delta time
             dt = imu.timestamp - prevTs;
@@ -113,7 +116,7 @@ void ahrs_task(void* _params) {
 
             prevTs = quaternion.timestamp;
         }
-        vTaskDelay(200/portTICK_RATE_MS);
+        //vTaskDelay(200/portTICK_RATE_MS);
     }
 
     byeBye:
@@ -129,6 +132,10 @@ uint8_t ahrs_read_quaternion(Quaternion_t* quat) {
 }
 
 uint8_t ahrs_get_pitchAndRate(PitchAndRate_t* _pitchAndRate) {
+    return (pdTRUE == xQueueReceive(pitchAndRateQueue, _pitchAndRate, 0));
+}
+
+uint8_t ahrs_read_pitchAndRate(PitchAndRate_t* _pitchAndRate) {
     return (pdTRUE == xQueueReceive(pitchAndRateQueue, _pitchAndRate, 0));
 }
 

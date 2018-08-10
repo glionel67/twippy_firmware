@@ -4,12 +4,32 @@
 		"selected_items":
 		[
 			[
-				"in",
-				"int32_t"
+				"MOTOR",
+				"MOTOR1"
+			],
+			[
+				"dut",
+				"dutyCycle"
+			],
+			[
+				"uint",
+				"uint16_t"
+			],
+			[
+				"tick",
+				"ticks"
 			],
 			[
 				"int",
-				"int16_t"
+				"int32_t"
+			],
+			[
+				"En",
+				"EncoderMsg_s"
+			],
+			[
+				"in",
+				"int32_t"
 			],
 			[
 				"motor",
@@ -30,10 +50,6 @@
 			[
 				"duty",
 				"dutycycle"
-			],
-			[
-				"uint",
-				"uint8_t"
 			],
 			[
 				"pidP",
@@ -495,60 +511,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "Makefile",
-			"settings":
-			{
-				"buffer_size": 6418,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/main.c",
-			"settings":
-			{
-				"buffer_size": 8316,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/motor.h",
-			"settings":
-			{
-				"buffer_size": 1889,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/motor.c",
-			"settings":
-			{
-				"buffer_size": 13988,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/encoders.c",
-			"settings":
-			{
-				"buffer_size": 8492,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/encoders.h",
-			"settings":
-			{
-				"buffer_size": 1019,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -588,25 +550,33 @@
 	],
 	"file_history":
 	[
-		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
-		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/src/main.c",
+		"/home/user/Workspace/twippy_firmware/Makefile",
+		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
 		"/home/user/Workspace/twippy_firmware/src/imu.c",
+		"/home/user/Workspace/twippy_firmware/inc/imu.h",
+		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
+		"/home/user/Workspace/twippy_firmware/inc/ahrs.h",
+		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
+		"/home/user/Workspace/twippy_firmware/inc/motor.h",
+		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
+		"/home/user/Workspace/twippy_firmware/src/encoder.c",
+		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/src/motor.c",
+		"/home/user/Workspace/twippy_firmware/src/motor_control.c",
+		"/home/user/Workspace/twippy_firmware/inc/motor_control.h",
+		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
 		"/home/user/Workspace/twippy_firmware/inc/config.h",
 		"/home/user/Workspace/twippy_firmware/src/motors_control.c",
 		"/home/user/Workspace/twippy_firmware/inc/motors_control.h",
 		"/home/user/Workspace/twippy_firmware/src/encoders.c",
 		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
-		"/home/user/Workspace/twippy_firmware/inc/motor.h",
-		"/home/user/Workspace/twippy_firmware/src/motor.c",
-		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
-		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
 		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
 		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
 		"/home/user/Workspace/twippy_firmware/src/gpio.c",
 		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
-		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
 		"/home/user/Workspace/twippy_firmware/inc/usTimer.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/stm32f446xx.h",
@@ -616,7 +586,6 @@
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
 		"/home/user/Workspace/twippy_firmware/src/adc.c",
-		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
 		"/home/user/Workspace/twippy_firmware/src/balance_controller.c",
@@ -629,7 +598,6 @@
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_cortex.h",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/core_cm4.h",
 		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
-		"/home/user/Workspace/twippy_firmware/inc/imu.h",
 		"/home/user/Workspace/twippy_firmware/src/stm32f4xx_it.c",
 		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_it.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_timebase_tim_template.c",
@@ -638,7 +606,6 @@
 		"/home/user/Workspace/twippy_firmware/inc/gpio.h",
 		"/home/user/Workspace/twippy_firmware/inc/spi.h",
 		"/home/user/Workspace/twippy_firmware/src/spi.c",
-		"/home/user/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
 		"/home/user/Workspace/twippy_firmware/inc/uart.h",
@@ -710,12 +677,7 @@
 		"/home/user/Workspace/tinyslam/test/test_lab_reverse.c",
 		"/home/user/Workspace/tinyslam/CoreSLAM_ext.c",
 		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/include/imu_mpu9250/MPU9250.H",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/src/my_spi_lib.c",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250/package.xml",
-		"/home/user/Workspace/catkin_ws/src/alfs/scripts/alfs_control_publisher.py",
-		"/home/user/Workspace/catkin_ws2/src/icars/icars_map_localization/icars_mapping/src/TileMapLocalization.cpp",
-		"/home/user/Workspace/catkin_ws2/src/icars/icars_map_localization/icars_mapping/src/TileMapLocalization.h",
-		"/home/user/Workspace/catkin_ws/src/alfs/scripts/slider_publisher.py"
+		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/src/my_spi_lib.c"
 	],
 	"find":
 	{
@@ -733,6 +695,16 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"voltageToPwm",
+			"dutyCycle",
+			"motorsQueue",
+			"Motors_t",
+			"Motor_t",
+			"voltageToPwm",
+			"MotorControl_t",
+			"EncoderMsg_t",
+			"sinusoidSignal",
+			"myQueue",
 			"enc1_rpm",
 			"HAL_GetTick",
 			"Encoders_t",
@@ -850,17 +822,7 @@
 			"queue",
 			"vTaskDelayU",
 			"logFile",
-			"imuDataQueue",
-			"xQueueRecei",
-			"xQueueOverwrite",
-			"queue",
-			"          ",
-			"myUsdLogTask",
-			"usdLogConfig.buffer",
-			"DEBUG_PRINT",
-			"sensorsTask",
-			"sensorsDeviceInit",
-			"sensorsTaskInit"
+			"imuDataQueue"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -868,6 +830,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"motorQueue",
 			"motors.motors[",
 			"motors.motors",
 			"motors",
@@ -885,183 +848,8 @@
 	"groups":
 	[
 		{
-			"selected": 3,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "Makefile",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6418,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1948,
-								1948
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 1134.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/main.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8316,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								512,
-								512
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 432.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "inc/motor.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1889,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1622,
-								1622
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 683.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/motor.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 13988,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								12498,
-								12498
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 8899.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "src/encoders.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8492,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								8043,
-								8043
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": -0.0,
-						"translation.y": 4482.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "inc/encoders.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1019,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								958,
-								958
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				}
 			]
 		}
 	],

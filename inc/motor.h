@@ -1,13 +1,15 @@
 #pragma once
 
+// -------------------------------------------------------------------------- //
+// --- Includes
+// -------------------------------------------------------------------------- //
 #include <stdint.h>
 
-enum {
-    MOTOR1=0, MOTOR2, N_MOTORS
-} Motors_e;
-
-#define LEFT_MOTOR (MOTOR1)
-#define RIGHT_MOTOR (MOTOR2)
+// -------------------------------------------------------------------------- //
+// --- Defines
+// -------------------------------------------------------------------------- //
+#define LEFT_MOTOR (0)
+#define RIGHT_MOTOR (1)
 
 #define FORWARD_DIR (1)
 #define REVERSE_DIR (0)
@@ -20,23 +22,33 @@ enum {
 
 #define MOTOR_QUEUE_SIZE 1
 
+// -------------------------------------------------------------------------- //
+// --- Structs/enums
+// -------------------------------------------------------------------------- //
+enum {
+    MOTOR1=0, MOTOR2, N_MOTORS
+} Motors_e;
 
-typedef struct Motor_s {
+typedef struct MotorState_s {
+    float desiredVoltage;
     uint8_t direction; // = FORWARD_DIR or REVERSE_DIR
     uint16_t pwm;
     //uint16_t dutyCyclei; // Between 0-MOTORS_PWM_PERIOD <-> 0-100 % 
-    float dutyCycle; // Between 0-100 %
+    float dutyCycle; // Between 0-1 %
     //uint8_t brake; // = BRAKE_ON or BRAKE_OFF
     //uint16_t currenti; // [mA]
     float current; // [A]
     uint8_t fault; // 0 = no, 1 = yes
+} MotorState_t;
+
+typedef struct Motor_s {
+    float timestamp; // [s]
+    MotorState_t motors[N_MOTORS];
 } Motor_t;
 
-typedef struct Motors_s {
-    float timestamp; // [s]
-    Motor_t motors[N_MOTORS];
-} Motors_t;
-
+// -------------------------------------------------------------------------- //
+// --- Prototypes
+// -------------------------------------------------------------------------- //
 int init_motors(void);
 
 int set_pwm1(uint16_t _pwm);
@@ -73,9 +85,9 @@ void motor_ident_task(void* _params);
 
 void motor_task(void* _params);
 
-int motor_read_data(Motors_t* mot);
+int motor_read_motor_data(Motor_t* mot);
 
-int32_t voltageToPwm(float _volt);
+int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor);
 float getInputVoltage(void);
 float sinusoidSignal(float t);
 float squareSignal(float f, float t);

@@ -12,7 +12,8 @@
 
 #define DEBUG_MODULE "imu"
 
-static xQueueHandle imuQueue = 0;
+static xQueueHandle imu6Queue = 0;
+static xQueueHandle imu9Queue = 0;
 static xSemaphoreHandle imuDataReady;
 static Mpu9250_t mpu9250;
 
@@ -43,14 +44,25 @@ uint8_t init_imu(void) {
     }
 
     // Create imu queue
-    imuQueue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu9_t));
-    if (imuQueue == 0) {
-        char str[] = "imuQueue creation NOK\r\n";
+    imu9Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu9_t));
+    if (imu9Queue == 0) {
+        char str[] = "imu9Queue creation NOK\r\n";
         print_msg((uint8_t*)str, strlen(str));
         return 0;
     }
     else {
-        char str[] = "imuQueue creation OK\r\n";
+        char str[] = "imu9Queue creation OK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
+
+    imu6Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu6_t));
+    if (imu6Queue == 0) {
+        char str[] = "imu6Queue creation NOK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+        return 0;
+    }
+    else {
+        char str[] = "imu6Queue creation OK\r\n";
         print_msg((uint8_t*)str, strlen(str));
     }
 
@@ -118,7 +130,6 @@ void imu_test_task(void* _params) {
         if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY)) {
             // Read data
             vTaskSuspendAll();
-            //ret = mpu9250_get_acc_gyro_mag_temp(&mpu9250);
             ret = mpu9250_read_data_register(&mpu9250);
             xTaskResumeAll();
 
@@ -136,7 +147,7 @@ void imu_test_task(void* _params) {
                     imu9.m[i] = mpu9250.m_raw[i];
                 }
 
-                xQueueOverwrite(imuQueue, &imu9);
+                xQueueOverwrite(imu9Queue, &imu9);
 
                 sprintf(data, "t=%3.3f,ax=%3.3f,ay=%3.3f,az=%3.3f,gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
                     (float)imu9.timestamp, 
@@ -161,26 +172,45 @@ void imu_task(void* _params) {
     uint8_t ret = 0;
     uint8_t i = 0;
     Imu9_t imu9;
+    Imu6_t imu6;
+
+    memset((void*)&imu9, 0, sizeof(Imu9_t));
+    memset((void*)&imu6, 0, sizeof(Imu6_t));
 
     if (_params != 0) { }
 
     while (1) {
         if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY)) {
             // Read data
-            ret = mpu9250_get_acc_gyro_mag_temp(&mpu9250);
+            vTaskSuspendAll();
+            ret = mpu9250_read_data_register(&mpu9250);
+            xTaskResumeAll();
+
             if (ret) {
                 // Get timestamp
                 imu9.timestamp = (float)get_us_time() * (float)1e-6;
+                imu6.timestamp = imu9.timestamp;
+
+                // Extract data
+                mpu9250_extract_data_register(&mpu9250);
+
                 // Copy data
                 for (i=0;i<N_AXES;i++) {
                     imu9.a[i] = mpu9250.a_raw[i];
                     imu9.g[i] = mpu9250.g_raw[i];
                     imu9.m[i] = mpu9250.m_raw[i];
+                    imu6.a[i] = imu9.a[i];
+                    imu6.g[i] = imu9.g[i];
                 }
+
                 // Send it over the queue
-                //vTaskSuspendAll();
-                xQueueOverwrite(imuQueue, &imu9);
-                //xTaskResumeAll();
+                xQueueOverwrite(imu6Queue, &imu6);
+                xQueueOverwrite(imu9Queue, &imu9);
+            }
+            else {
+                if (!mpu9250.isImuInit) {
+                    // TODO: emergency stop ?!
+                }
             }
         }
     }
@@ -189,8 +219,12 @@ void imu_task(void* _params) {
     vTaskDelete(NULL);
 }
 
-uint8_t imu_read_data(Imu9_t* imu) {
-    return (pdTRUE == xQueueReceive(imuQueue, imu, 0));
+uint8_t imu_read_imu9_data(Imu9_t* imu, TickType_t xTicksToWait) {
+    return (pdTRUE == xQueueReceive(imu9Queue, imu, xTicksToWait));
+}
+
+uint8_t imu_read_imu6_data(Imu6_t* imu, TickType_t xTicksToWait) {
+    return (pdTRUE == xQueueReceive(imu6Queue, imu, xTicksToWait));
 }
 
 uint8_t is_imu_calibrated(void) {

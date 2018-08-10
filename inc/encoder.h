@@ -1,17 +1,24 @@
 #pragma once
 
+// -------------------------------------------------------------------------- //
+// --- Includes
+// -------------------------------------------------------------------------- //
 #include <stdint.h>
 
 #include "FreeRTOS.h"
 
 #include "motor.h"
 
-
+// -------------------------------------------------------------------------- //
+// --- Defines
+// -------------------------------------------------------------------------- //
 #define ENCODER_QUEUE_SIZE 1
 
 #define ENCODER_MEASUREMENT_PERIOD_MS (20) // 20 ms <=> 50 Hz
 
-
+// -------------------------------------------------------------------------- //
+// --- Structs/enums
+// -------------------------------------------------------------------------- //
 typedef struct Encoder_s {
     int32_t tick;
     int32_t rpm;
@@ -23,7 +30,14 @@ typedef struct Encoders_s {
     Encoder_t encoders[N_MOTORS];
 } Encoders_t;
 
+typedef struct MotorMeasuredSpeed_s {
+    float timestamp; // in [s]
+    float speed[N_MOTORS]; // in [rpm] or [rad/s]
+} MotorMeasuredSpeed_t;
 
+// -------------------------------------------------------------------------- //
+// --- Prototypes
+// -------------------------------------------------------------------------- //
 int init_encoders(void);
 
 uint32_t enc1_get_direction(void);
@@ -48,3 +62,5 @@ void enc_test_task(void* _params);
 void encoder_task(void* _params);
 
 uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait);
+
+uint8_t encoder_read_motor_measured_speed(MotorMeasuredSpeed_t* data, TickType_t xTicksToWait);

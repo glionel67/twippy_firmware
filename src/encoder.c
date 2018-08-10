@@ -4,11 +4,11 @@
 #include "task.h"
 #include "queue.h"
 
-#include "encoders.h"
+#include "encoder.h"
 #include "main.h"
 #include "usTimer.h"
 
-#define DEBUB_MODULE "encoders"
+#define DEBUB_MODULE "encoder"
 
 // Timer handler declaration
 TIM_HandleTypeDef TimHandleEnc1;
@@ -31,12 +31,13 @@ static uint32_t t1_old = 0, t2_old = 0;
 static uint32_t t1_now = 0, t2_now = 0;
 static uint32_t dt = 0;
 
-static xQueueHandle encoderQueue = 0;
+//static xQueueHandle encoderQueue = 0;
+static xQueueHandle motorMeasuredSpeedQueue = 0;
 
 
 int init_encoders(void) {
 	int ret = 0;
-
+	/*
 	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
 	if (encoderQueue == 0) {
 		char str[] = "init_encoders: encoderQueue creation NOK\r\n";
@@ -45,6 +46,17 @@ int init_encoders(void) {
 	}
     else {
         char str[] = "init_encoders: encoderQueue creation OK\r\n";
+        print_msg((uint8_t*)str, strlen(str));
+    }
+	*/
+	motorMeasuredSpeedQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(MotorMeasuredSpeed_t));
+	if (motorMeasuredSpeedQueue == 0) {
+		char str[] = "init_encoders: motorMeasuredSpeedQueue creation NOK\r\n";
+		print_msg((uint8_t*)str, strlen(str));
+		return -1;
+	}
+    else {
+        char str[] = "init_encoders: motorMeasuredSpeedQueue creation OK\r\n";
         print_msg((uint8_t*)str, strlen(str));
     }
 
@@ -241,18 +253,22 @@ void enc_test_task(void* _params) {
 void encoder_task(void* _params) {
 	char data[50] = { 0, };
 	uint8_t count = 0;
-	Encoders_t encoders;
+	//Encoders_t encoders;
+	MotorMeasuredSpeed_t motorMeasuredSpeeds;
+	int32_t ticks[N_MOTORS] = { 0, };
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS);
 
 	if (_params != 0) { }
 
-	memset((void*)&encoders, 0, sizeof(Encoders_t));
+	//memset((void*)&encoders, 0, sizeof(Encoders_t));
+	memset((void*)&motorMeasuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));
 
 	xLastWakeTime = xTaskGetTickCount();
 
 	while (1) {
-		encoders.timestamp = (float)get_us_time() * (float)1e-6;
+		//encoders.timestamp = (float)get_us_time() * (float)1e-6;
+		motorMeasuredSpeeds.timestamp = (float)get_us_time() * (float)1e-6;
 		// Read ticks and compute RPM
 		taskENTER_CRITICAL();
 		enc1_now = TIM_ENC1->CNT;
@@ -263,33 +279,36 @@ void encoder_task(void* _params) {
 
 		t1_now = HAL_GetTick(); // (uint32_t)(get_us_time() / 1000);
 
-		encoders.encoders[MOTOR1].tick = (int32_t)(enc1_now - enc1_old);
-		encoders.encoders[MOTOR2].tick = (int32_t)(enc2_now - enc2_old);
+		//encoders.encoders[MOTOR1].tick = (int32_t)(enc1_now - enc1_old);
+		//encoders.encoders[MOTOR2].tick = (int32_t)(enc2_now - enc2_old);
+		ticks[MOTOR1] = (int32_t)(enc1_now - enc1_old);
+		ticks[MOTOR2] = (int32_t)(enc2_now - enc2_old);
 
 		dt = t1_now - t1_old;
 		t1_old = t1_now;
 
 	    den = (int32_t)((int32_t)dt * gear_ratio);
-	    num = (encoders.encoders[MOTOR1].tick * 60000) / ppt;
-	    encoders.encoders[MOTOR1].rpm = num / den;
-	    num = (encoders.encoders[MOTOR2].tick* 60000) / ppt;
-	    encoders.encoders[MOTOR2].rpm = num / den;
+	    //num = (encoders.encoders[MOTOR1].tick * 60000) / ppt;
+	    num = (ticks[MOTOR1] * 60000) / ppt;
+	    //encoders.encoders[MOTOR1].rpm = num / den;
+	    motorMeasuredSpeeds.speed[MOTOR1] = (float)num / (float)den;
+	    //num = (encoders.encoders[MOTOR2].tick * 60000) / ppt;
+	    num = (ticks[MOTOR2] * 60000) / ppt;
+	    //encoders.encoders[MOTOR2].rpm = num / den;
+	    motorMeasuredSpeeds.speed[MOTOR2] = (float)num / (float)den;
+
 
 	    // Send encoder data
-		xQueueOverwrite(encoderQueue, &encoders);
+		//xQueueOverwrite(encoderQueue, &encoders);
+		xQueueOverwrite(motorMeasuredSpeedQueue, &motorMeasuredSpeeds);
 
 		count++;
 		//if (count >= ENCODER_MEASUREMENT_PERIOD_MS/2) {
 		if (count >= 1) {
 			count = 0;
-			float inVolt = getInputVoltage();
-			sprintf(data, "%3.3f,%3.3f,%ld,%ld,%ld,%ld\r\n",
-				encoders.timestamp,
-				inVolt,
-				encoders.encoders[MOTOR1].tick,
-				encoders.encoders[MOTOR2].tick,
-				encoders.encoders[MOTOR1].rpm,
-				encoders.encoders[MOTOR2].rpm);
+			sprintf(data, "%3.3f,%3.3f\r\n",
+				motorMeasuredSpeeds.speed[MOTOR1],
+				motorMeasuredSpeeds.speed[MOTOR2]);
 			print_msg((uint8_t*)data, strlen(data));
 		}
 
@@ -299,6 +318,10 @@ void encoder_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
-uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait) {
-  return (pdTRUE == xQueueReceive(encoderQueue, enc, xTicksToWait));
+//uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait) {
+//	return (pdTRUE == xQueueReceive(encoderQueue, enc, xTicksToWait));
+//}
+
+uint8_t encoder_read_motor_measured_speed(MotorMeasuredSpeed_t* data, TickType_t xTicksToWait) {
+	return (pdTRUE == xQueueReceive(motorMeasuredSpeedQueue, data, xTicksToWait));
 }

@@ -151,6 +151,8 @@
 #define NOK 0
 #define OK 1
 
+#define NOMINAL_BATTERY_VOLTAGE (12.f) // [Volt]
+
 
 /******************************************************************************/
 /* Function prototypes */

@@ -6,36 +6,34 @@
 #include "queue.h"
 
 #include "motor.h"
+#include "motor_control.h"
 #include "main.h"
 #include "usTimer.h"
-#include "encoders.h"
+#include "encoder.h"
+
 
 // Timer handler declaration
 TIM_HandleTypeDef TimHandleMotors;
 
 // Timer Output Compare Configuration Structure declaration
 static TIM_OC_InitTypeDef sConfigMotors;
-static Motors_t motors;
-static xQueueHandle motorsQueue = 0;
+static Motor_t motors;
+static xQueueHandle motorQueue = 0;
 static float inputVoltage = 0.f;
-
-float getInputVoltage(void) {
-	return inputVoltage;
-}
 
 int init_motors(void) {
 	int ret = 0;
 
-	memset((void*)&motors, 0, sizeof(Motors_t));
+	memset((void*)&motors, 0, sizeof(Motor_t));
 
-	motorsQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motors_t));
-	if (motorsQueue == 0) {
-		char str[] = "init_motors: motorsQueue creation NOK\r\n";
+	motorQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motor_t));
+	if (motorQueue == 0) {
+		char str[] = "init_motors: motorQueue creation NOK\r\n";
 		print_msg((uint8_t*)str, strlen(str));
 		return -1;
 	}
     else {
-        char str[] = "init_motors: motorsQueue creation OK\r\n";
+        char str[] = "init_motors: motorQueue creation OK\r\n";
         print_msg((uint8_t*)str, strlen(str));
     }
 
@@ -452,7 +450,7 @@ void motor_test_task(void* _params) {
 		set_m2_speed(i);
 
 		motors.timestamp = (float)get_us_time() * (float)1e-6;
-		xQueueOverwrite(motorsQueue, &motors);
+		xQueueOverwrite(motorQueue, &motors);
 
 		vTaskDelay(5/portTICK_RATE_MS);
 	}
@@ -461,32 +459,54 @@ void motor_test_task(void* _params) {
 }
 
 void motor_ident_task(void* _params) {
-	//uint8_t ret = 0;
+	MotorMeasuredSpeed_t motorMeasuredSpeeds;
+	uint8_t ret = 0;
 	float t = 0.f;
-	int32_t speed = 0;
-	Encoders_t encs;
+	float vBat = NOMINAL_BATTERY_VOLTAGE; // [V]
+	int32_t speeds[N_MOTORS] = { 0, };
+	char data[50] = { 0, };
 
 	if (_params != 0) { }
 
-	while (1) {
-		encoder_read_data(&encs, pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS));
-		t = (float)get_us_time() * (float)1e-6;
-		inputVoltage = triangularSignal(.25, t);
-		speed = voltageToPwm(inputVoltage);
-		set_m1_speed(speed);
-		set_m2_speed(speed);
+	memset((void*)&motorMeasuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));
 
-		motors.timestamp = t;
-		xQueueOverwrite(motorsQueue, &motors);
+	while (1) {
+		ret = encoder_read_motor_measured_speed(&motorMeasuredSpeeds, 
+				pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS));
+		if (ret) {
+			sprintf(data, "%3.3f,%3.3f,%3.3fr\n",
+				inputVoltage,
+				motorMeasuredSpeeds.speed[MOTOR1],
+				motorMeasuredSpeeds.speed[MOTOR2]);
+			print_msg((uint8_t*)data, strlen(data));
+
+			t = (float)get_us_time() * (float)1e-6;
+			//inputVoltage = triangularSignal(.1, t);
+			//inputVoltage = squareSignal(.1, t);
+			inputVoltage = sinusoidSignal(t);
+			speeds[MOTOR1] = voltageToPwm(inputVoltage, vBat, MOTOR1);
+			speeds[MOTOR2] = voltageToPwm(inputVoltage, vBat, MOTOR2);
+			set_m1_speed(speeds[MOTOR1]);
+			set_m2_speed(speeds[MOTOR2]);
+
+			motors.timestamp = t;
+			xQueueOverwrite(motorQueue, &motors);
+		}
 	}
 
 	vTaskDelete(NULL);
 }
 
 void motor_task(void* _params) {
-	//int ret = 0;
+	MotorDesiredVoltage_t desiredVoltages;
+	uint8_t ret = 0;
+	int32_t speeds[N_MOTORS] = { 0, };
+	float vBat = NOMINAL_BATTERY_VOLTAGE; // [V]
+	uint16_t iMot[N_MOTORS] = {0, }; // [mA]
 
 	if (_params != 0) { }
+
+	memset((void*)&desiredVoltages, 0, sizeof(MotorDesiredVoltage_t));
 
 	/*
 	ret = init_adc_motors();
@@ -497,27 +517,68 @@ void motor_task(void* _params) {
 	}
 	*/
 	while (1) {
-		motors.timestamp = (float)get_us_time() * (float)1e-6;
-		xQueueOverwrite(motorsQueue, &motors);
+        // 1. Get desired motor voltage
+        ret = motor_control_read_desired_voltage(&desiredVoltages, 
+        		pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
+        if (ret) {
+        	motors.timestamp = desiredVoltages.timestamp;
+
+            motors.motors[MOTOR1].desiredVoltage = desiredVoltages.voltage[MOTOR1];
+            motors.motors[MOTOR2].desiredVoltage = desiredVoltages.voltage[MOTOR2];
+
+            // Get current battery voltage
+            //vBat = power_get_battery_voltage();
+
+            // Convert voltage to PWM
+			speeds[MOTOR1] = voltageToPwm(motors.motors[MOTOR1].desiredVoltage, vBat, MOTOR1);
+			speeds[MOTOR2] = voltageToPwm(motors.motors[MOTOR2].desiredVoltage, vBat, MOTOR2);
+			set_m1_speed(speeds[MOTOR1]);
+			set_m2_speed(speeds[MOTOR2]);
+
+			
+			xQueueOverwrite(motorQueue, &motors);
+        }
+        else {
+        	motors.timestamp = (float)get_us_time() * (float)1e-6;
+        }
+
+        // 2. Read ADC motor currents
+        //get_adc_imot12_ma(&iMot[MOTOR1], &iMot[MOTOR2]);
+        motors.motors[MOTOR1].current = (float)iMot[MOTOR1] / 1000.f;
+        motors.motors[MOTOR2].current = (float)iMot[MOTOR2] / 1000.f;
+
+        // 3. Get motor fault
+        motors.motors[MOTOR1].fault = get_m1_fault();
+        motors.motors[MOTOR2].fault = get_m2_fault();
+		
+		xQueueOverwrite(motorQueue, &motors);
 	}
 
 	vTaskDelete(NULL);
 }
 
-int motor_read_data(Motors_t* mot) {
-  return (pdTRUE == xQueueReceive(motorsQueue, mot, 0));
+int motor_read_motor_data(Motor_t* mot) {
+	return (pdTRUE == xQueueReceive(motorQueue, mot, 0));
 }
 
-int32_t voltageToPwm(float _volt) {
-	float pwmf = (_volt * (float)MOTORS_PWM_PERIOD) / 12.f;
+int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor) {
+	float percentage = _volt / _vbat;
+	percentage = percentage > 1.f ? 1.f : percentage;
+	percentage = percentage < -1.f ? -1.f : percentage;
+	motors.motors[_motor].dutyCycle = percentage;
+	float pwmf = percentage * (float)MOTORS_PWM_PERIOD;
 	return (int32_t)round(pwmf);
+}
+
+float getInputVoltage(void) {
+	return inputVoltage;
 }
 
 float sinusoidSignal(float t) {
 	return 3.1f * (
-		sinf(2.f*M_PI*t) + sinf(2.f*M_PI*.1f*t) + 
-		sinf(2.f*M_PI*.2f*t) + sinf(2.f*M_PI*.3f*t) + 
-		sinf(2.f*M_PI*.4f*t) + sinf(2.f*M_PI*.5f*t));
+		sin(2.f*M_PI*t) + sin(2.f*M_PI*.1f*t) + 
+		sin(2.f*M_PI*.2f*t) + sin(2.f*M_PI*.3f*t) + 
+		sin(2.f*M_PI*.4f*t) + sin(2.f*M_PI*.5f*t));
 }
 
 float squareSignal(float f, float t) {

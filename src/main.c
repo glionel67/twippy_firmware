@@ -5,11 +5,12 @@
 #include "uart1.h"
 #include "uart2.h"
 #include "spi.h"
-#include "encoders.h"
+#include "encoder.h"
 #include "usTimer.h"
 #include "imu.h"
 #include "ahrs.h"
 #include "motor.h"
+#include "motor_control.h"
 //#include "adc.h"
 
 #include <string.h>
@@ -25,10 +26,6 @@
 
 // Defines
 #define DATASIZE 100
-
-// Global variables
-static xQueueHandle myQueue = 0;
-
 
 // Function prototypes
 void SystemClock_Config(void);
@@ -115,7 +112,7 @@ int main(void) {
     print_msg((uint8_t*)str, strlen(str));
   }
 
-    // ------------------------------------------------------------------------ //
+  // ------------------------------------------------------------------------ //
   // --- Init motor
   // ------------------------------------------------------------------------ //
   ret = init_motors();
@@ -126,6 +123,20 @@ int main(void) {
   }
   else {
     char str[] = "init_motors OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
+  // ------------------------------------------------------------------------ //
+  // --- Init motor control
+  // ------------------------------------------------------------------------ //
+  ret = motor_control_init();
+  if (ret != 0) {
+    char str[] = "motor_control_init NOK\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "motor_control_init OK\r\n";
     print_msg((uint8_t*)str, strlen(str));
   }
 
@@ -142,9 +153,6 @@ int main(void) {
     char str[] = "init_imu OK\r\n";
     print_msg((uint8_t*)str, strlen(str));
   }
-
-
-  myQueue = xQueueCreate(1, sizeof(uint32_t));
 
   // Create FreeRTOS tasks
   if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
@@ -165,9 +173,9 @@ int main(void) {
     ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
     goto hell;
 
-  if (!(pdPASS == xTaskCreate(imu_test_task, (const char*)"imu_test_task",
+  if (!(pdPASS == xTaskCreate(imu_task, (const char*)"imu_task",
     IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create imu_test_task\r\n";
+    char msg[] = "Failed to create imu_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
@@ -178,10 +186,25 @@ int main(void) {
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
-
+/*
   if (!(pdPASS == xTaskCreate(motor_ident_task, (const char*)"motor_ident_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create motor_test_task\r\n";
+    char msg[] = "Failed to create motor_ident_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+*/
+
+  if (!(pdPASS == xTaskCreate(motor_task, (const char*)"motor_task",
+    MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create motor_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+
+  if (!(pdPASS == xTaskCreate(motor_control_task, (const char*)"motor_control_task",
+    MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create motor_control_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
