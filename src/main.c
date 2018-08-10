@@ -154,7 +154,9 @@ int main(void) {
     print_msg((uint8_t*)str, strlen(str));
   }
 
-  // Create FreeRTOS tasks
+  // ------------------------------------------------------------------------ //
+  // --- Create FreeRTOS tasks
+  // ------------------------------------------------------------------------ //
   if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create uart1_task\r\n";
@@ -194,20 +196,27 @@ int main(void) {
     goto hell;
   }
 */
-
   if (!(pdPASS == xTaskCreate(motor_task, (const char*)"motor_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create motor_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
-
+/*
   if (!(pdPASS == xTaskCreate(motor_control_task, (const char*)"motor_control_task",
     MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create motor_control_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
+*/
+  if (!(pdPASS == xTaskCreate(motor_control_test_task, (const char*)"motor_control_test_task",
+    MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create motor_control_test_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+
 
   // Start FreeRTOS scheduler
   vTaskStartScheduler();
@@ -284,7 +293,6 @@ void Error_Handler(void) {
 }
 
 void print_msg(uint8_t* _msg, uint8_t _len) {
-
   uint8_t end = 0;
   while (_msg[end] != '\n')
     end++;

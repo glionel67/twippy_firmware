@@ -474,16 +474,16 @@ void motor_ident_task(void* _params) {
 		ret = encoder_read_motor_measured_speed(&motorMeasuredSpeeds, 
 				pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS));
 		if (ret) {
-			sprintf(data, "%3.3f,%3.3f,%3.3fr\n",
+			sprintf(data, "%3.3f,%3.3f,%3.3f\r\n",
 				inputVoltage,
 				motorMeasuredSpeeds.speed[MOTOR1],
 				motorMeasuredSpeeds.speed[MOTOR2]);
 			print_msg((uint8_t*)data, strlen(data));
 
 			t = (float)get_us_time() * (float)1e-6;
-			//inputVoltage = triangularSignal(.1, t);
-			//inputVoltage = squareSignal(.1, t);
-			inputVoltage = sinusoidSignal(t);
+			//inputVoltage = triangularSignal(.1, vBat, t);
+			//inputVoltage = squareSignal(.1, vBat, t);
+			inputVoltage = sinusoidSignal(3.1f, t);
 			speeds[MOTOR1] = voltageToPwm(inputVoltage, vBat, MOTOR1);
 			speeds[MOTOR2] = voltageToPwm(inputVoltage, vBat, MOTOR2);
 			set_m1_speed(speeds[MOTOR1]);
@@ -574,22 +574,22 @@ float getInputVoltage(void) {
 	return inputVoltage;
 }
 
-float sinusoidSignal(float t) {
-	return 3.1f * (
+float sinusoidSignal(float a, float t) {
+	return a * (
 		sin(2.f*M_PI*t) + sin(2.f*M_PI*.1f*t) + 
 		sin(2.f*M_PI*.2f*t) + sin(2.f*M_PI*.3f*t) + 
 		sin(2.f*M_PI*.4f*t) + sin(2.f*M_PI*.5f*t));
 }
 
-float squareSignal(float f, float t) {
+float squareSignal(float f, float a, float t) {
 	float voltage = sinf(2.f*M_PI*f*t);
 	if (voltage >= 0.f)
-		voltage = 12.f;
+		voltage = a;
 	else
 		voltage = 0.;
 	return voltage;
 }
 
-float triangularSignal(float f, float t) {
-	return (2.f * 12.f / M_PI) * asinf(sinf(2.f*M_PI*f*t));
+float triangularSignal(float f, float a, float t) {
+	return (2.f * a / M_PI) * asinf(sinf(2.f*M_PI*f*t));
 }

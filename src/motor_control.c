@@ -101,11 +101,12 @@ void motor_control_task(void* _params) {
         ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
                 pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
         if (ret) {
+            //motorControls.timestamp = measuredSpeeds.timestamp;
             motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
             motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
         }
         else {
-
+            //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
         }
 
         // 2. Get reference speeds
@@ -122,6 +123,74 @@ void motor_control_task(void* _params) {
 
         // 4. PID control
         motorControls.timestamp = (float)get_us_time() * (float)1e-6;
+        dt = motorControls.timestamp - told;
+        told = motorControls.timestamp;
+        motorControls.controlState[MOTOR1].out = 
+            pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
+        motorControls.controlState[MOTOR2].out = 
+            pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+        //xQueueOverwrite(motorControlQueue, &motorControls); // Send debug data
+
+        // 5. Send voltage commands to motors
+        desiredVoltages.timestamp = motorControls.timestamp;
+        desiredVoltages.voltage[MOTOR1] = motorControls.controlState[MOTOR1].out;
+        desiredVoltages.voltage[MOTOR2] = motorControls.controlState[MOTOR2].out;
+        xQueueOverwrite(motorDesiredVoltageQueue, &desiredVoltages);
+    }
+
+    vTaskDelete(NULL);
+}
+
+void motor_control_test_task(void* _params) {
+    uint8_t ret = 0;
+    MotorMeasuredSpeed_t measuredSpeeds;
+    MotorDesiredVoltage_t desiredVoltages;
+    MotorControl_t motorControls;
+    float errors[N_MOTORS] = { 0, };
+    float dt = 0, told = (float)get_us_time() * (float)1e-6;
+    char data[50] = { 0, };
+
+    if (_params != 0) { }
+
+    memset((void*)&measuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));
+    memset((void*)&desiredVoltages, 0, sizeof(MotorDesiredVoltage_t));
+    memset((void*)&motorControls, 0, sizeof(MotorControl_t));
+
+    while (1) {
+        // 1. Get encoder data
+        ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
+                pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
+        if (ret) {
+            //motorControls.timestamp = measuredSpeeds.timestamp;
+            motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
+            motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
+        }
+        else {
+            //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
+        }
+
+        motorControls.timestamp = (float)get_us_time() * (float)1e-6;
+
+        // 2. Get reference speeds
+        sprintf(data, "%3.3f,%3.3f,%3.3f,%3.3f\r\n",
+            desiredWheelSpeed[MOTOR1], desiredWheelSpeed[MOTOR2],
+            measuredSpeeds.speed[MOTOR1], measuredSpeeds.speed[MOTOR2]);
+        print_msg((uint8_t*)data, strlen(data));
+
+        desiredWheelSpeed[MOTOR1] = triangularSignal(200.f, .1, motorControls.timestamp);
+        //desiredWheelSpeed[MOTOR1] = squareSignal(150.f, .1, motorControls.timestamp);
+        //desiredWheelSpeed[MOTOR1] = sinusoidSignal(40.f, motorControls.timestamp);
+        desiredWheelSpeed[MOTOR2] = desiredWheelSpeed[MOTOR1];
+        motorControls.controlState[MOTOR1].des = desiredWheelSpeed[MOTOR1];
+        motorControls.controlState[MOTOR2].des = desiredWheelSpeed[MOTOR2];
+
+        // 3. Compute errors
+        errors[MOTOR1] = motorControls.controlState[MOTOR1].des - 
+                        motorControls.controlState[MOTOR1].mes;
+        errors[MOTOR2] = motorControls.controlState[MOTOR2].des - 
+                        motorControls.controlState[MOTOR2].mes;
+
+        // 4. PID control
         dt = motorControls.timestamp - told;
         told = motorControls.timestamp;
         motorControls.controlState[MOTOR1].out = 

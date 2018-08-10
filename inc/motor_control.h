@@ -44,6 +44,8 @@ void motor_control_reset(void);
 
 void motor_control_task(void* _params);
 
+void motor_control_test_task(void* _params);
+
 void motor_control_set_desired_wheel_speeds(float _rpm1, float _rpm2);
 
 uint8_t motor_control_read_data(MotorControl_t* data, TickType_t xTicksToWait);

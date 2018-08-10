@@ -89,6 +89,6 @@ int motor_read_motor_data(Motor_t* mot);
 
 int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor);
 float getInputVoltage(void);
-float sinusoidSignal(float t);
-float squareSignal(float f, float t);
-float triangularSignal(float f, float t);
+float sinusoidSignal(float a, float t);
+float squareSignal(float f, float a, float t);
+float triangularSignal(float f, float a, float t);
