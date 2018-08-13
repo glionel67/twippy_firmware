@@ -13,18 +13,20 @@
 
 #define DEBUG_MODULE "motor_ctrl"
 
-#define PID_MOTOR1_KP (.5)
-#define PID_MOTOR1_KI (5.)
-#define PID_MOTOR1_KD (.01)
-#define PID_MOTOR1_SAT (210.) // in [rpm]
-#define PID_MOTOR1_ISAT (400.)
+#define PID_MOTOR1_KP (.5f)
+#define PID_MOTOR1_KI (5.f)
+#define PID_MOTOR1_KD (.01f)
+#define PID_MOTOR1_SAT (12.5f) // in [volt]
+#define PID_MOTOR1_ISAT (PID_MOTOR1_SAT)
 
-#define PID_MOTOR2_KP (.5)
-#define PID_MOTOR2_KI (5.)
-#define PID_MOTOR2_KD (.01)
-#define PID_MOTOR2_SAT (210.) // in [rpm]
-#define PID_MOTOR2_ISAT (400.)
+#define PID_MOTOR2_KP (PID_MOTOR1_KP)
+#define PID_MOTOR2_KI (PID_MOTOR1_KI)
+#define PID_MOTOR2_KD (PID_MOTOR1_KD)
+#define PID_MOTOR2_SAT (PID_MOTOR1_SAT) // in [volt]
+#define PID_MOTOR2_ISAT (PID_MOTOR1_ISAT)
 
+#define LOW_SPEED_SAT_RPM (5.f) // in RPM
+#define RPM_PER_VOLT (17.f)
 
 static Pid_t pidMotors[N_MOTORS];
 //PidParams_t pidParamsMotors[N_MOTORS];
@@ -125,10 +127,33 @@ void motor_control_task(void* _params) {
         motorControls.timestamp = (float)get_us_time() * (float)1e-6;
         dt = motorControls.timestamp - told;
         told = motorControls.timestamp;
-        motorControls.controlState[MOTOR1].out = 
-            pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
-        motorControls.controlState[MOTOR2].out = 
-            pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+
+        if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
+            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM) {
+            motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
+            //pid_reset(&pidMotors[MOTOR1]);
+        }
+        else {
+            motorControls.controlState[MOTOR1].out = 
+                pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
+        }
+
+        if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
+            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM) {
+            motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
+            //pid_reset(&pidMotors[MOTOR2]);
+        }
+        else {
+            motorControls.controlState[MOTOR2].out = 
+                pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+        }
+
+        if (desiredWheelSpeed[MOTOR1] * motorControls.controlState[MOTOR1].out < 0.f)
+            motorControls.controlState[MOTOR1].out = 0.f;
+        
+        if (desiredWheelSpeed[MOTOR2] * motorControls.controlState[MOTOR2].out < 0.f)
+            motorControls.controlState[MOTOR2].out = 0.f;
+
         //xQueueOverwrite(motorControlQueue, &motorControls); // Send debug data
 
         // 5. Send voltage commands to motors
@@ -156,6 +181,9 @@ void motor_control_test_task(void* _params) {
     memset((void*)&desiredVoltages, 0, sizeof(MotorDesiredVoltage_t));
     memset((void*)&motorControls, 0, sizeof(MotorControl_t));
 
+    vTaskDelay(3000);
+    float t0 = (float)get_us_time() * (float)1e-6;
+
     while (1) {
         // 1. Get encoder data
         ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
@@ -172,14 +200,9 @@ void motor_control_test_task(void* _params) {
         motorControls.timestamp = (float)get_us_time() * (float)1e-6;
 
         // 2. Get reference speeds
-        sprintf(data, "%3.3f,%3.3f,%3.3f,%3.3f\r\n",
-            desiredWheelSpeed[MOTOR1], desiredWheelSpeed[MOTOR2],
-            measuredSpeeds.speed[MOTOR1], measuredSpeeds.speed[MOTOR2]);
-        print_msg((uint8_t*)data, strlen(data));
-
-        desiredWheelSpeed[MOTOR1] = triangularSignal(200.f, .1, motorControls.timestamp);
-        //desiredWheelSpeed[MOTOR1] = squareSignal(150.f, .1, motorControls.timestamp);
-        //desiredWheelSpeed[MOTOR1] = sinusoidSignal(40.f, motorControls.timestamp);
+        desiredWheelSpeed[MOTOR1] = triangularSignal(.1, 200.f, motorControls.timestamp-t0);
+        //desiredWheelSpeed[MOTOR1] = squareSignal(.1, 150.f, motorControls.timestamp-t0);
+        //desiredWheelSpeed[MOTOR1] = sinusoidSignal(40.f, motorControls.timestamp-t0);
         desiredWheelSpeed[MOTOR2] = desiredWheelSpeed[MOTOR1];
         motorControls.controlState[MOTOR1].des = desiredWheelSpeed[MOTOR1];
         motorControls.controlState[MOTOR2].des = desiredWheelSpeed[MOTOR2];
@@ -193,10 +216,37 @@ void motor_control_test_task(void* _params) {
         // 4. PID control
         dt = motorControls.timestamp - told;
         told = motorControls.timestamp;
-        motorControls.controlState[MOTOR1].out = 
-            pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
-        motorControls.controlState[MOTOR2].out = 
-            pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+        //motorControls.controlState[MOTOR1].out = 
+        //    pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
+        //motorControls.controlState[MOTOR2].out = 
+        //    pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+
+        if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
+            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM) {
+            motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
+            //pid_reset(&pidMotors[MOTOR1]);
+        }
+        else {
+            motorControls.controlState[MOTOR1].out = 
+                pid_update(&pidMotors[MOTOR1], errors[MOTOR1], dt);
+        }
+
+        if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
+            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM) {
+            motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
+            //pid_reset(&pidMotors[MOTOR2]);
+        }
+        else {
+            motorControls.controlState[MOTOR2].out = 
+                pid_update(&pidMotors[MOTOR2], errors[MOTOR2], dt);
+        }
+
+        if (desiredWheelSpeed[MOTOR1] * motorControls.controlState[MOTOR1].out < 0)
+            motorControls.controlState[MOTOR1].out = 0.f;
+        
+        if (desiredWheelSpeed[MOTOR2] * motorControls.controlState[MOTOR2].out < 0)
+            motorControls.controlState[MOTOR2].out = 0.f;
+
         //xQueueOverwrite(motorControlQueue, &motorControls); // Send debug data
 
         // 5. Send voltage commands to motors
@@ -204,6 +254,12 @@ void motor_control_test_task(void* _params) {
         desiredVoltages.voltage[MOTOR1] = motorControls.controlState[MOTOR1].out;
         desiredVoltages.voltage[MOTOR2] = motorControls.controlState[MOTOR2].out;
         xQueueOverwrite(motorDesiredVoltageQueue, &desiredVoltages);
+
+        sprintf(data, "%3.3f,%3.3f,%3.3f\r\n",
+            desiredWheelSpeed[MOTOR1], desiredVoltages.voltage[MOTOR1],
+            measuredSpeeds.speed[MOTOR1]);
+        print_msg((uint8_t*)data, strlen(data));
+
     }
 
     vTaskDelete(NULL);

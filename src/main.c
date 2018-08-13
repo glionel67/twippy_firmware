@@ -130,7 +130,7 @@ int main(void) {
   // --- Init motor control
   // ------------------------------------------------------------------------ //
   ret = motor_control_init();
-  if (ret != 0) {
+  if (!ret) {
     char str[] = "motor_control_init NOK\n";
     print_msg((uint8_t*)str, strlen(str));
     Error_Handler();

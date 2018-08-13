@@ -35,23 +35,25 @@ float pid_update(Pid_t* _pid, float _e, float _dt) {
 	_pid->error = _e;
 
 	// Proportional term
-	_pid->outP = _pid->kp*_pid->error;
+	_pid->outP = _pid->kp * _pid->error;
 
 	// Integral term
-	_pid->integ += _pid->error*_pid->dt;
+	_pid->integ += _pid->ki * _pid->error * _pid->dt;
+	/*
 	if (_pid->iSat != 0) {
 		if (_pid->integ > _pid->iSat)
 			_pid->integ = _pid->iSat;
 		else if (_pid->integ < -_pid->iSat)
 			_pid->integ = -_pid->iSat;
 	}
-	_pid->outI = _pid->ki*_pid->integ;
+	*/
+	_pid->outI = _pid->integ;
 
 	// Derivative term + LPF
-	deriv = (_pid->error-_pid->prevError)/_pid->dt;
+	deriv = (_pid->error - _pid->prevError) / _pid->dt;
 	if (_pid->enableFilter) {
-		alpha = _pid->dt/(_pid->dt+_pid->rc);
-		_pid->deriv += alpha*(deriv-_pid->deriv);
+		alpha = _pid->dt / (_pid->dt + _pid->rc);
+		_pid->deriv += alpha * (deriv - _pid->deriv);
 	}
 	else {
 		_pid->deriv = deriv;
@@ -63,11 +65,11 @@ float pid_update(Pid_t* _pid, float _e, float _dt) {
 
 	// Command saturation
 	if (cmd > _pid->sat) {
-		_pid->integ += _pid->sat-cmd/(_pid->ki*_pid->dt);
+		_pid->integ += _pid->sat - cmd;
 		cmd = _pid->sat;
 	}
 	else if (cmd < -_pid->sat) {
-		_pid->integ -= (-_pid->sat-cmd)/(_pid->ki*_pid->dt);
+		_pid->integ += -_pid->sat - cmd;
 		cmd = -_pid->sat;
 	}
 

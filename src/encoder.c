@@ -309,7 +309,7 @@ void encoder_task(void* _params) {
 			sprintf(data, "%3.3f,%3.3f\r\n",
 				motorMeasuredSpeeds.speed[MOTOR1],
 				motorMeasuredSpeeds.speed[MOTOR2]);
-			print_msg((uint8_t*)data, strlen(data));
+			//print_msg((uint8_t*)data, strlen(data));
 		}
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);

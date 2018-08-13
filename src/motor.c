@@ -171,6 +171,7 @@ int set_dc_pwm12(float _dc1, float _dc2) {
 int set_m1_speed(int32_t _speed) {
 	int ret = 0;
 
+	// 1. Set motor direction
 	if (_speed == 0) {
 		motors.motors[MOTOR1].direction = FORWARD_DIR; // Assume forward
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0); // Make the motor coast no
@@ -188,7 +189,8 @@ int set_m1_speed(int32_t _speed) {
 		HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0);
 	}
 
-	if (_speed > MOTORS_PWM_PERIOD) // Max PWM dutycycle
+	// 2. Set motor PWM
+	if (_speed > MOTORS_PWM_PERIOD) // Max PWM period
 		_speed = MOTORS_PWM_PERIOD;
 
 	motors.motors[MOTOR1].pwm = (uint16_t)_speed;
@@ -208,6 +210,7 @@ int set_m1_speed(int32_t _speed) {
 int set_m2_speed(int32_t _speed) {
 	int ret = 0;
 
+	// 1. Set motor direction
 	if (_speed == 0) {
 		motors.motors[MOTOR2].direction = FORWARD_DIR; // Assume forward
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0); // Make the motor coast no
@@ -225,9 +228,9 @@ int set_m2_speed(int32_t _speed) {
 		HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0);
 	}
 
+	// 2. Set motor PWM
 	if (_speed > MOTORS_PWM_PERIOD) // Max PWM dutycycle
 		_speed = MOTORS_PWM_PERIOD;
-
 
 	motors.motors[MOTOR2].pwm = (uint16_t)_speed;
 	sConfigMotors.Pulse = (uint16_t)_speed;
@@ -563,8 +566,8 @@ int motor_read_motor_data(Motor_t* mot) {
 
 int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor) {
 	float percentage = _volt / _vbat;
-	percentage = percentage > 1.f ? 1.f : percentage;
-	percentage = percentage < -1.f ? -1.f : percentage;
+	percentage = (percentage > 1.f) ? 1.f : percentage;
+	percentage = (percentage < -1.f) ? -1.f : percentage;
 	motors.motors[_motor].dutyCycle = percentage;
 	float pwmf = percentage * (float)MOTORS_PWM_PERIOD;
 	return (int32_t)round(pwmf);

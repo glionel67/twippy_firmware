@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"pid",
+				"pid_reset"
+			],
+			[
+				"N",
+				"N_MOTORS"
+			],
+			[
 				"MOTOR",
 				"MOTOR1"
 			],
@@ -332,10 +340,6 @@
 				"localNodeHandle"
 			],
 			[
-				"N",
-				"N_AXES"
-			],
-			[
 				"temp",
 				"temporalWindow_"
 			],
@@ -511,6 +515,33 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "src/main.c",
+			"settings":
+			{
+				"buffer_size": 9685,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "inc/motor_control.h",
+			"settings":
+			{
+				"buffer_size": 1697,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/motor_control.c",
+			"settings":
+			{
+				"buffer_size": 9508,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -550,22 +581,23 @@
 	],
 	"file_history":
 	[
+		"/home/user/Workspace/twippy_firmware/src/motor.c",
+		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
+		"/home/user/Workspace/twippy_firmware/src/imu.c",
+		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
+		"/home/user/Workspace/twippy_firmware/src/encoder.c",
+		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
+		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
+		"/home/user/Workspace/twippy_firmware/inc/motor.h",
+		"/home/user/Workspace/twippy_firmware/inc/main.h",
 		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/Makefile",
-		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
-		"/home/user/Workspace/twippy_firmware/src/imu.c",
 		"/home/user/Workspace/twippy_firmware/inc/imu.h",
 		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
 		"/home/user/Workspace/twippy_firmware/inc/ahrs.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
-		"/home/user/Workspace/twippy_firmware/inc/motor.h",
-		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
-		"/home/user/Workspace/twippy_firmware/src/encoder.c",
-		"/home/user/Workspace/twippy_firmware/inc/main.h",
-		"/home/user/Workspace/twippy_firmware/src/motor.c",
 		"/home/user/Workspace/twippy_firmware/src/motor_control.c",
 		"/home/user/Workspace/twippy_firmware/inc/motor_control.h",
-		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
 		"/home/user/Workspace/twippy_firmware/inc/config.h",
 		"/home/user/Workspace/twippy_firmware/src/motors_control.c",
 		"/home/user/Workspace/twippy_firmware/inc/motors_control.h",
@@ -573,7 +605,6 @@
 		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
 		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
-		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
 		"/home/user/Workspace/twippy_firmware/src/gpio.c",
 		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
@@ -695,6 +726,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"sinusoidSignal",
+			"squareSignal",
 			"voltageToPwm",
 			"dutyCycle",
 			"motorsQueue",
@@ -820,9 +853,7 @@
 			"sensorsTaskInit",
 			"imuLogFile",
 			"queue",
-			"vTaskDelayU",
-			"logFile",
-			"imuDataQueue"
+			"vTaskDelayU"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -848,8 +879,97 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "src/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9685,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3792,
+								3792
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3024.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "inc/motor_control.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1697,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1265,
+								1265
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/motor_control.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 9508,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								330,
+								330
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
