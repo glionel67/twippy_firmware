@@ -122,5 +122,15 @@ uint8_t init_gpios(void) {
     //HAL_NVIC_SetPriority(IMU_INT_IRQ, 5, 0);
     //HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
+	// Enable servo PWM
+	TIM_PWM_SERVO_GPIO_CLK();
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
+	GPIO_InitStruct.Pin = TIM_PWM_SERVO1_PIN | TIM_PWM_SERVO2_PIN | 
+		TIM_PWM_SERVO3_PIN | TIM_PWM_SERVO4_PIN;
+	HAL_GPIO_Init(TIM_PWM_SERVO_GPIO_PORT, &GPIO_InitStruct);
+
 	return 1;
 }

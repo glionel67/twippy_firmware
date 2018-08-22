@@ -10,6 +10,7 @@
 #define STABILIZER_TASK_PRIORITY 4
 #define MOTOR_TASK_PRIORITY 4
 #define MOTOR_CONTROL_TASK_PRIORITY 4
+#define SERVO_TASK_PRIORITY 1
 
 /******************************************************************************/
 /* FreeRTOS task stack size */
@@ -21,3 +22,4 @@
 #define STABILIZER_TASK_STACK_SIZE (3*configMINIMAL_STACK_SIZE)
 #define MOTOR_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
 #define MOTOR_CONTROL_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+#define SERVO_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)

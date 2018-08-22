@@ -1,10 +1,12 @@
 #include <string.h>
+#include <math.h>
 
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "semphr.h"
 
+#include "config.h"
 #include "imu.h"
 #include "spi.h"
 #include "main.h"
@@ -195,12 +197,23 @@ void imu_task(void* _params) {
                 mpu9250_extract_data_register(&mpu9250);
 
                 // Copy data
-                for (i=0;i<N_AXES;i++) {
-                    imu9.a[i] = mpu9250.a_raw[i];
-                    imu9.g[i] = mpu9250.g_raw[i];
-                    imu9.m[i] = mpu9250.m_raw[i];
-                    imu6.a[i] = imu9.a[i];
-                    imu6.g[i] = imu9.g[i];
+                if (mpu9250.isCalibrated) {
+                    for (i=0;i<N_AXES;i++) {
+                        imu9.a[i] = mpu9250.a_raw[i];
+                        imu9.g[i] = mpu9250.g_raw[i] - mpu9250.bg[i];
+                        imu9.m[i] = mpu9250.m_raw[i];
+                        imu6.a[i] = imu9.a[i];
+                        imu6.g[i] = imu9.g[i];
+                    }
+                }
+                else {
+                    for (i=0;i<N_AXES;i++) {
+                        imu9.a[i] = mpu9250.a_raw[i];
+                        imu9.g[i] = mpu9250.g_raw[i];
+                        imu9.m[i] = mpu9250.m_raw[i];
+                        imu6.a[i] = imu9.a[i];
+                        imu6.g[i] = imu9.g[i];
+                    }
                 }
 
                 // Send it over the queue
@@ -246,6 +259,69 @@ void get_imu9_data(Imu9_t* imu) {
         imu->a[i] = mpu9250.a[i];
         imu->g[i] = mpu9250.g[i];
     }
+}
+
+uint8_t imu_calibrate_gyro_bias(void) {
+    if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
+            (const char*)"imu_calibrate_gyro_bias_task",
+            IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+        char msg[] = "Failed to create imu_calibrate_gyro_bias_task\r\n";
+        print_msg((uint8_t*)msg, strlen(msg));
+        return 0;
+    }
+    if (mpu9250.isCalibrated)
+        return 1;
+    else
+        return 0;
+}
+
+void imu_calibrate_gyro_bias_task(void* _params) {
+    uint8_t i = 0;
+    Imu6_t imu6;
+    float nSamples = 1000;
+    float count = 0.f;
+    float sum[N_AXES] = { 0.f };
+    float sumSquares[N_AXES] = { 0.f, };
+    float mean[N_AXES] =  {0.f, };
+    float variance[N_AXES] =  {0.f, };
+    char data[100] = { 0, };
+
+    memset((void*)&imu6, 0, sizeof(Imu6_t));
+
+    if (_params != 0) { }
+
+    sprintf(data, "Starting gyro bias calibration...\r\n");
+    print_msg((uint8_t*)data, strlen(data));
+
+    while (count < nSamples) {
+        if (pdTRUE == xQueuePeek(imu6Queue, &imu6, pdMS_TO_TICKS(100))) {
+            for (i=0;i<N_AXES;i++) {
+                sum[i] += imu6.g[i];
+                sumSquares[i] += imu6.g[i] * imu6.g[i];
+            }
+            count += 1.f;
+        }
+        else {
+            sprintf(data, "Timeout while waiting for gyro measurement, aborting gyro bias calib!\r\n");
+            print_msg((uint8_t*)data, strlen(data));
+        }
+    }
+
+    for (i=0;i<N_AXES;i++) {
+        mpu9250.bg[i] = mean[i] = sum[i] / count;
+        mpu9250.vg[i] = variance[i] = sumSquares[i] / count - mean[i] * mean[i];
+        mpu9250.sg[i] = sqrtf(mpu9250.vg[i]);
+    }
+
+    sprintf(data, "Calibration results:\r\n");
+    print_msg((uint8_t*)data, strlen(data));
+    sprintf(data, "bgx=%3.3f,bgy=%3.3f,bgz=%3.3f,vgx=%3.3f,vgy=%3.3f,vgz=%3.3f\r\n",
+        mean[0], mean[1], mean[2], variance[0], variance[1], variance[2]);
+    print_msg((uint8_t*)data, strlen(data));
+
+    mpu9250.isCalibrated = 1;
+
+    vTaskDelete(NULL);
 }
 
 void __attribute__((used)) EXTI2_IRQHandler(void) {

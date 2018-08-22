@@ -58,3 +58,7 @@ void get_imu9_data(Imu9_t* imu);
 uint8_t imu_read_imu6_data(Imu6_t* imu, TickType_t xTicksToWait);
 
 uint8_t imu_read_imu9_data(Imu9_t* imu, TickType_t xTicksToWait);
+
+uint8_t imu_calibrate_gyro_bias(void);
+
+void imu_calibrate_gyro_bias_task(void* _params);

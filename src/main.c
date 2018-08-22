@@ -12,6 +12,8 @@
 #include "motor.h"
 #include "motor_control.h"
 //#include "adc.h"
+#include "servo.h"
+#include "led.h"
 
 #include <string.h>
 
@@ -49,6 +51,14 @@ int main(void) {
   // --- Init GPIO
   // ------------------------------------------------------------------------ //
   ret = init_gpios();
+  if (!ret) {
+    Error_Handler();
+  }
+
+  // ------------------------------------------------------------------------ //
+  // --- Init LED
+  // ------------------------------------------------------------------------ //
+  ret = led_init();
   if (!ret) {
     Error_Handler();
   }
@@ -182,6 +192,13 @@ int main(void) {
     goto hell;
   }
 
+  if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
+      (const char*)"imu_calibrate_gyro_bias_task",
+      IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create imu_calibrate_gyro_bias_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+  }
+
   if (!(pdPASS == xTaskCreate(ahrs_task, (const char*)"ahrs_task",
     AHRS_TASK_STACK_SIZE, NULL, AHRS_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create ahrs_task\r\n";
@@ -209,14 +226,22 @@ int main(void) {
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
-*/
+
   if (!(pdPASS == xTaskCreate(motor_control_test_task, (const char*)"motor_control_test_task",
     MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create motor_control_test_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
-
+*/
+  /*
+  if (!(pdPASS == xTaskCreate(servo_task, (const char*)"servo_task",
+    SERVO_TASK_STACK_SIZE, NULL, SERVO_TASK_STACK_SIZE, NULL))) {
+    char msg[] = "Failed to create servo_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+  */
 
   // Start FreeRTOS scheduler
   vTaskStartScheduler();

@@ -147,7 +147,36 @@
 #define IMU_INT_PIN GPIO_PIN_2
 #define IMU_INT_IRQ EXTI2_IRQn
 
+/******************************************************************************/
+/* Definition for PWM Servo (TIM)  */
+/******************************************************************************/
+#define TIM_PWM_SERVO              TIM8
+#define TIM_PWM_SERVO_CLK_ENABLE() __HAL_RCC_TIM8_CLK_ENABLE()
+#define TIM_PWM_SERVO_GPIO_CLK()   __HAL_RCC_GPIOC_CLK_ENABLE()
+#define TIM_PWM_SERVO_GPIO_PORT    GPIOC
+#define TIM_PWM_SERVO1_PIN          GPIO_PIN_6
+#define TIM_PWM_SERVO2_PIN          GPIO_PIN_7
+#define TIM_PWM_SERVO3_PIN          GPIO_PIN_8
+#define TIM_PWM_SERVO4_PIN          GPIO_PIN_9
+#define TIM_PWM_SERVO1_CHANNEL      TIM_CHANNEL_1
+#define TIM_PWM_SERVO2_CHANNEL      TIM_CHANNEL_2
+#define TIM_PWM_SERVO3_CHANNEL      TIM_CHANNEL_3
+#define TIM_PWM_SERVO4_CHANNEL      TIM_CHANNEL_4
 
+/******************************************************************************/
+/* Definition for LEDs  */
+/******************************************************************************/
+#define LED_GPIO_PORT                      GPIOC
+#define LED_GPIO_CLK_ENABLE()              __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LED_GPIO_CLK_DISABLE()             __HAL_RCC_GPIOC_CLK_DISABLE()
+
+#define LED1_PIN                            GPIO_PIN_15
+#define LED2_PIN                            GPIO_PIN_14
+#define LED3_PIN                            GPIO_PIN_13
+
+/******************************************************************************/
+/* Definition for dummies  */
+/******************************************************************************/
 #define NOK 0
 #define OK 1
 
