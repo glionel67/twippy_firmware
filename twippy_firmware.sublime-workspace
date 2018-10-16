@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"angle",
+				"angleInc"
+			],
+			[
 				"de",
 				"degrees"
 			],
@@ -515,6 +519,31 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "src/main.c",
+			"settings":
+			{
+				"buffer_size": 10512,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "inc/uart2.h",
+			"settings":
+			{
+				"buffer_size": 685,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "inc/main.h",
+			"settings":
+			{
+				"buffer_size": 8237,
+				"line_ending": "Windows"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -554,21 +583,38 @@
 	],
 	"file_history":
 	[
-		"/home/user/Workspace/twippy_firmware/src/main.c",
-		"/home/user/Workspace/twippy_firmware/inc/servo.h",
+		"/media/user/TINYKEY/MapBuilder/testOffline.cpp",
 		"/home/user/Workspace/twippy_firmware/src/servo.c",
-		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/inc/servo.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
-		"/home/user/Workspace/twippy_firmware/src/motor.c",
-		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
 		"/home/user/Workspace/twippy_firmware/src/gpio.c",
+		"/home/user/Workspace/twippy_firmware/README.md",
+		"/home/user/Workspace/twippy_firmware/Makefile",
+		"/home/user/Workspace/twippy_firmware/src/battery.c",
+		"/home/user/Workspace/twippy_firmware/inc/battery.h",
+		"/home/user/Workspace/twippy_firmware/src/buzzer.c",
+		"/home/user/Workspace/twippy_firmware/inc/buzzer.h",
+		"/home/user/Workspace/twippy_firmware/src/com.c",
+		"/home/user/Workspace/twippy_firmware/inc/com.h",
+		"/home/user/Workspace/twippy_firmware/inc/i2c.h",
+		"/home/user/Workspace/twippy_firmware/src/i2c.c",
+		"/home/user/Workspace/twippy_firmware/src/led.c",
+		"/home/user/Workspace/twippy_firmware/inc/led.h",
+		"/home/user/Workspace/twippy_firmware/inc/gpio.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
+		"/home/user/Workspace/twippy_firmware/src/spi.c",
+		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/inc/spi.h",
+		"/home/user/Workspace/twippy_firmware/inc/motor.h",
+		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
+		"/home/user/Workspace/twippy_firmware/inc/config.h",
+		"/home/user/Workspace/twippy_firmware/src/motor.c",
+		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio_ex.h",
 		"/home/user/Workspace/twippy_firmware/inc/ahrs.h",
 		"/home/user/Workspace/twippy_firmware/src/imu.c",
 		"/home/user/Workspace/twippy_firmware/inc/imu.h",
-		"/home/user/Workspace/twippy_firmware/README.md",
-		"/home/user/Workspace/twippy_firmware/Makefile",
-		"/home/user/Workspace/twippy_firmware/inc/config.h",
 		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
 		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/user/Workspace/twippy_firmware/src/motor_control.c",
@@ -580,7 +626,6 @@
 		"/home/user/Workspace/twippy_firmware/src/encoder.c",
 		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
 		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
-		"/home/user/Workspace/twippy_firmware/inc/motor.h",
 		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
 		"/home/user/Workspace/twippy_firmware/src/motors_control.c",
@@ -594,11 +639,9 @@
 		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc_ex.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
 		"/home/user/Workspace/twippy_firmware/src/adc.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
 		"/home/user/Workspace/twippy_firmware/src/balance_controller.c",
 		"/home/user/Workspace/twippy_firmware/inc/balance_controller.h",
 		"/home/user/Workspace/twippy_firmware/inc/FreeRTOSConfig.h",
@@ -612,9 +655,6 @@
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_timebase_tim_template.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_cortex.c",
 		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_hal_conf.h",
-		"/home/user/Workspace/twippy_firmware/inc/gpio.h",
-		"/home/user/Workspace/twippy_firmware/inc/spi.h",
-		"/home/user/Workspace/twippy_firmware/src/spi.c",
 		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
 		"/home/user/Workspace/twippy_firmware/inc/uart.h",
 		"/home/user/Workspace/twippy_firmware/src/uart.c",
@@ -670,18 +710,7 @@
 		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/src/imu_mpu9250_node.cpp",
 		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/src/imu_mpu9250.c",
 		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/include/imu_mpu9250/imu_mpu9250.h",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/config/imu_mpu9250_config.yaml",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/package.xml",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/CMakeLists.txt",
-		"/home/user/Workspace/Crazyflie/crazyflie-firmware/src/drivers/src/mpu6500.c",
-		"/home/user/Workspace/Crazyflie/crazyflie-firmware/src/drivers/interface/mpu6500.h",
-		"/home/user/Workspace/catkin_ws2/src/icars/icars_control/icars_path_follower/src/PathControl.cpp",
-		"/home/user/Workspace/catkin_ws2/src/icars/icars_control/icars_path_follower/src/PathControl.h",
-		"/home/user/Workspace/catkin_ws2/src/icars/icars_control/icars_path_follower/src/PathPointInfo.h",
-		"/home/user/Workspace/tinyslam/CoreSLAM.h",
-		"/home/user/Workspace/tinyslam/CoreSLAM_state.c",
-		"/home/user/Workspace/tinyslam/CoreSLAM.c",
-		"/home/user/Workspace/tinyslam/test/test_lab_reverse.c"
+		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/imu_mpu9250_spi/config/imu_mpu9250_config.yaml"
 	],
 	"find":
 	{
@@ -852,8 +881,95 @@
 	"groups":
 	[
 		{
+			"selected": 1,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "src/main.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10512,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7466,
+								7466
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 3654.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "inc/uart2.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 685,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "inc/main.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8237,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6774,
+								6774
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 2331.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
 			]
 		}
 	],
