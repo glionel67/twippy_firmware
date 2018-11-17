@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "config.h"
+#include "main.h"
 #include "adc.h"
 
 enum {
@@ -27,4 +27,6 @@ typedef struct {
 
 int init_battery(Battery_t* _bat);
 
-int process_battery(Battery_t* _bat);
+int check_battery(Battery_t* _bat);
+
+void battery_task(void* _params);

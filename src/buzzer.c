@@ -1,23 +1,30 @@
 #include "buzzer.h"
-#include "config.h"
+#include "main.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
 
 TIM_HandleTypeDef TimHandleBuzzer;
 static TIM_OC_InitTypeDef sConfigBuzzer;
 
-uint32_t buzzerPeriod = ((64000000/10000)-1);
+static const uint32_t timerClockFreq = 180000000; // 180MHz
+static uint32_t buzzerPeriod = 0; // (180MHz/10kHz) - 1
 
 int init_buzzer(void) {
     int ret = 0;
 
-    // Init. GPIOs done in init_gpio
-    // Timer 1
+    buzzerPeriod = timerClockFreq / 10000 - 1;
+
+    // Init. GPIO done in init_gpios
+
+    // Init. timer
     TIM_BUZZER_CLK_ENABLE();
     TimHandleBuzzer.Instance = TIM_BUZZER;
     TimHandleBuzzer.Init.Period = buzzerPeriod;
     TimHandleBuzzer.Init.Prescaler = 0;
     TimHandleBuzzer.Init.ClockDivision = 0;
     TimHandleBuzzer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    TimHandleBuzzer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    TimHandleBuzzer.Init.RepetitionCounter = 0;
     if (HAL_TIM_Base_Init(&TimHandleBuzzer) != HAL_OK) {
         return -1;
     }
@@ -29,7 +36,8 @@ int init_buzzer(void) {
     sConfigBuzzer.OCNPolarity   = TIM_OCNPOLARITY_HIGH;
     sConfigBuzzer.OCNIdleState  = TIM_OCNIDLESTATE_RESET;
     sConfigBuzzer.Pulse = 0;
-    ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, &sConfigBuzzer, TIM_BUZZER_CHANNEL);
+    ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, 
+            &sConfigBuzzer, TIM_BUZZER_CHANNEL);
     if (ret != HAL_OK) {
         return -1;
     }
@@ -42,31 +50,32 @@ int init_buzzer(void) {
     return 0;
 }
 
-int setBuzzerFreq(uint32_t _freq) {
-    buzzerPeriod = ((64000000/_freq)-1);
+int set_buzzer_freq(uint32_t _freq) {
+    buzzerPeriod = ((timerClockFreq/_freq)-1);
 
     TimHandleBuzzer.Instance = TIM_BUZZER;
     TimHandleBuzzer.Init.Period = buzzerPeriod;
     TimHandleBuzzer.Init.Prescaler = 0;
     TimHandleBuzzer.Init.ClockDivision = 0;
     TimHandleBuzzer.Init.CounterMode = TIM_COUNTERMODE_UP;
-    TimHandleBuzzer.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+    TimHandleBuzzer.Init.RepetitionCounter = 0;
     if (HAL_TIM_Base_Init(&TimHandleBuzzer) != HAL_OK) {
         return -1;
     }
 
-    return setBuzzerDutyCycle(50);
+    return set_buzzer_dutyCycle(50);
 }
 
 /*
  * _dc \in [0,100] %
  */
-int setBuzzerDutyCycle(uint16_t _dc) {
+int set_buzzer_dutyCycle(uint16_t _dc) {
     int ret = 0;
     _dc = (_dc*buzzerPeriod)/100;
 
     sConfigBuzzer.Pulse = _dc;
-    ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, &sConfigBuzzer, TIM_BUZZER_CHANNEL);
+    ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, 
+            &sConfigBuzzer, TIM_BUZZER_CHANNEL);
     if (ret != HAL_OK) {
         return -1;
     }
@@ -78,34 +87,30 @@ int setBuzzerDutyCycle(uint16_t _dc) {
     return 0;
 }
 
-int buzzerTurnOn(void) {
-    return setBuzzerDutyCycle(50);
+int turn_on_buzzer(void) {
+    return set_buzzer_dutyCycle(50);
 }
 
-int buzzerTurnOff(void) {
-    return setBuzzerDutyCycle(0);
+int turn_off_buzzer(void) {
+    return set_buzzer_dutyCycle(0);
 }
 
-void testBuzzer(void) {
-    setBuzzerFreq(50);
-    HAL_Delay(200);
-    setBuzzerFreq(100);
-    HAL_Delay(200);
-    setBuzzerFreq(200);
-    HAL_Delay(200);
-    setBuzzerFreq(300);
-    HAL_Delay(200);
-    setBuzzerFreq(400);
-    HAL_Delay(200);
-    setBuzzerFreq(500);
-    HAL_Delay(200);
-    setBuzzerFreq(600);
-    HAL_Delay(200);
-    setBuzzerFreq(700);
-    HAL_Delay(200);
-    setBuzzerFreq(800);
-    HAL_Delay(200);
-    setBuzzerFreq(900);
-    HAL_Delay(200);
-    setBuzzerFreq(1000);
+void test_buzzer(void) {
+    uint32_t freqs[] = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
+            2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000 }; // n=19
+    for (int i=0;i<15;i++) {
+        set_buzzer_freq(freqs[i]);
+        HAL_Delay(200);
+    }
+}
+
+void buzzer_task(void* _params) {
+
+    if (_params != 0) { }
+
+    while (1) {
+        vTaskDelay(500/portTICK_RATE_MS);
+    }
+
+    vTaskDelete(NULL);
 }

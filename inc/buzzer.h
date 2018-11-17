@@ -4,9 +4,9 @@
 
 
 int init_buzzer(void);
-int setBuzzerFreq(uint32_t _freq);
-int setBuzzerDutyCycle(uint16_t _freq);
-int buzzerTurnOn(void);
-int buzzerTurnOff(void);
-
-void testBuzzer(void);
+int set_buzzer_freq(uint32_t _freq);
+int set_buzzer_dutyCycle(uint16_t _freq);
+int turn_on_buzzer(void);
+int turn_off_buzzer(void);
+void test_buzzer(void);
+void buzzer_task(void* _params);

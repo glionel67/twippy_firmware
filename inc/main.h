@@ -164,6 +164,16 @@
 #define TIM_PWM_SERVO4_CHANNEL      TIM_CHANNEL_4
 
 /******************************************************************************/
+/* Definition for PWM Buzzer (TIM)  */
+/******************************************************************************/
+#define TIM_BUZZER              TIM2
+#define TIM_BUZZER_CLK_ENABLE() __HAL_RCC_TIM2_CLK_ENABLE()
+#define TIM_BUZZER_GPIO_CLK()   __HAL_RCC_GPIOA_CLK_ENABLE()
+#define TIM_BUZZER_GPIO_PORT    GPIOA
+#define TIM_BUZZER_GPIO_PIN     GPIO_PIN_15
+#define TIM_BUZZER_CHANNEL      TIM_CHANNEL_1
+
+/******************************************************************************/
 /* Definition for LEDs  */
 /******************************************************************************/
 #define LED_GPIO_PORT                      GPIOC

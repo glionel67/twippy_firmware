@@ -19,7 +19,7 @@ int init_battery(Battery_t* _bat) {
     return process_battery(_bat);
 }
 
-int process_battery(Battery_t* _bat) {
+int check_battery(Battery_t* _bat) {
     int ret = _bat->status;
     uint32_t timestamp = HAL_GetTick();
     uint32_t dt = timestamp - _bat->last_timestamp;

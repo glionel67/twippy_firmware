@@ -102,6 +102,10 @@ PROJECT_SRCS+= mpu9250.c
 PROJECT_SRCS+= ahrs.c
 PROJECT_SRCS+= pid_controller.c
 PROJECT_SRCS+= balance_control.c
+PROJECT_SRCS+= buzzer.c
+#PROJECT_SRCS+= battery.c
+#PROJECT_SRCS+= com.c
+#PROJECT_SRCS+= led.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)

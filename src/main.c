@@ -14,6 +14,7 @@
 //#include "adc.h"
 #include "servo.h"
 #include "led.h"
+#include "buzzer.h"
 
 #include <string.h>
 
@@ -107,6 +108,22 @@ int main(void) {
   }
 
   test_us_timer();
+
+  // ------------------------------------------------------------------------ //
+  // --- Init buzzer
+  // ------------------------------------------------------------------------ //
+  ret = init_buzzer();
+  if (ret != 0) {
+    char str[] = "init_buzzer NOK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "init_buzzer OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
+  test_buzzer();
 
   // ------------------------------------------------------------------------ //
   // --- Init encoder
