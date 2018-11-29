@@ -126,6 +126,21 @@
 
 #define IMOT_MAX                1600 // [mA]
 
+// Definition for Vbat and Ibat
+#define ADC_BAT_GPIO_CLK_ENABLE()   __HAL_RCC_GPIOB_CLK_ENABLE()
+#define ADC_BAT_GPIO_PORT           GPIOB
+#define ADC_VBAT_PIN                GPIO_PIN_0
+#define ADC_IBAT_PIN                GPIO_PIN_1
+#define ADC_VBAT_CHANNEL            ADC_CHANNEL_8
+#define ADC_IBAT_CHANNEL            ADC_CHANNEL_9
+
+#define ADC_BAT_RESOLUTION          (4096.f)
+#define ADC_BAT_VREF                (3.3f) // [Volt]
+#define VBAT_RATIO                  (6.f)
+#define IBAT_RATIO                  (15.1515f) // (66 mV/A) centered at 2.5 V
+#define IBAT_ZERO                   (2.5f) // [Volt]
+
+
 /******************************************************************************/
 /* Definition for SPI1 (IMU MPU9250) */
 /******************************************************************************/
@@ -176,13 +191,13 @@
 /******************************************************************************/
 /* Definition for LEDs  */
 /******************************************************************************/
-#define LED_GPIO_PORT                      GPIOC
-#define LED_GPIO_CLK_ENABLE()              __HAL_RCC_GPIOC_CLK_ENABLE()
-#define LED_GPIO_CLK_DISABLE()             __HAL_RCC_GPIOC_CLK_DISABLE()
+#define LEDS_GPIO_PORT                      GPIOC
+#define LEDS_GPIO_CLK_ENABLE()              __HAL_RCC_GPIOC_CLK_ENABLE()
+#define LEDS_GPIO_CLK_DISABLE()             __HAL_RCC_GPIOC_CLK_DISABLE()
 
-#define LED1_PIN                            GPIO_PIN_15
-#define LED2_PIN                            GPIO_PIN_14
-#define LED3_PIN                            GPIO_PIN_13
+#define LED1_PIN                            GPIO_PIN_13
+//#define LED2_PIN                            GPIO_PIN_14
+//#define LED3_PIN                            GPIO_PIN_15
 
 /******************************************************************************/
 /* Definition for dummies  */

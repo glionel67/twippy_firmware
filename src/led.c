@@ -1,26 +1,49 @@
 #include "led.h"
 #include "main.h"
 
-uint8_t led_init(void) {
-    GPIO_InitTypeDef GPIO_InitStruct;
-    LED_GPIO_CLK_ENABLE();
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.Pin = LED1_PIN | LED2_PIN | LED3_PIN;
-    HAL_GPIO_Init(LED_GPIO_PORT, &GPIO_InitStruct);
+#include "FreeRTOS.h"
+#include "task.h"
 
+static uint16_t led_period_ms = 500;
+
+int led_init(void) {
+    // GPIO already init in init_gpios from gpio.h
     return 1;
 }
 
 void led_on(uint16_t _led) {
-    HAL_GPIO_WritePin(LED_GPIO_PORT, _led, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(LEDS_GPIO_PORT, _led, GPIO_PIN_RESET);
 }
 
 void led_off(uint16_t _led) {
-    HAL_GPIO_WritePin(LED_GPIO_PORT, _led, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LEDS_GPIO_PORT, _led, GPIO_PIN_SET);
 }
 
 void led_toggle(uint16_t _led) {
-    HAL_GPIO_TogglePin(LED_GPIO_PORT, _led);
+    HAL_GPIO_TogglePin(LEDS_GPIO_PORT, _led);
+}
+
+void led_set_period(uint16_t _ms) {
+    led_period_ms = _ms;
+}
+
+void test_led(void) {
+    for (int i=0;i<10;i++) {
+        led_toggle(LED1);
+        //led_toggle(LED2);
+        //led_toggle(LED3);
+        HAL_Delay(500);
+    }
+}
+
+void led_task(void* _params) {
+
+    if (_params != 0) { }
+
+    while (1) {
+        led_toggle(LED1);
+        vTaskDelay(led_period_ms/portTICK_RATE_MS);
+    }
+
+    vTaskDelete(NULL);
 }

@@ -48,7 +48,7 @@ uint8_t init_gpios(void) {
 	GPIO_InitStruct.Pin = ENC1A_PIN | ENC1B_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL; //GPIO_PULLUP; pullup on the PCB
 	GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
 	HAL_GPIO_Init(ENC1A_GPIO, &GPIO_InitStruct);
 
@@ -57,7 +57,7 @@ uint8_t init_gpios(void) {
 	GPIO_InitStruct.Pin = ENC2A_PIN | ENC2B_PIN;
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL; //GPIO_PULLUP; pullup on the PCB
 	GPIO_InitStruct.Alternate = GPIO_AF2_TIM4;
 	HAL_GPIO_Init(ENC2A_GPIO, &GPIO_InitStruct);
 
@@ -135,11 +135,26 @@ uint8_t init_gpios(void) {
 	// Enable buzzer PWM
 	TIM_BUZZER_GPIO_CLK();
 	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+	GPIO_InitStruct.Pull = GPIO_PULLDOWN; // GPIO_PULLUP
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Alternate = GPIO_AF1_TIM2;
 	GPIO_InitStruct.Pin = TIM_BUZZER_GPIO_PIN;
 	HAL_GPIO_Init(TIM_BUZZER_GPIO_PORT, &GPIO_InitStruct);
+
+	// Enable LEDs
+	LEDS_GPIO_CLK_ENABLE();
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP; //GPIO_PULLDOWN
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Pin = LED1_PIN; // | LED2_PIN | LED3_PIN;
+	HAL_GPIO_Init(LEDS_GPIO_PORT, &GPIO_InitStruct);
+
+	// Enable battery voltage and current monitor
+	ADC_BAT_GPIO_CLK_ENABLE();
+	GPIO_InitStruct.Pin = ADC_VBAT_PIN | ADC_IBAT_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(ADC_BAT_GPIO_PORT, &GPIO_InitStruct);
 
 	return 1;
 }

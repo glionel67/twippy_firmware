@@ -11,7 +11,7 @@
 #include "ahrs.h"
 #include "motor.h"
 #include "motor_control.h"
-//#include "adc.h"
+#include "adc.h"
 #include "servo.h"
 #include "led.h"
 #include "buzzer.h"
@@ -123,7 +123,19 @@ int main(void) {
     print_msg((uint8_t*)str, strlen(str));
   }
 
-  test_buzzer();
+  // ------------------------------------------------------------------------ //
+  // --- Init ADC
+  // ------------------------------------------------------------------------ //
+  ret = init_adc();
+  if (ret != 0) {
+    char str[] = "init_adc NOK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "init_adc OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
 
   // ------------------------------------------------------------------------ //
   // --- Init encoder
@@ -184,6 +196,13 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   // --- Create FreeRTOS tasks
   // ------------------------------------------------------------------------ //
+  if (!(pdPASS == xTaskCreate(led_task, (const char*)"led_task",
+    LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create led_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+
   if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create uart1_task\r\n";
@@ -230,12 +249,14 @@ int main(void) {
     goto hell;
   }
 */
+/*
   if (!(pdPASS == xTaskCreate(motor_task, (const char*)"motor_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create motor_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }
+*/
 /*
   if (!(pdPASS == xTaskCreate(motor_control_task, (const char*)"motor_control_task",
     MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
@@ -266,7 +287,7 @@ int main(void) {
   while (1) {
     char msg[] = "Error: should not reach here!\n";
     print_msg((uint8_t*)msg, strlen(msg));
-    HAL_Delay(1000);
+    goto hell;
   }
 
   hell: // Should never reach here
@@ -325,6 +346,8 @@ void Error_Handler(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
+
+  led_set_period(200);
 
   while (1) {
     //UART1_WRITE(errorMsg, sizeof(errorMsg));

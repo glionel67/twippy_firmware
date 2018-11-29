@@ -47,6 +47,8 @@ int init_buzzer(void) {
         return -1;
     }
 
+    turn_off_buzzer();
+
     return 0;
 }
 
@@ -93,6 +95,7 @@ int turn_on_buzzer(void) {
 
 int turn_off_buzzer(void) {
     return set_buzzer_dutyCycle(0);
+    //return set_buzzer_dutyCycle(100);
 }
 
 void test_buzzer(void) {
@@ -102,6 +105,7 @@ void test_buzzer(void) {
         set_buzzer_freq(freqs[i]);
         HAL_Delay(200);
     }
+    turn_off_buzzer();
 }
 
 void buzzer_task(void* _params) {
