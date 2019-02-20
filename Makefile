@@ -26,6 +26,11 @@ FREERTOS_DIR = FreeRTOS
 FREERTOS_INC = $(FREERTOS_DIR)/inc
 FREERTOS_SRC = $(FREERTOS_DIR)/src
 
+# Mavlink
+MAVLINK_DIR = mavlink
+MAVLINK_INC = $(MAVLINK_DIR)
+MAVLINK_SRC = $(MAVLINK_DIR)
+
 # Project
 PROJECT_INC = inc
 PROJECT_SRC = src
@@ -36,11 +41,13 @@ vpath %.c $(CMSIS_SRC)
 vpath %.s $(CMSIS_SRC)
 vpath %.c $(FREERTOS_SRC)
 vpath %.c $(PROJECT_SRC)
+vpath %.cpp $(PROJECT_SRC)
 
 ### Include files ###
 INC_DIRS = $(HAL_INC)
 INC_DIRS+= $(CMSIS_INC)
 INC_DIRS+= $(FREERTOS_INC)
+INC_DIRS+= $(MAVLINK_INC)
 INC_DIRS+= $(PROJECT_INC)
 
 INCLUDES = $(addprefix -I,$(INC_DIRS))
@@ -103,6 +110,7 @@ PROJECT_SRCS+= ahrs.c
 PROJECT_SRCS+= pid_controller.c
 PROJECT_SRCS+= balance_control.c
 PROJECT_SRCS+= buzzer.c
+#PROJECT_SRCS+= mavlink_uart.c
 #PROJECT_SRCS+= battery.c
 #PROJECT_SRCS+= com.c
 #PROJECT_SRCS+= led.c
@@ -113,18 +121,22 @@ SRCS+= $(CMSIS_SRCS)
 SRCS+= $(FREERTOS_SRCS)
 #$(info $$SRCS is [${SRCS}])
 
+#CXXSOURCES+=$(shell find -L $(PROJECT_SRC) -name '*.cpp')
+CXX_SRCS = mavlink_uart.cpp
+
 ### Object files ###
 OBJS = $(addsuffix .o,$(basename $(SRCS)))
+OBJS+= $(addsuffix .o,$(basename $(CXX_SRCS)))
 #OBJS+= libarm_math.a
 OBJS := $(addprefix $(BUILD_DIR)/,$(OBJS))
 #$(info $$OBJS is [${OBJS}])
+
 
 ### Cross-compilation ###
 AS = arm-none-eabi-as
 AR = arm-none-eabi-ar
 CC = arm-none-eabi-gcc
-#CXX = arm-none-eabi-g++
-#LD = arm-none-eabi-gcc
+CXX = arm-none-eabi-g++
 LD = arm-none-eabi-ld
 SIZE = arm-none-eabi-size
 OBJCOPY = arm-none-eabi-objcopy
@@ -150,27 +162,33 @@ STFLAGS+= -DARM_MATH_CM4
 #STFLAGS+= -D__FPU_USED=1
 STFLAGS+= -D__TARGET_FPU_VFP
 
-CFLAGS = $(MCFLAGS) $(STFLAGS)
+# Def flags
+DEFS = -DBOARD_REV_$(REV) -DVERSION_$(VERSION)
+DEFS+= -Wall -Wextra -Warray-bounds -Wmissing-braces
+DEFS+= -fno-strict-aliasing $(C_PROFILE)
+DEFS+= -ffunction-sections -fdata-sections
+#DEFS+= -Wno-unused-function -ffreestanding
+#DEFS+= -Wno-pointer-sign
+#DEFS+= -Wdouble-promotion # Prevent promoting floats to doubles
+#DEFS+= -fno-math-errno
+#DEFS+= -fno-builtin
+#DEFS+= -ggdb
 ifeq ($(DEBUG), 1)
-  CFLAGS+= -O0 -g3 -DDEBUG
+  DEFS+= -O0 -g3 -DDEBUG
 else
-  CFLAGS+= -Os -g3 -Werror
+  DEFS+= -Os -g3 -Werror
 endif
-CFLAGS+= -DBOARD_REV_$(REV) -DVERSION_$(VERSION)
-CFLAGS+= $(INCLUDES)
-CFLAGS+= -Wall -Wextra -Warray-bounds -Wmissing-braces
-#CFLAGS+= -Wno-unused-function -ffreestanding
-#CFLAGS+= -Wno-pointer-sign
-#CFLAGS+= -Wdouble-promotion # Prevent promoting floats to doubles
-#CFLAGS+= -ggdb
-CFLAGS+= -fno-strict-aliasing $(C_PROFILE)
-#CFLAGS+= -fno-math-errno
-#CFLAGS+= -fno-builtin
+
+# C flags
+CFLAGS = $(MCFLAGS) $(STFLAGS) $(DEFS) $(INCLUDES)
 CFLAGS+= -std=gnu11 #-std=c99
 # Compiler flags to generate dependency files:
 #CFLAGS+= -MD -MP -MF $(BIN_DIR)/dep/$(@).d -MQ $(@)
 #Permits to remove un-used functions and global variables from output file
-CFLAGS+= -ffunction-sections -fdata-sections
+
+# C++ flags
+CXXFLAGS= $(MCFLAGS) $(STFLAGS) $(DEFS) $(INCLUDES)
+CXXFLAGS+= -std=c++11
 
 # Assembler flags
 ASFLAGS = $(MCFLAGS) #$(INCLUDES)
@@ -207,37 +225,53 @@ all: $(ELF) $(HEX) $(BIN) $(DFU)
 #	@echo "elf done"
 	
 $(ELF): $(OBJS)
-	@echo "Building elf\n"
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-	@echo "elf done"
+	@echo "Building elf...\n"
+	#$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	#$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CXX) $(LDFLAGS) $(OBJS) -o $@
+	@echo "Building elf done!\n"
 
 %.hex: %.elf
-	@echo "elf to hex"
+	@echo "elf to hex...\n"
 	$(OBJCOPY) -O ihex $^ $@
+	@echo "elf to hex done!\n"
 	
 %.bin: %.elf
-	@echo "elf to bin"
+	@echo "elf to bin...\n"
 	$(OBJCOPY) $^ -O binary $@
+	@echo "elf to bin done!\n"
 
 %.dfu: %.bin
-	@echo "bin to dfu"
+	@echo "bin to dfu..\n"
 	python2 tools/dfu-convert.py -b 0x8000000:$^ $@
+	@echo "bin to dfu done!\n"
+
+$(BUILD_DIR)/%.o: %.cpp
+	@echo "Compiling C++...\n"
+	mkdir -p $(dir $@)
+	$(CXX) -c $(CXXFLAGS) -o $@ $^
+	@echo "Compiled C++!\n"
 
 $(BUILD_DIR)/%.o: %.c
+	@echo "Compiling C...\n"
 	mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $^
+	@echo "Compiled C!\n"
 
 $(BUILD_DIR)/%.o: %.s
+	@echo "Assembling...\n"
 	$(CC) -c $(CFLAGS) -o $@ $^
+	@echo "Assembled!\n"
 
 $(BUILD_DIR):
 	mkdir -p $@
 
 clean:
+	@echo "Cleaning...\n"
 	#rm -f $(OBJS)
 	find $(BUILD_DIR) -type f -name '*.o' -print0 | xargs -0 -r rm
 	rm -f $(ELF) $(HEX) $(BIN) $(DFU) $(MAP)
-	@echo "clean done!\n"
+	@echo "Clean done!\n"
 
 dfu:
 	dfu-util -d 0483:df11 -a 0 -D $(DFU) -s :leave
