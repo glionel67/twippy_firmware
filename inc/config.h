@@ -13,6 +13,9 @@
 #define SERVO_TASK_PRIORITY 1
 #define LED_TASK_PRIORITY 1
 
+#define MAVLINK_READ_TASK_PRIORITY 2
+#define MAVLINK_WRITE_TASK_PRIORITY 2
+
 /******************************************************************************/
 /* FreeRTOS task stack size */
 /******************************************************************************/
@@ -25,3 +28,6 @@
 #define MOTOR_CONTROL_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
 #define SERVO_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
 #define LED_TASK_STACK_SIZE (1*configMINIMAL_STACK_SIZE)
+
+#define MAVLINK_READ_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+#define MAVLINK_WRITE_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)

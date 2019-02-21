@@ -43,6 +43,15 @@ uint8_t init_gpios(void) {
 	GPIO_InitStruct.Alternate = USART2_GPIO_AF;
 	HAL_GPIO_Init(USART2_GPIO_PORT, &GPIO_InitStruct);
 
+	// USART3
+	USART3_GPIO_CLK_ENABLE();
+	GPIO_InitStruct.Pin = USART3_TX_PIN | USART3_RX_PIN;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP; //GPIO_NOPULL
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+	GPIO_InitStruct.Alternate = USART3_GPIO_AF;
+	HAL_GPIO_Init(USART3_GPIO_PORT, &GPIO_InitStruct);
+
 	// Encoder1 (TIM3)
 	ENC1A_GPIO_CLK_ENABLE();
 	GPIO_InitStruct.Pin = ENC1A_PIN | ENC1B_PIN;

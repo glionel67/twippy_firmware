@@ -4,6 +4,7 @@
 #include "gpio.h"
 #include "uart1.h"
 #include "uart2.h"
+#include "uart3.h"
 #include "spi.h"
 #include "encoder.h"
 #include "usTimer.h"
@@ -15,6 +16,7 @@
 #include "servo.h"
 #include "led.h"
 #include "buzzer.h"
+#include "mavlink_uart.h"
 
 #include <string.h>
 
@@ -73,6 +75,10 @@ int main(void) {
   }
   ret = uart2_init();
   if (ret != 0) {
+    Error_Handler();
+  }
+  ret = uart3_init();
+  if (ret == NOK) {
     Error_Handler();
   }
   
@@ -194,6 +200,30 @@ int main(void) {
   }
 
   // ------------------------------------------------------------------------ //
+  // --- Init Mavlink
+  // ------------------------------------------------------------------------ //
+  ret = mavlinkInit();
+  if (!ret) {
+    char str[] = "mavlinkInit NOK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "mavlinkInit OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+  ret = mavlinkStart();
+  if (!ret) {
+    char str[] = "mavlinkStart NOK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+    Error_Handler();
+  }
+  else {
+    char str[] = "mavlinkStart OK\r\n";
+    print_msg((uint8_t*)str, strlen(str));
+  }
+
+  // ------------------------------------------------------------------------ //
   // --- Create FreeRTOS tasks
   // ------------------------------------------------------------------------ //
   if (!(pdPASS == xTaskCreate(led_task, (const char*)"led_task",
@@ -213,6 +243,13 @@ int main(void) {
   if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
     char msg[] = "Failed to create uart2_task\r\n";
+    print_msg((uint8_t*)msg, strlen(msg));
+    goto hell;
+  }
+
+  if (!(pdPASS == xTaskCreate(uart3_task, (const char*)"uart3_task",
+    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+    char msg[] = "Failed to create uart3_task\r\n";
     print_msg((uint8_t*)msg, strlen(msg));
     goto hell;
   }

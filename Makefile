@@ -95,6 +95,7 @@ PROJECT_SRCS+= stm32f4xx_it.c
 PROJECT_SRCS+= gpio.c
 PROJECT_SRCS+= uart1.c
 PROJECT_SRCS+= uart2.c
+PROJECT_SRCS+= uart3.c
 PROJECT_SRCS+= adc.c
 PROJECT_SRCS+= servo.c
 PROJECT_SRCS+= led.c
@@ -110,7 +111,7 @@ PROJECT_SRCS+= ahrs.c
 PROJECT_SRCS+= pid_controller.c
 PROJECT_SRCS+= balance_control.c
 PROJECT_SRCS+= buzzer.c
-#PROJECT_SRCS+= mavlink_uart.c
+PROJECT_SRCS+= mavlink_uart.c
 #PROJECT_SRCS+= battery.c
 #PROJECT_SRCS+= com.c
 #PROJECT_SRCS+= led.c
@@ -122,7 +123,7 @@ SRCS+= $(FREERTOS_SRCS)
 #$(info $$SRCS is [${SRCS}])
 
 #CXXSOURCES+=$(shell find -L $(PROJECT_SRC) -name '*.cpp')
-CXX_SRCS = mavlink_uart.cpp
+CXX_SRCS = mavlink_interface.cpp
 
 ### Object files ###
 OBJS = $(addsuffix .o,$(basename $(SRCS)))

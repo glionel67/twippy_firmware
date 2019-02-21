@@ -53,11 +53,19 @@ void uart1_deInit(void) {
 }
 
 int uart1_write(uint8_t* buf, uint8_t len) {
-	return HAL_UART_Transmit(&UartHandle1, buf, len, USART1_TIMEOUT);
+  uint8_t res = HAL_UART_Transmit(&UartHandle1, buf, len, USART1_TIMEOUT);
+  if (res == HAL_OK)
+   return OK;
+  else
+    return NOK;
 }
 
 int uart1_read(uint8_t* buf, uint8_t len) {
-	return HAL_UART_Receive(&UartHandle1, buf, len, USART1_TIMEOUT);
+  uint8_t res = HAL_UART_Receive(&UartHandle1, buf, len, USART1_TIMEOUT);
+  if (res == HAL_OK)
+	 return OK;
+  else
+    return NOK;
 }
 
 void uart1_send_data(uint8_t* data, uint8_t size) {

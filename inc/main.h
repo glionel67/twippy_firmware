@@ -30,6 +30,18 @@
 #define USART2_IRQ                  USART2_IRQn
 
 /******************************************************************************/
+/* Definition for USART3  */
+/******************************************************************************/
+#define USART3_GPIO_CLK_ENABLE()    __HAL_RCC_GPIOC_CLK_ENABLE()
+#define USART3_GPIO_PORT            GPIOC
+#define USART3_TX_PIN               GPIO_PIN_10
+#define USART3_RX_PIN               GPIO_PIN_11
+#define USART3_GPIO_AF              GPIO_AF7_USART3
+#define USART3_BAUDRATE             115200 //9600
+#define USART3_TIMEOUT              100 // [ms]
+#define USART3_IRQ                  USART3_IRQn
+
+/******************************************************************************/
 /* Definition for encoders */
 /******************************************************************************/
 #define TIM_ENC1            TIM3
@@ -204,6 +216,9 @@
 /******************************************************************************/
 #define NOK 0
 #define OK 1
+
+#define TRUE 1
+#define FALSE 0
 
 #define NOMINAL_BATTERY_VOLTAGE (12.f) // [Volt]
 
