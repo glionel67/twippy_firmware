@@ -14,8 +14,8 @@ extern UART_HandleTypeDef UartHandle2;
 
 int uart2_init(void);
 void uart2_deInit(void);
-int uart2_write(uint8_t* buf, uint8_t len);
-int uart2_read(uint8_t* buf, uint8_t len);
-void uart2_send_data(uint8_t* data, uint8_t size);
-uint8_t uart2_enque_data(uint8_t* data, uint8_t size);
+int uart2_write(uint8_t* buf, uint32_t len);
+int uart2_read(uint8_t* buf, uint32_t len);
+void uart2_send_data(uint8_t* data, uint32_t size);
+uint32_t uart2_enque_data(uint8_t* data, uint32_t size);
 void uart2_task(void* _params);

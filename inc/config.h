@@ -16,6 +16,8 @@
 #define MAVLINK_READ_TASK_PRIORITY 2
 #define MAVLINK_WRITE_TASK_PRIORITY 2
 
+#define GPS_TASK_PRIORITY 2
+
 /******************************************************************************/
 /* FreeRTOS task stack size */
 /******************************************************************************/
@@ -31,3 +33,5 @@
 
 #define MAVLINK_READ_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
 #define MAVLINK_WRITE_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)
+
+#define GPS_TASK_STACK_SIZE (2*configMINIMAL_STACK_SIZE)

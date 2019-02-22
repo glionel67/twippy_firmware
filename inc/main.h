@@ -42,6 +42,38 @@
 #define USART3_IRQ                  USART3_IRQn
 
 /******************************************************************************/
+/* Definition for I2C1  */
+/******************************************************************************/
+#define I2C1_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define I2C1_GPIO_PORT              GPIOB
+#define I2C1_SCL_PIN                GPIO_PIN_8
+#define I2C1_SDA_PIN                GPIO_PIN_9
+#define I2C1_GPIO_AF                GPIO_AF4_I2C1
+#define I2C1_CLOCK_SPEED            400000
+#define I2C1_OWN_ADDRESS            0x30F
+#define I2C1_TIMEOUT                100 // [ms]
+// #define I2C1_EV_IRQn                    I2C1_EV_IRQn
+// #define I2C1_EV_IRQHandler              I2C1_EV_IRQHandler
+// #define I2C1_ER_IRQn                    I2C1_ER_IRQn
+// #define I2C1_ER_IRQHandler              I2C1_ER_IRQHandler
+
+/******************************************************************************/
+/* Definition for I2C2  */
+/******************************************************************************/
+#define I2C2_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define I2C2_GPIO_PORT              GPIOB
+#define I2C2_SCL_PIN                GPIO_PIN_10
+#define I2C2_SDA_PIN                GPIO_PIN_3
+#define I2C2_GPIO_AF                GPIO_AF4_I2C2
+#define I2C2_CLOCK_SPEED            400000
+#define I2C2_OWN_ADDRESS            0x40F
+#define I2C2_TIMEOUT                100 // [ms]
+// #define I2C2_EV_IRQn                    I2C2_EV_IRQn
+// #define I2C2_EV_IRQHandler              I2C2_EV_IRQHandler
+// #define I2C2_ER_IRQn                    I2C2_ER_IRQn
+// #define I2C2_ER_IRQHandler              I2C2_ER_IRQHandler
+
+/******************************************************************************/
 /* Definition for encoders */
 /******************************************************************************/
 #define TIM_ENC1            TIM3

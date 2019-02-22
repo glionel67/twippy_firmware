@@ -5,6 +5,8 @@
 #include "uart1.h"
 #include "uart2.h"
 #include "uart3.h"
+#include "i2c1.h"
+#include "i2c2.h"
 #include "spi.h"
 #include "encoder.h"
 #include "usTimer.h"
@@ -17,7 +19,10 @@
 #include "led.h"
 #include "buzzer.h"
 #include "mavlink_uart.h"
+#include "gps.h"
 
+// libc
+#include <stdio.h>
 #include <string.h>
 
 #include "stm32f4xx.h"
@@ -40,7 +45,6 @@ void SystemClock_Config(void);
 // ---------------------------------------------------------------------------//
 int main(void) {
   int ret = 0;
-  uint8_t welcomeMsg[] = "\r\n--- Hello Twippy! ---\r\n";
   //uint8_t data[DATASIZE] = { 0, };
   //int32_t enc1 = 0, enc2 = 0;
   //uint32_t ticks = 0;
@@ -54,7 +58,7 @@ int main(void) {
   // --- Init GPIO
   // ------------------------------------------------------------------------ //
   ret = init_gpios();
-  if (!ret) {
+  if (ret != OK) {
     Error_Handler();
   }
 
@@ -62,7 +66,7 @@ int main(void) {
   // --- Init LED
   // ------------------------------------------------------------------------ //
   ret = led_init();
-  if (!ret) {
+  if (ret != OK) {
     Error_Handler();
   }
 
@@ -70,33 +74,52 @@ int main(void) {
   // --- Init UART
   // ------------------------------------------------------------------------ //
   ret = uart1_init();
-  if (ret != 0) {
+  if (ret == NOK) {
     Error_Handler();
   }
   ret = uart2_init();
-  if (ret != 0) {
+  if (ret == NOK) {
     Error_Handler();
   }
   ret = uart3_init();
   if (ret == NOK) {
     Error_Handler();
   }
-  
-  //UART1_WRITE(welcomeMsg, sizeof(welcomeMsg));
-  UART2_WRITE(welcomeMsg, sizeof(welcomeMsg));
+
+  printf("\r\n--- Hello Twippy2! ---\r\n");
+
+
+  // ------------------------------------------------------------------------ //
+  // --- Init I2C
+  // ------------------------------------------------------------------------ //
+  ret = i2c1_init();
+  if (ret == NOK) {
+    printf("i2c1_init NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("i2c1_init OK\r\n");
+  }
+
+  ret = i2c2_init();
+  if (ret == NOK) {
+    printf("i2c2_init NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("i2c2_init OK\r\n");
+  }
 
   // ------------------------------------------------------------------------ //
   // --- Init SPI
   // ------------------------------------------------------------------------ //
   ret = spi1_init();
   if (!ret) {
-    char str[] = "spi1_init NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("spi1_init NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "spi1_init OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("spi1_init OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -104,13 +127,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_us_timer();
   if (ret != 0) {
-    char str[] = "init_us_timer NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_us_timer NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_us_timer OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_us_timer OK\r\n");
   }
 
   test_us_timer();
@@ -120,13 +141,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_buzzer();
   if (ret != 0) {
-    char str[] = "init_buzzer NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_buzzer NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_buzzer OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_buzzer OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -134,13 +153,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_adc();
   if (ret != 0) {
-    char str[] = "init_adc NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_adc NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_adc OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_adc OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -148,13 +165,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_encoders();
   if (ret != 0) {
-    char str[] = "init_encoders NOK\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_encoders NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_encoders OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_encoders OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -162,13 +177,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_motors();
   if (ret != 0) {
-    char str[] = "init_motors NOK\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_motors NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_motors OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_motors OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -176,13 +189,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = motor_control_init();
   if (!ret) {
-    char str[] = "motor_control_init NOK\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("motor_control_init NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "motor_control_init OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("motor_control_init OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -190,13 +201,11 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = init_imu();
   if (!ret) {
-    char str[] = "init_imu NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_imu NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "init_imu OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("init_imu OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -204,23 +213,41 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   ret = mavlinkInit();
   if (!ret) {
-    char str[] = "mavlinkInit NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mavlinkInit NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "mavlinkInit OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mavlinkInit OK\r\n");
   }
+
   ret = mavlinkStart();
   if (!ret) {
-    char str[] = "mavlinkStart NOK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mavlinkStart NOK\r\n");
     Error_Handler();
   }
   else {
-    char str[] = "mavlinkStart OK\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mavlinkStart OK\r\n");
+  }
+
+  // ------------------------------------------------------------------------ //
+  // --- Init GPS
+  // ------------------------------------------------------------------------ //
+  ret = gps_init();
+  if (ret == NOK) {
+    printf("gps_init NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("gps_init OK\r\n");
+  }
+
+  ret = gps_start();
+  if (ret == NOK) {
+    printf("gps_start NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("gps_start OK\r\n");
   }
 
   // ------------------------------------------------------------------------ //
@@ -228,92 +255,84 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   if (!(pdPASS == xTaskCreate(led_task, (const char*)"led_task",
     LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create led_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create led_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create uart1_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create uart1_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create uart2_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create uart2_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(uart3_task, (const char*)"uart3_task",
     UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create uart3_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create uart3_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(encoder_task, (const char*)"encoder_task",
-    ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
+    ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL))) {
+    printf("Failed to create encoder_task\r\n");
     goto hell;
+  }
+
 
   if (!(pdPASS == xTaskCreate(imu_task, (const char*)"imu_task",
     IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create imu_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create imu_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
       (const char*)"imu_calibrate_gyro_bias_task",
       IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create imu_calibrate_gyro_bias_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create imu_calibrate_gyro_bias_task\r\n");
+    goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(ahrs_task, (const char*)"ahrs_task",
     AHRS_TASK_STACK_SIZE, NULL, AHRS_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create ahrs_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create ahrs_task\r\n");
     goto hell;
   }
 /*
   if (!(pdPASS == xTaskCreate(motor_ident_task, (const char*)"motor_ident_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create motor_ident_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create motor_ident_task\r\n");
     goto hell;
   }
 */
 /*
   if (!(pdPASS == xTaskCreate(motor_task, (const char*)"motor_task",
     MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create motor_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create motor_task\r\n");
     goto hell;
   }
 */
 /*
   if (!(pdPASS == xTaskCreate(motor_control_task, (const char*)"motor_control_task",
     MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create motor_control_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create motor_control_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(motor_control_test_task, (const char*)"motor_control_test_task",
     MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
-    char msg[] = "Failed to create motor_control_test_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create motor_control_test_task\r\n");
     goto hell;
   }
 */
   /*
   if (!(pdPASS == xTaskCreate(servo_task, (const char*)"servo_task",
     SERVO_TASK_STACK_SIZE, NULL, SERVO_TASK_STACK_SIZE, NULL))) {
-    char msg[] = "Failed to create servo_task\r\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Failed to create servo_task\r\n");
     goto hell;
   }
   */
@@ -322,8 +341,7 @@ int main(void) {
   vTaskStartScheduler();
 
   while (1) {
-    char msg[] = "Error: should not reach here!\n";
-    print_msg((uint8_t*)msg, strlen(msg));
+    printf("Error: should not reach here!\r\n");
     goto hell;
   }
 
@@ -426,3 +444,4 @@ void print_msg(uint8_t* _msg, uint8_t _len) {
 //   else
 //     vTaskDelay(Delay);
 // }
+

@@ -63,7 +63,7 @@ HAL_MODULES+= gpio
 #HAL_MODULES+= pcd pcd_ex
 HAL_MODULES+= dma
 HAL_MODULES+= tim tim_ex
-#HAL_MODULES+= i2c i2c_ex
+HAL_MODULES+= i2c i2c_ex
 HAL_MODULES+= spi
 HAL_MODULES+= uart usart
 HAL_MODULES+= adc adc_ex
@@ -93,16 +93,15 @@ FREERTOS_SRCS+= freeRtosUtils.c
 PROJECT_SRCS = main.c
 PROJECT_SRCS+= stm32f4xx_it.c
 PROJECT_SRCS+= gpio.c
-PROJECT_SRCS+= uart1.c
-PROJECT_SRCS+= uart2.c
-PROJECT_SRCS+= uart3.c
+PROJECT_SRCS+= uart1.c uart2.c uart3.c
+PROJECT_SRCS+= i2c1.c i2c2.c
 PROJECT_SRCS+= adc.c
 PROJECT_SRCS+= servo.c
 PROJECT_SRCS+= led.c
 PROJECT_SRCS+= encoder.c
 PROJECT_SRCS+= motor.c
 PROJECT_SRCS+= motor_control.c
-#PROJECT_SRCS+= syscall.c
+PROJECT_SRCS+= syscalls.c
 PROJECT_SRCS+= usTimer.c
 PROJECT_SRCS+= spi.c
 PROJECT_SRCS+= imu.c
@@ -115,6 +114,7 @@ PROJECT_SRCS+= mavlink_uart.c
 #PROJECT_SRCS+= battery.c
 #PROJECT_SRCS+= com.c
 #PROJECT_SRCS+= led.c
+PROJECT_SRCS+= gps.c
 
 SRCS = $(PROJECT_SRCS)
 SRCS+= $(HAL_SRCS)
@@ -203,7 +203,9 @@ LDFLAGS+= $(MCFLAGS)
 LDFLAGS+= $(LIBS_INCS)
 LDFLAGS+= $(LIBS_LINK)
 #LDFLAGS+= -nostartfiles
-#LDFLAGS+= --specs=nano.specs -mcpu=cortex-m4 -mthumb
+LDFLAGS+= --specs=nano.specs
+LDFLAGS+= -u_printf_float
+#LDFLAGS+=-mcpu=cortex-m4 -mthumb
 LDFLAGS+= --specs=nosys.specs
 #LDFLAGS+= --specs=rdimon.specs
 LDFLAGS+= -lm

@@ -4,16 +4,44 @@
 		"selected_items":
 		[
 			[
+				"uar",
+				"uart1"
+			],
+			[
+				"uart",
+				"uart1_task"
+			],
+			[
+				"uint",
+				"uint8_t"
+			],
+			[
+				"pos",
+				"posMode"
+			],
+			[
+				"u",
+				"uint8_t"
+			],
+			[
+				"alt",
+				"altitude"
+			],
+			[
+				"print",
+				"printf\tprintf …"
+			],
+			[
+				"L",
+				"LDFLAGS"
+			],
+			[
 				"UART",
 				"UART_WRITE"
 			],
 			[
 				"time",
 				"timestamps"
-			],
-			[
-				"uint",
-				"uint8_t"
 			],
 			[
 				"in",
@@ -106,10 +134,6 @@
 			[
 				"ua",
 				"uart1_read"
-			],
-			[
-				"print",
-				"print_msg"
 			],
 			[
 				"closest",
@@ -460,10 +484,6 @@
 				"trajErrors"
 			],
 			[
-				"pos",
-				"pose2dm"
-			],
-			[
 				"true",
 				"truePoses"
 			],
@@ -494,26 +514,6 @@
 			[
 				"fre",
 				"freq1"
-			],
-			[
-				"get",
-				"getTicks"
-			],
-			[
-				"sef",
-				"self"
-			],
-			[
-				"psi",
-				"psiLimits"
-			],
-			[
-				"dt",
-				"dt"
-			],
-			[
-				"curre",
-				"currentTime"
 			]
 		]
 	},
@@ -552,38 +552,58 @@
 	},
 	"expanded_folders":
 	[
-		"/home/user/Workspace/twippy_firmware",
-		"/home/user/Workspace/twippy_firmware/inc",
-		"/home/user/Workspace/twippy_firmware/src"
+		"/home/user/Workspace/twippy_firmware"
 	],
 	"file_history":
 	[
-		"/home/user/Workspace/twippy_firmware/src/uart3.c",
-		"/home/user/Workspace/twippy_firmware/src/main.c",
-		"/home/user/Workspace/twippy_firmware/Makefile",
-		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.c",
-		"/home/user/Workspace/twippy_firmware/inc/uart3.h",
+		"/home/user/Workspace/twippy_firmware/src/gps.c",
+		"/home/user/Workspace/twippy_firmware/inc/gps.h",
 		"/home/user/Workspace/twippy_firmware/src/uart1.c",
-		"/home/user/Workspace/twippy_firmware/inc/uart2.h",
-		"/home/user/Workspace/twippy_firmware/src/uart2.c",
+		"/home/user/Workspace/twippy_firmware/inc/uart1.h",
+		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/inc/led.h",
+		"/home/user/Workspace/twippy_firmware/src/led.c",
+		"/home/user/Workspace/twippy_firmware/src/gpio.c",
+		"/home/user/Workspace/twippy_firmware/inc/gpio.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_uart.h",
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_uart.c",
+		"/home/user/Workspace/twippy_firmware/Makefile",
+		"/home/user/Workspace/twippy_firmware/README.md",
+		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.c",
+		"/home/user/Workspace/twippy_firmware/inc/mavlink_uart.h",
+		"/home/user/Workspace/twippy_firmware/inc/config.h",
+		"/home/user/Workspace/twippy_firmware/src/encoder.c",
+		"/home/user/Workspace/twippy_firmware/inc/mavlink_interface.h",
+		"/home/user/Workspace/twippy_firmware/inc/nmea.h",
+		"/home/user/Workspace/twippy_firmware/inc/ubx.h",
+		"/home/user/Workspace/twippy_firmware/src/ubx.cpp",
+		"/home/user/Workspace/twippy_firmware/src/uart2.c",
+		"/home/user/Workspace/twippy_firmware/inc/uart2.h",
+		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
+		"/home/user/Workspace/twippy_firmware/src/uart3.c",
+		"/home/user/Workspace/twippy_firmware/inc/uart3.h",
+		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
+		"/home/user/Workspace/twippy_firmware/src/i2c2.c",
+		"/home/user/Workspace/twippy_firmware/inc/i2c2.h",
+		"/home/user/Workspace/twippy_firmware/src/i2c1.c",
+		"/home/user/Workspace/twippy_firmware/inc/i2c1.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio_ex.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_i2c.h",
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_i2c.c",
+		"/home/user/Workspace/twippy_firmware/src/i2c.c",
+		"/home/user/Workspace/twippy_firmware/inc/i2c.h",
+		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_it.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
+		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_hal_conf.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
 		"/home/user/Workspace/twippy_firmware/inc/com.h",
-		"/home/user/Workspace/twippy_firmware/src/gpio.c",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio_ex.h",
-		"/home/user/Workspace/twippy_firmware/inc/mavlink_uart.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/task.h",
-		"/home/user/Workspace/twippy_firmware/inc/uart1.h",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_uart.c",
 		"/home/user/Workspace/twippy_firmware/src/imu.c",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/portmacro.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/FreeRTOS.h",
 		"/home/user/Workspace/twippy_firmware/src/mavlink_interface.cpp",
-		"/home/user/Workspace/twippy_firmware/inc/mavlink_interface.h",
 		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.cpp",
-		"/home/user/Workspace/twippy_firmware/inc/config.h",
-		"/home/user/Workspace/twippy_firmware/src/encoder.c",
 		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/mpu_wrappers.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
@@ -595,22 +615,16 @@
 		"/home/user/Workspace/twippy_firmware/inc/battery.h",
 		"/home/user/Workspace/twippy_firmware/src/battery.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_adc_ex.c",
-		"/home/user/Workspace/twippy_firmware/inc/led.h",
-		"/home/user/Workspace/twippy_firmware/src/led.c",
 		"/home/user/Workspace/twippy_firmware/inc/buzzer.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/src/motor_control.c",
 		"/home/user/Workspace/twippy_firmware/src/motor.c",
 		"/home/user/Workspace/twippy_firmware/inc/motor.h",
-		"/home/user/Workspace/twippy_firmware/inc/gpio.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
 		"/media/user/TINYKEY/MapBuilder/testOffline.cpp",
 		"/home/user/Workspace/twippy_firmware/src/servo.c",
 		"/home/user/Workspace/twippy_firmware/inc/servo.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
-		"/home/user/Workspace/twippy_firmware/README.md",
-		"/home/user/Workspace/twippy_firmware/inc/i2c.h",
-		"/home/user/Workspace/twippy_firmware/src/i2c.c",
 		"/home/user/Workspace/twippy_firmware/src/spi.c",
 		"/home/user/Workspace/twippy_firmware/inc/spi.h",
 		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
@@ -618,7 +632,6 @@
 		"/home/user/Workspace/twippy_firmware/inc/imu.h",
 		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
 		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
-		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
 		"/home/user/Workspace/twippy_firmware/inc/motor_control.h",
 		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
 		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
@@ -631,7 +644,6 @@
 		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/stm32f446xx.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc_ex.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
@@ -642,11 +654,8 @@
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_cortex.h",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/core_cm4.h",
 		"/home/user/Workspace/twippy_firmware/src/stm32f4xx_it.c",
-		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_it.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_timebase_tim_template.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_cortex.c",
-		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_hal_conf.h",
-		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
 		"/home/user/Workspace/twippy_firmware/inc/uart.h",
 		"/home/user/Workspace/twippy_firmware/src/uart.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal.h",
@@ -674,18 +683,7 @@
 		"/home/user/Workspace/catkin_ws/src/path_follower/src/PathFollower.cpp",
 		"/home/user/Workspace/catkin_ws/src/path_follower/src/path_follower3_node.cpp",
 		"/home/user/Workspace/catkin_ws/src/path_follower/launch/path_follower_alfs3a.launch",
-		"/home/user/Workspace/stm32f446/FreeRTOS/inc/portmacro.h",
-		"/home/user/Workspace/stm32f446/Makefile",
-		"/home/user/Workspace/stm32f446/src/uart.c",
-		"/home/user/Workspace/catkin_ws/src/path_follower/src/path_follower2_node.cpp",
-		"/home/user/Workspace/catkin_ws/src/path_follower/src/path_follower_node.cpp",
-		"/home/user/Workspace/catkin_ws/src/path_follower/src/PathFollower2.cpp",
-		"/home/user/Workspace/catkin_ws/src/path_follower/include/path_follower/PathFollower2.h",
-		"/home/user/Workspace/catkin_ws/src/path_follower/include/path_follower/PathFollower.h",
-		"/home/user/Workspace/stm32f446/src/gpio.c",
-		"/home/user/Workspace/stm32f446/inc/gpio.h",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/beacon_dwm1000/src/beacon_dwm1000_node.cpp",
-		"/media/user/TINYKEY/Lionel/RPi/catkin_ws/beacon_dwm1000/src/dwm1000_node.cpp"
+		"/home/user/Workspace/stm32f446/FreeRTOS/inc/portmacro.h"
 	],
 	"find":
 	{
@@ -703,6 +701,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"UART_IT_RXNE",
+			"Receive",
+			"rxByte",
+			"i2c1",
+			"I2cHandle1",
 			"failed",
 			"uart",
 			"mavlinkWriteMessage",
@@ -825,12 +828,7 @@
 			"worker",
 			"imuDataQueue",
 			"uwbTask",
-			"imuData",
-			"rangeData",
-			"range",
-			"rangeDataQueue",
-			"range",
-			"_FS_READONLY"
+			"imuData"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -838,6 +836,8 @@
 		"regex": false,
 		"replace_history":
 		[
+			"i2c2",
+			"I2cHandle2",
 			"mavlinkMessages",
 			"mavlinkMessages_",
 			"timestamps",

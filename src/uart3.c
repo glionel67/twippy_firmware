@@ -9,7 +9,6 @@
 
 UART_HandleTypeDef UartHandle3;
 
-static uint8_t rxByte = 0;
 static xQueueHandle uart3RxQueue = 0;
 static xQueueHandle uart3TxQueue = 0;
 
@@ -55,7 +54,7 @@ void uart3_deInit(void) {
   __HAL_UART_DISABLE_IT(&UartHandle3, UART_IT_RXNE);
 }
 
-int uart3_write(uint8_t* buf, uint8_t len) {
+int uart3_write(uint8_t* buf, uint32_t len) {
   uint8_t res = HAL_UART_Transmit(&UartHandle3, buf, len, USART3_TIMEOUT);
   if (res == HAL_OK)
    return OK;
@@ -63,7 +62,7 @@ int uart3_write(uint8_t* buf, uint8_t len) {
     return NOK;
 }
 
-int uart3_read(uint8_t* buf, uint8_t len) {
+int uart3_read(uint8_t* buf, uint32_t len) {
   uint8_t res = HAL_UART_Receive(&UartHandle3, buf, len, USART3_TIMEOUT);
   if (res == HAL_OK)
      return OK;
@@ -71,15 +70,15 @@ int uart3_read(uint8_t* buf, uint8_t len) {
     return NOK;
 }
 
-void uart3_send_data(uint8_t* data, uint8_t size) {
-    uint8_t i = 0;
+void uart3_send_data(uint8_t* data, uint32_t size) {
+    uint32_t i = 0;
     for (i=0;i<size;i++) {
         while (!(USART3->SR & USART_FLAG_TXE));
         USART3->DR = (data[i] & 0x00FF);
      }
 }
 
-uint8_t uart3_enque_data(uint8_t* data, uint8_t size) {
+uint32_t uart3_enque_data(uint8_t* data, uint32_t size) {
   uint8_t i = 0;
   for (i=0;i<size;i++) {
     if (xQueueSend(uart3TxQueue, data+i, 10) == errQUEUE_FULL) {
@@ -134,6 +133,7 @@ void uart3_task(void* _params) {
 }
 
 void __attribute__((used)) USART3_IRQHandler(void) {
+  uint8_t rxByte = 0;
   //HAL_UART_IRQHandler(&UartHandle3);
   if (__HAL_UART_GET_FLAG(&UartHandle3, UART_FLAG_RXNE)) {
     rxByte = (uint8_t)(UartHandle3.Instance->DR & (uint8_t)0x00FF);

@@ -14,8 +14,8 @@ extern UART_HandleTypeDef UartHandle3;
 
 int uart3_init(void);
 void uart3_deInit(void);
-int uart3_write(uint8_t* buf, uint8_t len);
-int uart3_read(uint8_t* buf, uint8_t len);
-void uart3_send_data(uint8_t* data, uint8_t size);
-uint8_t uart3_enque_data(uint8_t* data, uint8_t size);
+int uart3_write(uint8_t* buf, uint32_t len);
+int uart3_read(uint8_t* buf, uint32_t len);
+void uart3_send_data(uint8_t* data, uint32_t size);
+uint32_t uart3_enque_data(uint8_t* data, uint32_t size);
 void uart3_task(void* _params);

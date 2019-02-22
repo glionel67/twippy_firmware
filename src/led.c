@@ -8,7 +8,7 @@ static uint16_t led_period_ms = 500;
 
 int led_init(void) {
     // GPIO already init in init_gpios from gpio.h
-    return 1;
+    return OK;
 }
 
 void led_on(uint16_t _led) {

@@ -78,6 +78,9 @@ void SysTick_Handler(void);
 //void TIM7_IRQHandler(void);
 //void TIM8_IRQHandler(void);
 
+//void I2C1_EV_IRQHandler(void);
+//void I2C1_ER_IRQHandler(void);
+
 
 #ifdef __cplusplus
 }

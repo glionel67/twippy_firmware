@@ -2,7 +2,7 @@
 
 #include "main.h"
 
-uint8_t init_gpios(void) {
+int init_gpios(void) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	// Configure all unused GPIO port pins in Analog Input mode (floating input
@@ -51,6 +51,24 @@ uint8_t init_gpios(void) {
 	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Alternate = USART3_GPIO_AF;
 	HAL_GPIO_Init(USART3_GPIO_PORT, &GPIO_InitStruct);
+
+	// I2C1
+	I2C1_GPIO_CLK_ENABLE();
+	GPIO_InitStruct.Pin       = I2C1_SCL_PIN | I2C1_SDA_PIN;
+	GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = I2C1_GPIO_AF;
+	HAL_GPIO_Init(I2C1_GPIO_PORT, &GPIO_InitStruct);
+
+	// I2C2
+	I2C2_GPIO_CLK_ENABLE();
+	GPIO_InitStruct.Pin       = I2C2_SCL_PIN | I2C2_SDA_PIN;
+	GPIO_InitStruct.Mode      = GPIO_MODE_AF_OD;
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Alternate = I2C2_GPIO_AF;
+	HAL_GPIO_Init(I2C2_GPIO_PORT, &GPIO_InitStruct);
 
 	// Encoder1 (TIM3)
 	ENC1A_GPIO_CLK_ENABLE();
@@ -165,5 +183,5 @@ uint8_t init_gpios(void) {
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(ADC_BAT_GPIO_PORT, &GPIO_InitStruct);
 
-	return 1;
+	return OK;
 }
