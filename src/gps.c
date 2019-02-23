@@ -67,7 +67,7 @@ void gps_task(void* _params)
 {
     //TickType_t ticks = 0;
     int res = 0;
-    char byte = 0;
+    uint8_t byte = 0;
     uint32_t lengthSend = 0;
 
     char msg[] = "Hello!\r\n";
@@ -78,15 +78,16 @@ void gps_task(void* _params)
         // TODO
         //ticks = xTaskGetTickCount();
         //printf("gps_task: ticks=%ld\r\n", ticks);
-        res = uart1_deque_byte((uint8_t*)&byte, 10);
+        //do { res = uart1_deque_byte(&byte, 10); } while (res == OK);
+        res = uart1_deque_byte(&byte, 10);
         if (res == OK) {
-            printf("gps_task: received c=%c from uart1\r\n", byte);
+            printf("gps_task: received c=0x%X from uart1\r\n", byte);
         }
         lengthSend = uart1_enque_data((uint8_t*)msg, strlen(msg));
         if (lengthSend == strlen(msg)) {
             //printf("gps_task: enque %ld data on uart1\r\n", lengthSend);
         }
-        vTaskDelay(100/portTICK_RATE_MS); // 10 Hz
+        vTaskDelay(10/portTICK_RATE_MS); // 10 Hz
     }
 
     vTaskDelete(NULL);

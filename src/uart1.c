@@ -15,6 +15,8 @@ static xQueueHandle uart1TxQueue = 0;
 static bool isInit = false;
 static bool hasOverrun = false;
 
+//static uint8_t rxByte = 0;
+
 int uart1_init(void) {
   __HAL_RCC_USART1_CLK_ENABLE();
 
@@ -42,8 +44,9 @@ int uart1_init(void) {
   }
 
   HAL_NVIC_SetPriority(USART1_IRQ, 10, 0);
-  //HAL_NVIC_EnableIRQ(USART1_IRQ);
+  HAL_NVIC_EnableIRQ(USART1_IRQ);
   __HAL_UART_ENABLE_IT(&UartHandle1, UART_IT_RXNE);
+  //SET_BIT(UartHandle1.Instance->CR1, USART_CR1_PEIE | USART_CR1_RXNEIE);
 
   isInit = true;
 
@@ -89,7 +92,7 @@ void uart1_send_data(uint8_t* data, uint32_t size)
 	uint32_t i = 0;
 	for (i=0;i<size;i++) {
 	    while (!(USART1->SR & USART_FLAG_TXE));
-	    USART1->DR = (data[i] & 0x00FF);
+      USART1->DR = (data[i] & (uint8_t)0xFF);
 	 }
 }
 
@@ -125,18 +128,32 @@ uint32_t uart1_deque_data(uint8_t* _data, uint32_t _len, uint32_t _timeToWait)
 void uart1_task(void* _params)
 {
   uint8_t data = 0;
-  uint8_t res = 0;
+  //uint8_t res = 0;
 
   if (_params != 0) { }
 
   while (1) {
     // TX data in the TX queue
     while (pdTRUE == xQueueReceive(uart1TxQueue, &data, (TickType_t)0)) {
-      //printf("uart1_task: rcv from TX queue and sending to uart1\r\n");
-      res = HAL_UART_Transmit(&UartHandle1, &data, 1, USART1_TIMEOUT);
-      if (res != HAL_OK) {
-        printf("uart1_task: failed to send data via uart1\r\n");
-      }
+      //printf("uart1_task: rcv %c from TX queue\r\n", (char)data);
+      //while (!(USART1->SR & USART_FLAG_TXE));
+      //USART1->DR = (data & (uint8_t)0xFF);
+      // res = HAL_UART_Transmit(&UartHandle1, &data, 1, USART1_TIMEOUT);
+      // if (res != HAL_OK) {
+      //   printf("uart1_task: TX failed\r\n");
+      // }
+      // if(res == HAL_TIMEOUT) {
+      //    printf("uart1_task: TX timeout\r\n");
+      // }
+      // else if (res == HAL_BUSY) {
+      //   printf("uart1_task: TX busy\r\n");
+      // }
+      // else if (res == HAL_ERROR) {
+      //   printf("uart1_task: TX error\r\n");
+      // }
+      // else if (res == HAL_OK) {
+      //   printf("uart1_task: TX ok\r\n");
+      // }
     }
 
     vTaskDelay(10/portTICK_RATE_MS); // 100 Hz
@@ -157,11 +174,18 @@ void __attribute__((used)) USART1_IRQHandler(void)
   uint8_t rxByte = 0;
   portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
   //HAL_UART_IRQHandler(&UartHandle1);
-  if (__HAL_UART_GET_IT_SOURCE(&UartHandle1, UART_IT_RXNE)) {
-  //if (__HAL_UART_GET_FLAG(&UartHandle1, UART_FLAG_RXNE)) {
-    rxByte = (uint8_t)(UartHandle1.Instance->DR & (uint8_t)0x00FF);
-    __HAL_UART_CLEAR_FLAG(&UartHandle1, UART_FLAG_RXNE);
+  //if (__HAL_UART_GET_IT_SOURCE(&UartHandle1, UART_IT_RXNE)) {
+  //if (__HAL_UART_GET_FLAG(&UartHandle1, UART_FLAG_RXNE == SET)) {
+  if ((USART1->SR & UART_FLAG_RXNE)) {
+  //if ((USART1->SR & USART_SR_RXNE) == SET &&
+  //    (USART1->CR1 & USART_CR1_RXNEIE) == SET) {
+    rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF);
+    //printf("uart1_int: RX byte=0x%x\r\n", rxByte);
     xQueueSendFromISR(uart1RxQueue, &rxByte, &xHigherPriorityTaskWoken);
+    // if( xHigherPriorityTaskWoken ) {
+    //   // Actual macro used here is port specific.
+    //   portYIELD_FROM_ISR();
+    // }
   }
   else {
     /** if we get here, the error is most likely caused by an overrun!

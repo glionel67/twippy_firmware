@@ -86,8 +86,7 @@ int main(void) {
     Error_Handler();
   }
 
-  printf("\r\n--- Hello Twippy2! ---\r\n");
-
+  printf("\r\n--- Hello Twippy! ---\r\n");
 
   // ------------------------------------------------------------------------ //
   // --- Init I2C
@@ -211,23 +210,23 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   // --- Init Mavlink
   // ------------------------------------------------------------------------ //
-  ret = mavlinkInit();
-  if (!ret) {
-    printf("mavlinkInit NOK\r\n");
-    Error_Handler();
-  }
-  else {
-    printf("mavlinkInit OK\r\n");
-  }
+  // ret = mavlinkInit();
+  // if (!ret) {
+  //   printf("mavlinkInit NOK\r\n");
+  //   Error_Handler();
+  // }
+  // else {
+  //   printf("mavlinkInit OK\r\n");
+  // }
 
-  ret = mavlinkStart();
-  if (!ret) {
-    printf("mavlinkStart NOK\r\n");
-    Error_Handler();
-  }
-  else {
-    printf("mavlinkStart OK\r\n");
-  }
+  // ret = mavlinkStart();
+  // if (!ret) {
+  //   printf("mavlinkStart NOK\r\n");
+  //   Error_Handler();
+  // }
+  // else {
+  //   printf("mavlinkStart OK\r\n");
+  // }
 
   // ------------------------------------------------------------------------ //
   // --- Init GPS
