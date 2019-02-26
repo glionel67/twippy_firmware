@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "FreeRTOS.h"
@@ -36,7 +37,8 @@ static float desiredWheelSpeed[N_MOTORS] = { 0, };
 static xQueueHandle motorDesiredVoltageQueue = 0;
 
 
-uint8_t motor_control_init(void) {
+uint8_t motor_control_init(void)
+{
     if (isInit)
         return 0;
 
@@ -54,13 +56,11 @@ uint8_t motor_control_init(void) {
     */
     motorDesiredVoltageQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorDesiredVoltage_t));
     if (motorDesiredVoltageQueue == 0) {
-        char str[] = "motors_control_init: motorDesiredVoltageQueue creation NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("motors_control_init: motorDesiredVoltageQueue creation NOK\r\n");
         return -1;
     }
     else {
-        char str[] = "motors_control_init: motorDesiredVoltageQueue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("motors_control_init: motorDesiredVoltageQueue creation OK\r\n");
     }
 
     // Init. motor 1 PID
@@ -75,16 +75,19 @@ uint8_t motor_control_init(void) {
     return 1;
 }
 
-uint8_t motor_control_test(void) {
+uint8_t motor_control_test(void)
+{
     return isInit;
 }
 
-void motor_control_reset(void) {
+void motor_control_reset(void)
+{
     pid_reset(&pidMotors[MOTOR1]);
     pid_reset(&pidMotors[MOTOR2]);
 }
 
-void motor_control_task(void* _params) {
+void motor_control_task(void* _params)
+{
     uint8_t ret = 0;
     MotorMeasuredSpeed_t measuredSpeeds;
     MotorDesiredVoltage_t desiredVoltages;
@@ -166,14 +169,14 @@ void motor_control_task(void* _params) {
     vTaskDelete(NULL);
 }
 
-void motor_control_test_task(void* _params) {
+void motor_control_test_task(void* _params)
+{
     uint8_t ret = 0;
     MotorMeasuredSpeed_t measuredSpeeds;
     MotorDesiredVoltage_t desiredVoltages;
     MotorControl_t motorControls;
     float errors[N_MOTORS] = { 0, };
     float dt = 0, told = (float)get_us_time() * (float)1e-6;
-    char data[50] = { 0, };
 
     if (_params != 0) { }
 
@@ -255,17 +258,16 @@ void motor_control_test_task(void* _params) {
         desiredVoltages.voltage[MOTOR2] = motorControls.controlState[MOTOR2].out;
         xQueueOverwrite(motorDesiredVoltageQueue, &desiredVoltages);
 
-        sprintf(data, "%3.3f,%3.3f,%3.3f\r\n",
+        printf("%3.3f,%3.3f,%3.3f\r\n",
             desiredWheelSpeed[MOTOR1], desiredVoltages.voltage[MOTOR1],
             measuredSpeeds.speed[MOTOR1]);
-        print_msg((uint8_t*)data, strlen(data));
-
     }
 
     vTaskDelete(NULL);
 }
 
-void motor_control_set_desired_wheel_speeds(float _speed1, float _speed2) {
+void motor_control_set_desired_wheel_speeds(float _speed1, float _speed2)
+{
     desiredWheelSpeed[MOTOR1] = _speed1;
     desiredWheelSpeed[MOTOR2] = _speed2;
 }
@@ -274,6 +276,8 @@ void motor_control_set_desired_wheel_speeds(float _speed1, float _speed2) {
 //    return (pdTRUE == xQueueReceive(motorControlQueue, data, xTicksToWait));
 //}
 
-uint8_t motor_control_read_desired_voltage(MotorDesiredVoltage_t* data, TickType_t xTicksToWait) {
+uint8_t motor_control_read_desired_voltage(MotorDesiredVoltage_t* data, 
+        TickType_t xTicksToWait)
+{
     return (pdTRUE == xQueueReceive(motorDesiredVoltageQueue, data, xTicksToWait));
 }

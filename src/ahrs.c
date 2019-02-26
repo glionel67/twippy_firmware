@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -18,18 +19,21 @@ static float beta = .1f;
 static float q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
 
 
-uint8_t ahrs_init(void) {
+uint8_t ahrs_init(void)
+{
     // Init. attitude
     q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
 
     return 1;
 }
 
-void ahrs_reset(void) {
+void ahrs_reset(void)
+{
     q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
 }
 
-void ahrs_task(void* _params) {
+void ahrs_task(void* _params)
+{
     uint8_t ret = 0;
     float prevTs = 0., dt = 0.;
     float pitch = 0.f;
@@ -46,22 +50,19 @@ void ahrs_task(void* _params) {
 
     ret = ahrs_init();
     if (!ret) {
-        char str[] = "ahrs_init error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("ahrs_init error\r\n");
         Error_Handler();
     }
 
     ahrsQueue = xQueueCreate(AHRS_QUEUE_SIZE, sizeof(Quaternion_t));
     if (ahrsQueue == 0) {
-        char str[] = "ahrsQueue creation error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("ahrsQueue creation error\r\n");
         goto byeBye;
     }
 
     pitchAndRateQueue = xQueueCreate(AHRS_QUEUE_SIZE, sizeof(PitchAndRate_t));
     if (pitchAndRateQueue == 0) {
-        char str[] = "pitchAndRateQueue creation error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("pitchAndRateQueue creation error\r\n");
         goto byeBye;
     }
 
@@ -75,9 +76,8 @@ void ahrs_task(void* _params) {
             // Compute delta time
             dt = imu.timestamp - prevTs;
 
-            //sprintf(data, "%s: t=%3.3f,ax=%3.3f,gx=%3.3f\r\n", DEBUG_MODULE,
+            //printf("%s: t=%3.3f,ax=%3.3f,gx=%3.3f\r\n", DEBUG_MODULE,
             //        (float)imu.timestamp, (float)imu.a[0], (float)imu.g[0]);
-            //print_msg((uint8_t*)data, strlen(data));
             
             // Compute attitude
             //MadgwickAHRSupdate(imu.g[0], imu.g[1], imu.g[2], 
@@ -94,12 +94,10 @@ void ahrs_task(void* _params) {
             quaternion.q[QY] = q2;
             quaternion.q[QZ] = q3;
 
-            //sprintf(data, "%s: t=%3.3f,qw=%3.3f,qx=%3.3f,qy=%3.3f,qz=%3.3f\r\n",
+            //printf("%s: t=%3.3f,qw=%3.3f,qx=%3.3f,qy=%3.3f,qz=%3.3f\r\n",
             //        DEBUG_MODULE, (float)quaternion.timestamp, 
             //        (float)quaternion.q[QW], (float)quaternion.q[QX],
             //        quaternion.q[QY], quaternion.q[QZ]);
-            //print_msg((uint8_t*)data, strlen(data));
-
 
             // Convert quaternion to pitch angle for balance control
             quaternion_to_pitch(q0, q1, q2, q3, &pitch);
@@ -123,25 +121,30 @@ void ahrs_task(void* _params) {
     vTaskDelete(NULL);
 }
 
-uint8_t ahrs_get_quaternion(Quaternion_t* quat) {
+uint8_t ahrs_get_quaternion(Quaternion_t* quat)
+{
     return (pdTRUE == xQueueReceive(ahrsQueue, quat, 0));
 }
 
-uint8_t ahrs_read_quaternion(Quaternion_t* quat) {
+uint8_t ahrs_read_quaternion(Quaternion_t* quat)
+{
     return (pdTRUE == xQueueReceive(ahrsQueue, quat, 0));
 }
 
-uint8_t ahrs_get_pitchAndRate(PitchAndRate_t* _pitchAndRate) {
+uint8_t ahrs_get_pitchAndRate(PitchAndRate_t* _pitchAndRate)
+{
     return (pdTRUE == xQueueReceive(pitchAndRateQueue, _pitchAndRate, 0));
 }
 
-uint8_t ahrs_read_pitchAndRate(PitchAndRate_t* _pitchAndRate) {
+uint8_t ahrs_read_pitchAndRate(PitchAndRate_t* _pitchAndRate)
+{
     return (pdTRUE == xQueueReceive(pitchAndRateQueue, _pitchAndRate, 0));
 }
 
 // Fast inverse square-root
 // See: http://en.wikipedia.org/wiki/Fast_inverse_square_root
-static float invSqrt(float x) {
+static float invSqrt(float x)
+{
     float halfx = 0.5f * x;
     float y = x;
     long i = *(long*)&y;
@@ -153,7 +156,8 @@ static float invSqrt(float x) {
 
 void MadgwickAHRSupdate(float gx, float gy, float gz, 
     float ax, float ay, float az, 
-    float mx, float my, float mz, float dt) {
+    float mx, float my, float mz, float dt)
+{
     float recipNorm;
     float s0, s1, s2, s3;
     float qDot1, qDot2, qDot3, qDot4;
@@ -261,7 +265,8 @@ void MadgwickAHRSupdate(float gx, float gy, float gz,
 // IMU algorithm update
 
 void MadgwickAHRSupdateIMU(float gx, float gy, float gz, 
-    float ax, float ay, float az, float dt) {
+    float ax, float ay, float az, float dt)
+{
     float recipNorm;
     float s0, s1, s2, s3;
     float qDot1, qDot2, qDot3, qDot4;
@@ -336,7 +341,8 @@ void MadgwickAHRSupdateIMU(float gx, float gy, float gz,
 }
 
 void quaternion_to_rollPitchYaw(float _qw, float _qx, float _qy, float _qz,
-    float* _roll, float* _pitch, float* _yaw) {
+    float* _roll, float* _pitch, float* _yaw)
+{
     float num = 2.f * (_qy * _qz + _qx * _qw);
     float den = 1.f - 2.f * (_qx * _qx + _qy * _qy); //w*w + z*z - y*y - x*x;
     *_roll = atan2f(num, den);
@@ -348,6 +354,7 @@ void quaternion_to_rollPitchYaw(float _qw, float _qx, float _qy, float _qz,
 
 
 inline void quaternion_to_pitch(float _qw, float _qx, float _qy, float _qz, 
-    float* _pitch) {
+    float* _pitch)
+{
     *_pitch = asinf(2.f * (_qw * _qy - _qx * _qz));
 }

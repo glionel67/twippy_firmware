@@ -9,9 +9,10 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct NmeaGgaMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     uint8_t hour; /** UTC time hour */
     uint8_t minute; /** UTC time minute */
     float second; /** UTC time second */
@@ -30,7 +31,7 @@ typedef struct NmeaGgaMsg_s {
 } NmeaGgaMsg_t;
 
 typedef struct NmeaGllMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     float latitude; /** Latitude [degrees] */
     char ns; /** North/South indicator */
     float longitude; /** Longitude [degrees] */
@@ -41,10 +42,10 @@ typedef struct NmeaGllMsg_s {
     char status; /** V = Data invalid or receiver warning, A = Data valid */
     char posMode; /** Positioning mode */
     uint8_t checksum; /** Checksum */
-} NmeaGgaMsg_t;
+} NmeaGllMsg_t;
 
 typedef struct NmeaGnsMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     uint8_t hour; /** UTC time hour */
     uint8_t minute; /** UTC time minute */
     float second; /** UTC time second */
@@ -64,7 +65,7 @@ typedef struct NmeaGnsMsg_s {
 } NmeaGnsMsg_t;
 
 typedef struct NmeaGsaMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     char opMode; /** Operation mode */
     uint8_t navMode; /** Navigation mode 1=Fix not available, 2=2D fix, 3=3D fix */
     uint8_t satNum[12]; /** Satellite number */
@@ -76,7 +77,7 @@ typedef struct NmeaGsaMsg_s {
 } NmeaGsaMsg_t;
 
 typedef struct NmeaGstMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     uint8_t hour; /** UTC time hour */
     uint8_t minute; /** UTC time minute */
     float second; /** UTC time second */
@@ -91,7 +92,7 @@ typedef struct NmeaGstMsg_s {
 } NmeaGstMsg_t;
 
 typedef struct NmeaRmcMsg_s {
-    char[6] msgId; /**  Message ID */
+    char msgId[6]; /**  Message ID */
     uint8_t hour; /** UTC time hour */
     uint8_t minute; /** UTC time minute */
     char status; /** Status, V = Navigation receiver warning, A = Data valid */
@@ -108,3 +109,59 @@ typedef struct NmeaRmcMsg_s {
     char navStatus; /** Navigational status indicator (V = Equipment is not providing navigational status information) */
     uint8_t checksum; /** Checksum */
 } NmeaRmcMsg_t;
+
+/**
+ * \enum NmeaDecodeState_e
+ * \brief Decoder state
+ */
+typedef enum {
+    NMEA_DECODE_START = 0,
+    NMEA_DECODE_ADDR1,
+    NMEA_DECODE_ADDR2,
+    NMEA_DECODE_ADDR3,
+    NMEA_DECODE_ADDR4,
+    NMEA_DECODE_ADDR5,
+    NMEA_DECODE_ADDR6,
+    NMEA_DECODE_PAYLOAD,
+    NMEA_DECODE_CHKSUM1,
+    NMEA_DECODE_CHKSUM2,
+    NMEA_DECODE_END1,
+    NMEA_DECODE_END2
+} NmeaDecodeState_e;
+
+#define NMEA_START_CHAR '$'
+#define NMEA_ADDR1 'G'
+#define NMEA_ADDR6 ','
+#define NMEA_CHKSUM '*'
+#define NMEA_END1 '\r'
+#define NMEA_END2 '\n'
+
+#define NMEA_MSG_ID_LEN 6
+
+void decodeInit(void);
+
+bool decodeMsg(char* _msg);
+
+bool decodeGGA(char* _msg);
+bool decodeGLL(char* _msg);
+bool decodeGNS(char* _msg);
+bool decodeGSA(char* _msg);
+bool decodeGST(char* _msg);
+bool decodeRMC(char* _msg);
+
+bool decodeUtcTime(char* msg, uint8_t* h, uint8_t* m, float* s);
+bool decodeLatitude(char* msg, float* latDeg);
+bool decodeLongitude(char* msg, float* lonDeg);
+bool decodeLatDir(char* msg, char* latDir);
+bool decodeLonDir(char* msg, char* lonDir);
+bool decodeAltitude(char* msg, float* alt);
+bool decodeQuality(char* msg, uint8_t* qua);
+bool decodeNumSat(char* msg, uint8_t* nSat);
+bool decodeHdop(char* msg, float* hdop);
+bool decodeGeoidSep(char* msg, float* geoSep);
+bool decodeDiffAge(char* msg, float* diffAge);
+bool decodeDiffSta(char* msg, uint8_t* diffSta);
+
+bool nmeaParseChar(char _c);
+
+//int computeChecksum(void);

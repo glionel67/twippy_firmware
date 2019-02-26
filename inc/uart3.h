@@ -1,6 +1,9 @@
 #pragma once
 
+// C lib
 #include <stdint.h>
+#include <stdbool.h>
+
 #include "main.h"
 
 extern UART_HandleTypeDef UartHandle3;
@@ -14,8 +17,12 @@ extern UART_HandleTypeDef UartHandle3;
 
 int uart3_init(void);
 void uart3_deInit(void);
+bool uart3_is_init(void);
 int uart3_write(uint8_t* buf, uint32_t len);
 int uart3_read(uint8_t* buf, uint32_t len);
 void uart3_send_data(uint8_t* data, uint32_t size);
 uint32_t uart3_enque_data(uint8_t* data, uint32_t size);
+int uart3_deque_byte(uint8_t* _data, uint32_t _timeToWait);
+uint32_t uart3_deque_data(uint8_t* _data, uint32_t _len, uint32_t _timeToWait);
 void uart3_task(void* _params);
+bool uart3_has_overrun(void);

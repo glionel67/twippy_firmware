@@ -1,6 +1,7 @@
 #include "battery.h"
 
-int init_battery(Battery_t* _bat) {
+int init_battery(Battery_t* _bat)
+{
     _bat->vbat = get_vbat_mv(); // [mV]
     _bat->ibat = get_ibat_ma(); // [mA]
     _bat->status = BAT_OK;
@@ -19,7 +20,8 @@ int init_battery(Battery_t* _bat) {
     return process_battery(_bat);
 }
 
-int check_battery(Battery_t* _bat) {
+int check_battery(Battery_t* _bat)
+{
     int ret = _bat->status;
     uint32_t timestamp = HAL_GetTick();
     uint32_t dt = timestamp - _bat->last_timestamp;

@@ -3,7 +3,8 @@
 #include <math.h>
 
 void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _sat,
-		float _isat, float _dt) {
+		float _isat, float _dt)
+{
 	_pid->kp = _kp;
 	_pid->ki = _ki;
 	_pid->kd = _kd;
@@ -17,7 +18,8 @@ void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _sat,
 /*
  * dt in seconds [s]
  */
-float pid_update(Pid_t* _pid, float _e, float _dt) {
+float pid_update(Pid_t* _pid, float _e, float _dt)
+{
 	float cmd = 0;
 	float alpha = 0, deriv = 0;
 

@@ -2,8 +2,9 @@
 #include "spi.h"
 #include "main.h"
 
-#include <math.h>
+#include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #define DEBUG_MODULE "mpu9250"
 
@@ -19,7 +20,8 @@
 //static const float deg_to_rad = PI / 180.f;
 
 
-uint8_t mpu9250_init(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_init(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
     uint8_t i = 0, j = 0;
 
@@ -131,38 +133,30 @@ uint8_t mpu9250_init(Mpu9250_t* mpu9250) {
     ret = mpu9250_init_mag(mpu9250);
     if (ret) {
         mpu9250->isMagInit = 1;
-        char str[] = "mpu9250_init_mag OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_init_mag OK\r\n");
     }
     else {
         mpu9250->isMagInit = 0;
-        char str[] = "mpu9250_init_mag NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_init_mag NOK\r\n");
     }
 
     // Test data reading
     for (i=0;i<N_TRIES;i++) {
         ret = mpu9250_get_acc_gyro_mag_temp(mpu9250);
         if (ret) {
-            char str[] = "mpu9250_get_acc_gyro_mag_temp OK\r\n";
-            print_msg((uint8_t*)str, strlen(str));
-            char data[100] = { 0, };
-            sprintf(data, "ax=%3.3f,ay=%3.3f,az=%3.3f\r\n",
+            printf("mpu9250_get_acc_gyro_mag_temp OK\r\n");
+            printf("ax=%3.3f,ay=%3.3f,az=%3.3f\r\n",
                 (float)mpu9250->a_raw[0], (float)mpu9250->a_raw[1], (float)mpu9250->a_raw[2]);
-            print_msg((uint8_t*)data, strlen(data));
-            sprintf(data, "gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
+            printf("gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
                 (float)mpu9250->g_raw[0], (float)mpu9250->g_raw[1], (float)mpu9250->g_raw[2]);
-            print_msg((uint8_t*)data, strlen(data));
-            sprintf(data, "mx=%3.3f,my=%3.3f,mz=%3.3f\r\n",
+            printf("mx=%3.3f,my=%3.3f,mz=%3.3f\r\n",
                 (float)mpu9250->m_raw[0], (float)mpu9250->m_raw[1], (float)mpu9250->m_raw[2]);
-            print_msg((uint8_t*)data, strlen(data));
             HAL_Delay(100);
             break;
         }
     }
     if (i >= N_TRIES) {
-        char str[] = "mpu9250_get_acc_gyro_mag_temp NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_get_acc_gyro_mag_temp NOK\r\n");
         mpu9250->isImuInit = 0;
         return 0;
     }
@@ -176,7 +170,8 @@ uint8_t mpu9250_init(Mpu9250_t* mpu9250) {
     return 1;
 }
 
-uint8_t mpu9250_write_byte_mag(uint8_t _reg, uint8_t _data) {
+uint8_t mpu9250_write_byte_mag(uint8_t _reg, uint8_t _data)
+{
     uint8_t ret = 1;
 
     ret &= write_byte_spi1(I2C_SLV0_ADDR, AK8963_I2C_ADDRESS);
@@ -196,7 +191,6 @@ uint8_t mpu9250_write_byte_mag(uint8_t _reg, uint8_t _data) {
 
 uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data) {
     uint8_t ret = 1;
-    char str[20] = {0, };
 
     ret &= write_byte_spi1(I2C_SLV0_ADDR, AK8963_I2C_ADDRESS | 0x80);
     HAL_Delay(1);
@@ -208,8 +202,7 @@ uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data) {
     HAL_Delay(10);
     ret &= read_byte_spi1(EXT_SENS_DATA_00, _data);
     
-    sprintf(str, "data=0x%02X\r\n", *_data);
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mpu9250_read_byte_mag: data=0x%02X\r\n", *_data);
     
     if (ret)
         return 1;
@@ -217,7 +210,8 @@ uint8_t mpu9250_read_byte_mag(uint8_t _reg, uint8_t* _data) {
         return 0;
 }
 
-uint8_t mpu9250_init_mag(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_init_mag(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
     uint8_t i = 0;
     uint8_t asa = 0;
@@ -230,8 +224,7 @@ uint8_t mpu9250_init_mag(Mpu9250_t* mpu9250) {
 
         ret = mpu9250_check_mag_devId(mpu9250);
         if (ret) {
-            char str[] = "mpu9250_check_mag_devId OK\r\n";
-            print_msg((uint8_t*)str, strlen(str));
+            printf("mpu9250_check_mag_devId OK\r\n");
             break;
         }
     }
@@ -276,7 +269,8 @@ uint8_t mpu9250_init_mag(Mpu9250_t* mpu9250) {
     return 1;
 }
 
-uint8_t mpu9250_get_acc_gyro_mag_temp(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_get_acc_gyro_mag_temp(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
 
     if (!mpu9250->isImuInit)
@@ -350,7 +344,8 @@ uint8_t mpu9250_get_acc_gyro_mag_temp(Mpu9250_t* mpu9250) {
     return ret;
 }
 
-uint8_t mpu9250_read_data_register(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_read_data_register(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
 
     if (!mpu9250->isImuInit)
@@ -374,7 +369,8 @@ uint8_t mpu9250_read_data_register(Mpu9250_t* mpu9250) {
     return ret;
 }
 
-void mpu9250_extract_data_register(Mpu9250_t* mpu9250) {
+void mpu9250_extract_data_register(Mpu9250_t* mpu9250)
+{
     // Get accelerometer data in g
     mpu9250->a_rawi[0] = (((int16_t)mpu9250->register_data[0]) << 8) | mpu9250->register_data[1];
     mpu9250->a_rawi[1] = (((int16_t)mpu9250->register_data[2]) << 8) | mpu9250->register_data[3];
@@ -426,14 +422,16 @@ void mpu9250_extract_data_register(Mpu9250_t* mpu9250) {
     }
 }
 
-uint8_t mpu9250_close(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_close(Mpu9250_t* mpu9250)
+{
     mpu9250->isImuInit = 0;
     mpu9250->isMagInit = 0;
     return 1;
 }
 
 // From https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-uint8_t mpu9250_static_calibration(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_static_calibration(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
     float delta = 0.f;
     float delta2 = 0.f;
@@ -497,7 +495,8 @@ uint8_t mpu9250_static_calibration(Mpu9250_t* mpu9250) {
     }
 }
 
-void mpu9250_get_azimuth(Mpu9250_t* mpu9250) {
+void mpu9250_get_azimuth(Mpu9250_t* mpu9250)
+{
     if (!mpu9250->isMagInit) {
         mpu9250->mag_azimuth = -10000.0f;
         return;
@@ -521,7 +520,8 @@ void mpu9250_get_azimuth(Mpu9250_t* mpu9250) {
     }
 }
 
-void mpu9250_low_pass_filter(Mpu9250_t* mpu9250) {
+void mpu9250_low_pass_filter(Mpu9250_t* mpu9250)
+{
     float alpha = 0.f;
     uint8_t i = 0;
 
@@ -553,7 +553,8 @@ void mpu9250_low_pass_filter(Mpu9250_t* mpu9250) {
     }
 }
 
-void mpu9250_correct(Mpu9250_t* mpu9250) {
+void mpu9250_correct(Mpu9250_t* mpu9250)
+{
     // Correct only for bias
     mpu9250->a[0] = mpu9250->a_raw[0] - mpu9250->ba[0];
     mpu9250->a[1] = mpu9250->a_raw[1] - mpu9250->ba[1];
@@ -611,7 +612,8 @@ void mpu9250_correct(Mpu9250_t* mpu9250) {
     */
 }
 
-uint8_t mpu9250_set_cut_off_freq(Mpu9250_t* mpu9250, float* cut_off_freqs) {
+uint8_t mpu9250_set_cut_off_freq(Mpu9250_t* mpu9250, float* cut_off_freqs)
+{
     if (cut_off_freqs == NULL)
         return 0;
 
@@ -626,35 +628,38 @@ uint8_t mpu9250_set_cut_off_freq(Mpu9250_t* mpu9250, float* cut_off_freqs) {
     return 1;
 }
 
-void mpu9250_set_filtering(Mpu9250_t* mpu9250, uint8_t value) {
+void mpu9250_set_filtering(Mpu9250_t* mpu9250, uint8_t value)
+{
     mpu9250->isFiltered = value;
 }
 
-void mpu9250_set_corrected(Mpu9250_t* mpu9250, uint8_t value) {
+void mpu9250_set_corrected(Mpu9250_t* mpu9250, uint8_t value)
+{
     mpu9250->isCorrected = value;
 }
 
-void mpu9250_set_calib_time(Mpu9250_t* mpu9250, uint32_t time) {
+void mpu9250_set_calib_time(Mpu9250_t* mpu9250, uint32_t time)
+{
     mpu9250->calib_time = time;
 }
 
-uint8_t mpu9250_getIntStatus(void) {
+uint8_t mpu9250_getIntStatus(void)
+{
     uint8_t intStatus = 0;
     read_byte_spi1(INT_STATUS, &intStatus);
     return intStatus;
 }
 
-uint8_t mpu9250_check_devId(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_check_devId(Mpu9250_t* mpu9250)
+{
     uint8_t whoAmI = 0;
-    char str[20] = {0, };
 
     if (mpu9250 == 0)
         return 0;
 
     // Look for device ID
     read_byte_spi1(WHO_AM_I, &whoAmI);
-    sprintf(str, "whoAmI imu=0x%02X\r\n", whoAmI);
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mpu9250_check_devId: whoAmI imu=0x%02X\r\n", whoAmI);
     
     // Verify with the default value
     if (whoAmI == WHO_AM_I_ID || whoAmI == WHO_AM_I_ID2) {
@@ -665,22 +670,20 @@ uint8_t mpu9250_check_devId(Mpu9250_t* mpu9250) {
     }
 }
 
-uint8_t mpu9250_check_mag_devId(Mpu9250_t* mpu9250) {
+uint8_t mpu9250_check_mag_devId(Mpu9250_t* mpu9250)
+{
     uint8_t ret = 0;
     uint8_t whoAmI = 0;
-    char str[20] = {0, };
 
     if (mpu9250 == NULL) {
-        sprintf(str, "mpu9250 == 0\r\n");
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250 == 0\r\n");
         return 0;
     }
 
     // Look for device ID
     ret = mpu9250_read_byte_mag(WIA, &whoAmI);
         
-    sprintf(str, "whoAmI mag=0x%02X\r\n", whoAmI);
-    print_msg((uint8_t*)str, strlen(str));
+    printf("mpu9250_check_mag_devId: whoAmI mag=0x%02X\r\n", whoAmI);
 
     if (!ret)
         return 0;
@@ -694,7 +697,8 @@ uint8_t mpu9250_check_mag_devId(Mpu9250_t* mpu9250) {
     }
 }
 
-void mpu9250_set_smplrtDiv(Mpu9250_t* mpu9250, uint8_t _div) {
+void mpu9250_set_smplrtDiv(Mpu9250_t* mpu9250, uint8_t _div)
+{
     float freq = 0.;
     
     write_byte_spi1(SMPLRT_DIV, _div);
@@ -705,7 +709,8 @@ void mpu9250_set_smplrtDiv(Mpu9250_t* mpu9250, uint8_t _div) {
     mpu9250->dt = 1.f/freq; // [s]
 }
 
-void mpu9250_set_smplrtFreq(Mpu9250_t* mpu9250, uint16_t _freq) {
+void mpu9250_set_smplrtFreq(Mpu9250_t* mpu9250, uint16_t _freq)
+{
     uint8_t div = 0;
     float freq = 0;
 
@@ -722,7 +727,8 @@ void mpu9250_set_smplrtFreq(Mpu9250_t* mpu9250, uint16_t _freq) {
     mpu9250->dt = 1.f/freq; // [s]
 }
 
-void mpu9250_set_acc_g_per_lsb(Mpu9250_t* mpu9250, uint8_t range) {
+void mpu9250_set_acc_g_per_lsb(Mpu9250_t* mpu9250, uint8_t range)
+{
     uint8_t data = 0;
 
     read_byte_spi1(ACCEL_CONFIG, &data);
@@ -752,7 +758,8 @@ void mpu9250_set_acc_g_per_lsb(Mpu9250_t* mpu9250, uint8_t range) {
     write_byte_spi1(ACCEL_CONFIG, data);
 }
 
-void mpu9250_set_gyro_deg_per_lsb(Mpu9250_t* mpu9250, uint8_t range) {
+void mpu9250_set_gyro_deg_per_lsb(Mpu9250_t* mpu9250, uint8_t range)
+{
     uint8_t data = 0;
     read_byte_spi1(GYRO_CONFIG, &data);
     if (range == GYRO_FS_250) {
@@ -776,7 +783,7 @@ void mpu9250_set_gyro_deg_per_lsb(Mpu9250_t* mpu9250, uint8_t range) {
         mpu9250->g_gain = DEG_PER_LSB_2000;
     }
     else {
-        //fprintf(stderr, "mpu9250_set_gyro_deg_per_lsb: error\n");
+        //printf("mpu9250_set_gyro_deg_per_lsb: error\r\n");
     }
     write_byte_spi1(GYRO_CONFIG, data);
 }
@@ -788,10 +795,10 @@ void mpu9250_reset(Mpu9250_t* mpu9250) {
     HAL_Delay(50);
 }
 
-uint8_t write_and_check_register(uint8_t reg, uint8_t data) {
+uint8_t write_and_check_register(uint8_t reg, uint8_t data)
+{
     uint8_t ret = 0;
     uint8_t rx = 0;
-    char str[50] = {0, };
     ret = write_byte_spi1(reg, data);
     if (!ret)
         return 0;
@@ -802,8 +809,7 @@ uint8_t write_and_check_register(uint8_t reg, uint8_t data) {
     if (!ret)
         return 0;
 
-    sprintf(str, "reg=0x%02X: in=0x%02X, out=0x%02X\r\n", reg, data, rx);
-    print_msg((uint8_t*)str, strlen(str));
+    printf("reg=0x%02X: in=0x%02X, out=0x%02X\r\n", reg, data, rx);
 
     return 1;
 }

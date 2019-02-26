@@ -4,20 +4,13 @@
 #include "task.h"
 #include "queue.h"
 
-#ifdef __GNUC__
-/* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
- set to 'Yes') calls __io_putchar() */
-#define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
-
 UART_HandleTypeDef UartHandle2;
 
 static xQueueHandle uart2RxQueue = 0;
 static xQueueHandle uart2TxQueue = 0;
 
-int uart2_init(void) {
+int uart2_init(void)
+{
   __HAL_RCC_USART2_CLK_ENABLE();
 
   UartHandle2.Instance        = USART2;
@@ -43,6 +36,7 @@ int uart2_init(void) {
     return NOK;
   }
 
+  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
   HAL_NVIC_SetPriority(USART2_IRQ, 11, 0);
   //HAL_NVIC_EnableIRQ(USART2_IRQn);
   __HAL_UART_ENABLE_IT(&UartHandle2, UART_IT_RXNE);
@@ -50,7 +44,8 @@ int uart2_init(void) {
   return OK;
 }
 
-void uart2_deInit(void) {
+void uart2_deInit(void)
+{
   __HAL_RCC_USART2_FORCE_RESET();
   __HAL_RCC_USART2_RELEASE_RESET();
   HAL_GPIO_DeInit(USART2_GPIO_PORT, USART2_TX_PIN);
@@ -58,7 +53,8 @@ void uart2_deInit(void) {
   __HAL_UART_DISABLE_IT(&UartHandle2, UART_IT_RXNE);
 }
 
-int uart2_write(uint8_t* buf, uint32_t len) {
+int uart2_write(uint8_t* buf, uint32_t len)
+{
   uint8_t res = HAL_UART_Transmit(&UartHandle2, buf, len, USART2_TIMEOUT);
   if (res == HAL_OK)
     return OK;
@@ -66,7 +62,8 @@ int uart2_write(uint8_t* buf, uint32_t len) {
     return NOK;
 }
 
-int uart2_read(uint8_t* buf, uint32_t len) {
+int uart2_read(uint8_t* buf, uint32_t len)
+{
   uint8_t res = HAL_UART_Receive(&UartHandle2, buf, len, USART2_TIMEOUT);
   if (res == HAL_OK)
     return OK;
@@ -74,7 +71,8 @@ int uart2_read(uint8_t* buf, uint32_t len) {
     return NOK;
 }
 
-void uart2_send_data(uint8_t* data, uint32_t size) {
+void uart2_send_data(uint8_t* data, uint32_t size)
+{
   uint32_t i = 0;
 
   for (i=0;i<size;i++) {
@@ -83,7 +81,8 @@ void uart2_send_data(uint8_t* data, uint32_t size) {
    }
 }
 
-uint32_t uart2_enque_data(uint8_t* data, uint32_t size) {
+uint32_t uart2_enque_data(uint8_t* data, uint32_t size)
+{
   uint32_t i = 0;
   for (i=0;i<size;i++) {
     if (xQueueSend(uart2TxQueue, data+i, 10) == errQUEUE_FULL) {
@@ -93,7 +92,8 @@ uint32_t uart2_enque_data(uint8_t* data, uint32_t size) {
   return 0;
 }
 
-void uart2_task(void* _params) {
+void uart2_task(void* _params)
+{
   uint8_t data = 0;
   uint8_t rxIdx = 0;
   uint8_t rxBuffer[UART2_QUEUE_SIZE] = {0, };
@@ -124,27 +124,12 @@ void uart2_task(void* _params) {
   vTaskDelete(NULL);
 }
 
-void __attribute__((used)) USART2_IRQHandler(void) {
+void __attribute__((used)) USART2_IRQHandler(void)
+{
   uint8_t rxByte = 0;
-  //HAL_UART_IRQHandler(&UartHandle2);
+  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
   if (__HAL_UART_GET_FLAG(&UartHandle2, UART_FLAG_RXNE)) {
-    rxByte = (uint8_t)(UartHandle2.Instance->DR & (uint8_t)0x00FF);
-    __HAL_UART_CLEAR_FLAG(&UartHandle2, UART_FLAG_RXNE);
-    portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+    rxByte = (uint8_t)(USART2->DR & (uint8_t)0x00FF);
     xQueueSendFromISR(uart2RxQueue, &rxByte, &xHigherPriorityTaskWoken);
   }
-}
-
-/**
- * @brief Retargets the C library printf function to the USART.
- * @param None
- * @retval None
- */
-PUTCHAR_PROTOTYPE
-{
- /* Place your implementation of fputc here */
- /* e.g. write a character to the USART2 and Loop until the end of transmission */
- HAL_UART_Transmit(&UartHandle2, (uint8_t *)&ch, 1, 0xFFFF);
-
-return ch;
 }

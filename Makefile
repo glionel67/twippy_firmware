@@ -13,10 +13,12 @@ BIN_DIR = bin
 BUILD_DIR = build
 
 ### File locations ###
-# HAL and CMSIS
+# HAL
 HAL_DIR = hal
 HAL_INC = $(HAL_DIR)/inc
 HAL_SRC = $(HAL_DIR)/src
+
+# CMSIS
 CMSIS_DIR = CMSIS
 CMSIS_INC = $(CMSIS_DIR)/inc
 CMSIS_SRC = $(CMSIS_DIR)/src
@@ -114,6 +116,7 @@ PROJECT_SRCS+= mavlink_uart.c
 #PROJECT_SRCS+= battery.c
 #PROJECT_SRCS+= com.c
 #PROJECT_SRCS+= led.c
+PROJECT_SRCS+= nmea.c
 PROJECT_SRCS+= gps.c
 
 SRCS = $(PROJECT_SRCS)

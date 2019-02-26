@@ -9,7 +9,8 @@ TIM_HandleTypeDef TimHandle6;
 
 static uint64_t usTime = 0;
 
-int init_us_timer(void) {
+int init_us_timer(void)
+{
     int ret = 0;
 
     RCC_ClkInitTypeDef clkconfig;
@@ -42,7 +43,7 @@ int init_us_timer(void) {
 
     ret = HAL_TIM_Base_Init(&TimHandle6);
     if (ret != HAL_OK) {
-        return -1;
+        return NOK;
     }
 
     // Set timer IRQ priority
@@ -54,39 +55,43 @@ int init_us_timer(void) {
     // Start the timer in interrupt mode
     ret = HAL_TIM_Base_Start_IT(&TimHandle6);
     if (ret != HAL_OK) {
-        return -1;
+        return NOK;
     }
 
     usTime = 0;
     
-    return 0;
+    return OK;
 }
 
-void delay_us(uint32_t us) {
+void delay_us(uint32_t us)
+{
   uint64_t start = get_us_time();
   while ((get_us_time() - start) <= us);
 }
 
-uint64_t get_us_time(void) {
+uint64_t get_us_time(void)
+{
   return (usTime + TIM6->CNT);
 }
 
-void reset_us_timer(void) {
+void reset_us_timer(void)
+{
   TIM6->CNT = 0;
   usTime = 0;
 }
 
-void suspend_us_timer(void) {
+void suspend_us_timer(void)
+{
   __HAL_TIM_DISABLE_IT(&TimHandle6, TIM_IT_UPDATE);
 }
 
-void resume_us_timer(void) {
+void resume_us_timer(void)
+{
   __HAL_TIM_ENABLE_IT(&TimHandle6, TIM_IT_UPDATE);
 }
 
-void test_us_timer(void) {
-  char data[60] = { 0, };
-
+void test_us_timer(void)
+{
   uint64_t start = 0, stop = 0;
   uint32_t dt = 0;
 
@@ -94,11 +99,11 @@ void test_us_timer(void) {
   HAL_Delay(40);
   stop = get_us_time();
   dt = (stop - start) / 1000;
-  sprintf(data, "40ms <-> cnt=%ld, start=%ld, stop=%ld\r\n", dt, (uint32_t)start, (uint32_t)stop);
-  print_msg((uint8_t*)data, 60);
+  printf("40ms <-> cnt=%ld, start=%ld, stop=%ld\r\n", dt, (uint32_t)start, (uint32_t)stop);
 }
 
-void __attribute__((used)) TIM6_DAC_IRQHandler(void) {
+void __attribute__((used)) TIM6_DAC_IRQHandler(void)
+{
   __HAL_TIM_CLEAR_IT(&TimHandle6, TIM_IT_UPDATE);
   usTime += 65535;
   //__sync_fetch_and_add(&usTime, 65535);

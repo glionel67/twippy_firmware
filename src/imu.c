@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -19,65 +20,56 @@ static xQueueHandle imu9Queue = 0;
 static xSemaphoreHandle imuDataReady;
 static Mpu9250_t mpu9250;
 
-uint8_t init_imu(void) {
+uint8_t init_imu(void)
+{
     uint8_t ret = 0; 
 
     ret = mpu9250_init(&mpu9250);
     if (!ret) {
-        char str[] = "mpu9250_init NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_init NOK\r\n");
         return 0;
     }
     else {
-        char str[] = "mpu9250_init OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_init OK\r\n");
     }
 
     // Augment SPI baudrate to access IMU data register
     ret = spi1_set_speed(SPI_BAUDRATE_11MHZ); //);
     if (!ret) {
-        char str[] = "spi1_set_speed NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("spi1_set_speed NOK\r\n");
         return 0;
     }
     else {
-        char str[] = "spi1_set_speed OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("spi1_set_speed OK\r\n");
     }
 
     // Create imu queue
     imu9Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu9_t));
     if (imu9Queue == 0) {
-        char str[] = "imu9Queue creation NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imu9Queue creation NOK\r\n");
         return 0;
     }
     else {
-        char str[] = "imu9Queue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imu9Queue creation OK\r\n");
     }
 
     imu6Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu6_t));
     if (imu6Queue == 0) {
-        char str[] = "imu6Queue creation NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imu6Queue creation NOK\r\n");
         return 0;
     }
     else {
-        char str[] = "imu6Queue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imu6Queue creation OK\r\n");
     }
 
     // Create imu semaphore for interrupt synchronisation
     imuDataReady = xSemaphoreCreateBinary();
     if (imuDataReady == NULL) {
-        char str[] = "imuDataReady semaphore creation NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imuDataReady semaphore creation NOK\r\n");
         return 0;
     }
     else {
-        char str[] = "imuDataReady semaphore creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("imuDataReady semaphore creation OK\r\n");
     }
 
     // Activate IMU INT PIN
@@ -87,30 +79,28 @@ uint8_t init_imu(void) {
     return 1;
 }
 
-uint8_t test_imu(void) {
+uint8_t test_imu(void)
+{
     uint8_t ret = 0;
     uint8_t pass = 0;
 
     ret = mpu9250_check_devId(&mpu9250);
     if (!ret) {
-        char str[] = "mpu9250_check_devId error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_check_devId error\r\n");
     }
     else
         pass++;
 
     ret = mpu9250_check_mag_devId(&mpu9250);
     if (!ret) {
-        char str[] = "mpu9250_check_mag_devId error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_check_mag_devId error\r\n");
     }
     else
         pass++;
 
     ret = mpu9250_get_acc_gyro_mag_temp(&mpu9250);
     if (!ret) {
-        char str[] = "mpu9250_get_acc_gyro_mag_temp error\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("mpu9250_get_acc_gyro_mag_temp error\r\n");
     }
     else
         pass++;
@@ -118,11 +108,11 @@ uint8_t test_imu(void) {
     return pass;
 }
 
-void imu_test_task(void* _params) {
+void imu_test_task(void* _params)
+{
     uint8_t ret = 0;
     uint8_t i = 0;
     Imu9_t imu9;
-    char data[100] = { 0, };
 
     memset((void*)&imu9, 0, sizeof(Imu9_t));
 
@@ -151,7 +141,7 @@ void imu_test_task(void* _params) {
 
                 xQueueOverwrite(imu9Queue, &imu9);
 
-                sprintf(data, "t=%3.3f,ax=%3.3f,ay=%3.3f,az=%3.3f,gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
+                printf("t=%3.3f,ax=%3.3f,ay=%3.3f,az=%3.3f,gx=%3.3f,gy=%3.3f,gz=%3.3f\r\n",
                     (float)imu9.timestamp, 
                     (float)imu9.a[0], (float)imu9.a[1], (float)imu9.a[2],
                     (float)imu9.g[0], (float)imu9.g[1], (float)imu9.g[2]);
@@ -170,7 +160,8 @@ void imu_test_task(void* _params) {
     vTaskDelete(NULL);
 }
 
-void imu_task(void* _params) {
+void imu_task(void* _params)
+{
     uint8_t ret = 0;
     uint8_t i = 0;
     Imu9_t imu9;
@@ -232,19 +223,23 @@ void imu_task(void* _params) {
     vTaskDelete(NULL);
 }
 
-uint8_t imu_read_imu9_data(Imu9_t* imu, TickType_t xTicksToWait) {
+uint8_t imu_read_imu9_data(Imu9_t* imu, TickType_t xTicksToWait)
+{
     return (pdTRUE == xQueueReceive(imu9Queue, imu, xTicksToWait));
 }
 
-uint8_t imu_read_imu6_data(Imu6_t* imu, TickType_t xTicksToWait) {
+uint8_t imu_read_imu6_data(Imu6_t* imu, TickType_t xTicksToWait)
+{
     return (pdTRUE == xQueueReceive(imu6Queue, imu, xTicksToWait));
 }
 
-uint8_t is_imu_calibrated(void) {
+uint8_t is_imu_calibrated(void)
+{
     return mpu9250.isCalibrated;
 }
 
-void get_imu9_data(Imu9_t* imu) {
+void get_imu9_data(Imu9_t* imu)
+{
     uint8_t i = 0;
     for (i=0;i<N_AXES;i++) {
         imu->a[i] = mpu9250.a[i];
@@ -253,7 +248,8 @@ void get_imu9_data(Imu9_t* imu) {
     }
 }
 
- void get_imu6_data(Imu6_t* imu) {
+ void get_imu6_data(Imu6_t* imu)
+ {
     uint8_t i = 0;
     for (i=0;i<N_AXES;i++) {
         imu->a[i] = mpu9250.a[i];
@@ -261,12 +257,12 @@ void get_imu9_data(Imu9_t* imu) {
     }
 }
 
-uint8_t imu_calibrate_gyro_bias(void) {
+uint8_t imu_calibrate_gyro_bias(void)
+{
     if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
             (const char*)"imu_calibrate_gyro_bias_task",
             IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
-        char msg[] = "Failed to create imu_calibrate_gyro_bias_task\r\n";
-        print_msg((uint8_t*)msg, strlen(msg));
+        printf("Failed to create imu_calibrate_gyro_bias_task\r\n");
         return 0;
     }
     if (mpu9250.isCalibrated)
@@ -275,7 +271,8 @@ uint8_t imu_calibrate_gyro_bias(void) {
         return 0;
 }
 
-void imu_calibrate_gyro_bias_task(void* _params) {
+void imu_calibrate_gyro_bias_task(void* _params)
+{
     uint8_t i = 0;
     Imu6_t imu6;
     float nSamples = 1000;
@@ -284,14 +281,12 @@ void imu_calibrate_gyro_bias_task(void* _params) {
     float sumSquares[N_AXES] = { 0.f, };
     float mean[N_AXES] =  {0.f, };
     float variance[N_AXES] =  {0.f, };
-    char data[100] = { 0, };
 
     memset((void*)&imu6, 0, sizeof(Imu6_t));
 
     if (_params != 0) { }
 
-    sprintf(data, "Starting gyro bias calibration...\r\n");
-    print_msg((uint8_t*)data, strlen(data));
+    printf("Starting gyro bias calibration...\r\n");
 
     while (count < nSamples) {
         if (pdTRUE == xQueuePeek(imu6Queue, &imu6, pdMS_TO_TICKS(100))) {
@@ -302,8 +297,7 @@ void imu_calibrate_gyro_bias_task(void* _params) {
             count += 1.f;
         }
         else {
-            sprintf(data, "Timeout while waiting for gyro measurement, aborting gyro bias calib!\r\n");
-            print_msg((uint8_t*)data, strlen(data));
+            printf("Timeout while waiting for gyro measurement, aborting gyro bias calib!\r\n");
         }
     }
 
@@ -313,11 +307,9 @@ void imu_calibrate_gyro_bias_task(void* _params) {
         mpu9250.sg[i] = sqrtf(mpu9250.vg[i]);
     }
 
-    sprintf(data, "Calibration results:\r\n");
-    print_msg((uint8_t*)data, strlen(data));
-    sprintf(data, "bgx=%3.3f,bgy=%3.3f,bgz=%3.3f,vgx=%3.3f,vgy=%3.3f,vgz=%3.3f\r\n",
+    printf("Calibration results:\r\n");
+    printf("bgx=%3.3f,bgy=%3.3f,bgz=%3.3f,vgx=%3.3f,vgy=%3.3f,vgz=%3.3f\r\n",
         mean[0], mean[1], mean[2], variance[0], variance[1], variance[2]);
-    print_msg((uint8_t*)data, strlen(data));
 
     mpu9250.isCalibrated = 1;
 
@@ -327,8 +319,6 @@ void imu_calibrate_gyro_bias_task(void* _params) {
 void __attribute__((used)) EXTI2_IRQHandler(void) {
     if (__HAL_GPIO_EXTI_GET_IT(IMU_INT_PIN) != RESET) {
         __HAL_GPIO_EXTI_CLEAR_IT(IMU_INT_PIN);
-        //char data[] = "INT\r\n";
-        //print_msg((uint8_t*)data, strlen(data));
         portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(imuDataReady, &xHigherPriorityTaskWoken);
         portEND_SWITCHING_ISR(xHigherPriorityTaskWoken);

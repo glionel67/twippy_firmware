@@ -1,9 +1,6 @@
 #pragma once
 
 #include "stm32f4xx_hal.h"
-//#include <stdio.h>
-
-//#define N_MOTORS          2
 
 /******************************************************************************/
 /* Definition for USART1  */
@@ -259,4 +256,3 @@
 /* Function prototypes */
 /******************************************************************************/
 void Error_Handler(void);
-void print_msg(uint8_t* _msg, uint8_t _len);

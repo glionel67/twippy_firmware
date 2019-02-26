@@ -69,8 +69,7 @@ int mavlinkStart(void)
             MAVLINK_READ_TASK_STACK_SIZE, NULL, MAVLINK_READ_TASK_PRIORITY, 
             &readTaskHandle))) {
         // TODO: ERROR
-        char msg[] = "mavlinkStart: failed to create mavlinkReadTask\n";
-        print_msg((uint8_t*)msg, strlen(msg));
+        printf("mavlinkStart: failed to create mavlinkReadTask\n");
         return 0;
     }
 
@@ -79,8 +78,7 @@ int mavlinkStart(void)
             MAVLINK_WRITE_TASK_STACK_SIZE, NULL, MAVLINK_WRITE_TASK_PRIORITY, 
             &writeTaskHandle))) {
         // TODO: ERROR
-        char msg[] = "mavlinkStart: failed to create mavlinkWriteTask\n";
-        print_msg((uint8_t*)msg, strlen(msg));
+        printf("mavlinkStart: failed to create mavlinkWriteTask\n");
         return 0;
     }
 
@@ -131,8 +129,7 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
 
         // message length error
         if (messageLength > MAVLINK_MAX_PACKET_LEN) {
-            char msg[] = "mavlinkReadMessage: FATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\n";
-            print_msg((uint8_t*)msg, strlen(msg));
+            printf("mavlinkReadMessage: FATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\r\n");
         }
         else { // print out the buffer
             // unsigned int i = 0;
@@ -260,8 +257,7 @@ void mavlinkReadMessages(void)
 
                 default:
                 {
-                    char msg[] = "mavlinkReadMessage: handle message id not handled\n";
-                    print_msg((uint8_t*)msg, strlen(msg));
+                    printf("mavlinkReadMessage: handle message id not handled\n");
                     // printf("Warning, did not handle message id %i\n",message.msgid);
                     break;
                 }
@@ -329,8 +325,7 @@ void mavlinkWriteTask(void* _params)
     mavlinkMsgQueue = xQueueCreate(MAVLINK_QUEUE_SIZE, sizeof(mavlink_message_t));
     if (mavlinkMsgQueue == 0) {
         // TODO: handle error
-        char msg[] = "mavlinkWriteTask: failed to create mavlinkMsgQueue\n";
-        print_msg((uint8_t*)msg, strlen(msg));
+        printf("mavlinkWriteTask: failed to create mavlinkMsgQueue\r\n");
         vTaskDelete(NULL);
     }
 
@@ -347,8 +342,7 @@ void mavlinkWriteTask(void* _params)
             res = mavlinkWriteMessage(&msg);
             if (res == NOK) {
                 // TODO: handle error
-                char msg[] = "mavlinkWriteTask: failed to write message\n";
-                print_msg((uint8_t*)msg, strlen(msg));
+                printf("mavlinkWriteTask: failed to write message\r\n");
             }
         }
         

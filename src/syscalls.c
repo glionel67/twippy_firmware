@@ -77,10 +77,12 @@ int _write(int file, char *ptr, int len)
    }
 
    // arbitrary timeout 1000
-   int res = uart2_write((uint8_t*)ptr, len);
+   //int res = uart2_write((uint8_t*)ptr, len);
+   int res = UART2_WRITE((uint8_t*)ptr, len);
 
    // return # of bytes written - as best we can tell
-   return (res == OK ? len : 0);
+   //return (res == OK ? len : 0);
+   return (res == HAL_OK ? len : 0);
 }
 
 __attribute__ ((used))

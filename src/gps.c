@@ -9,8 +9,10 @@
 #include "gps.h"
 #include "config.h"
 #include "uart1.h"
-#include "uart2.h"
+#include "uart3.h"
+#include "nmea.h"
 
+// C lib
 #include <stdio.h>
 #include <string.h>
 
@@ -65,28 +67,26 @@ int gps_stop(void)
 
 void gps_task(void* _params)
 {
-    //TickType_t ticks = 0;
     int res = 0;
     uint8_t byte = 0;
-    uint32_t lengthSend = 0;
-
-    char msg[] = "Hello!\r\n";
+    bool trameParsed = false;
 
     if (_params != 0) { }
 
     while (isRunning) {
-        // TODO
-        //ticks = xTaskGetTickCount();
-        //printf("gps_task: ticks=%ld\r\n", ticks);
-        //do { res = uart1_deque_byte(&byte, 10); } while (res == OK);
-        res = uart1_deque_byte(&byte, 10);
-        if (res == OK) {
-            printf("gps_task: received c=0x%X from uart1\r\n", byte);
-        }
-        lengthSend = uart1_enque_data((uint8_t*)msg, strlen(msg));
-        if (lengthSend == strlen(msg)) {
-            //printf("gps_task: enque %ld data on uart1\r\n", lengthSend);
-        }
+        do {
+            //res = uart1_deque_byte(&byte, 1);
+            res = uart3_deque_byte(&byte, 1);
+            if (res == OK) {
+                //printf("gps_task: rcv c=0x%X from uart queue\r\n", byte);
+                // Parse char
+                trameParsed = nmeaParseChar((char)byte);
+                if (trameParsed) {
+                    printf("gps_task: trameParsed\r\n");
+                }
+            }
+        } while (res == OK);
+
         vTaskDelay(10/portTICK_RATE_MS); // 10 Hz
     }
 

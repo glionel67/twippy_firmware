@@ -35,29 +35,26 @@ static uint32_t dt = 0;
 static xQueueHandle motorMeasuredSpeedQueue = 0;
 
 
-int init_encoders(void) {
+int init_encoders(void) 
+{
 	int ret = 0;
 	/*
 	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
 	if (encoderQueue == 0) {
-		char str[] = "init_encoders: encoderQueue creation NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_encoders: encoderQueue creation NOK\r\n");
 		return -1;
 	}
     else {
-        char str[] = "init_encoders: encoderQueue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("init_encoders: encoderQueue creation OK\r\n");
     }
 	*/
 	motorMeasuredSpeedQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(MotorMeasuredSpeed_t));
 	if (motorMeasuredSpeedQueue == 0) {
-		char str[] = "init_encoders: motorMeasuredSpeedQueue creation NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_encoders: motorMeasuredSpeedQueue creation NOK\r\n");
 		return -1;
 	}
     else {
-        char str[] = "init_encoders: motorMeasuredSpeedQueue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("init_encoders: motorMeasuredSpeedQueue creation OK\r\n");
     }
 
 	// Init. encoders timers
@@ -125,15 +122,18 @@ int init_encoders(void) {
 	return 0;
 }
 
-uint32_t enc1_get_direction(void) {
+uint32_t enc1_get_direction(void)
+{
 	return !__HAL_TIM_IS_TIM_COUNTING_DOWN(&TimHandleEnc1);
 }
 
-uint32_t enc2_get_direction(void) {
+uint32_t enc2_get_direction(void)
+{
 	return !__HAL_TIM_IS_TIM_COUNTING_DOWN(&TimHandleEnc2);
 }
 
-int32_t enc1_get_counts(void) {
+int32_t enc1_get_counts(void)
+{
 	enc1_now = TIM_ENC1->CNT;
 	TIM_ENC1->CNT = enc1_old;
 	enc1_diff = (int32_t)(enc1_now - enc1_old);
@@ -141,7 +141,8 @@ int32_t enc1_get_counts(void) {
 	return enc1_sum;
 }
 
-int32_t enc2_get_counts(void) {
+int32_t enc2_get_counts(void)
+{
 	enc2_now = TIM_ENC2->CNT;
 	TIM_ENC2->CNT = enc2_old;
 	enc2_diff = (int32_t)(enc2_now - enc2_old);
@@ -149,7 +150,8 @@ int32_t enc2_get_counts(void) {
 	return enc2_sum;
 }
 
-int32_t enc1_get_rpm(void) {
+int32_t enc1_get_rpm(void)
+{
 	enc1_now = TIM_ENC1->CNT;
 	TIM_ENC1->CNT = enc1_old;
 	t1_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
@@ -164,7 +166,8 @@ int32_t enc1_get_rpm(void) {
     return enc1_rpm;
 }
 
-int32_t enc2_get_rpm(void) {
+int32_t enc2_get_rpm(void)
+{
 	enc2_now = TIM_ENC2->CNT;
 	TIM_ENC2->CNT = enc2_old;
 	t2_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
@@ -179,7 +182,8 @@ int32_t enc2_get_rpm(void) {
     return enc2_rpm;
 }
 
-void enc1_get_cts_and_rpm(int32_t* cts, int32_t* rpm) {
+void enc1_get_cts_and_rpm(int32_t* cts, int32_t* rpm)
+{
 	enc1_now = TIM_ENC1->CNT;
 	TIM_ENC1->CNT = enc1_old;
 	t1_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
@@ -193,7 +197,8 @@ void enc1_get_cts_and_rpm(int32_t* cts, int32_t* rpm) {
     (*rpm) = num / den;
 }
 
-void enc2_get_cts_and_rpm(int32_t* cts, int32_t* rpm) {
+void enc2_get_cts_and_rpm(int32_t* cts, int32_t* rpm)
+{
 	enc2_now = TIM_ENC2->CNT;
 	TIM_ENC2->CNT = enc2_old;
 	t2_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
@@ -207,7 +212,9 @@ void enc2_get_cts_and_rpm(int32_t* cts, int32_t* rpm) {
     (*rpm) = num / den;
 }
 
-void enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, int32_t* cts2, int32_t* rpm2) {
+void enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, 
+		int32_t* cts2, int32_t* rpm2)
+{
 	enc1_now = TIM_ENC1->CNT;
 	enc2_now = TIM_ENC2->CNT;
 	TIM_ENC1->CNT = enc1_old;
@@ -231,10 +238,10 @@ void enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, int32_t* cts2, int32_t* r
     (*rpm2) = (int16_t)enc2_rpm;
 }
 
-void enc_test_task(void* _params) {
+void enc_test_task(void* _params)
+{
 	uint32_t ticks = 0;
 	int32_t enc1 = 0, enc2 = 0;
-	char data[50] = { 0, };
 
 	if (_params != 0) { }
 
@@ -242,16 +249,15 @@ void enc_test_task(void* _params) {
 		enc1 = enc1_get_counts();
 		enc2 = enc2_get_counts();
 		ticks = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
-		sprintf(data, "%lu,enc1=%ld,enc2=%ld\r\n", ticks, enc1, enc2);
-		print_msg((uint8_t*)data, strlen(data));
+		printf("%lu,enc1=%ld,enc2=%ld\r\n", ticks, enc1, enc2);
 		vTaskDelay(500/portTICK_RATE_MS);
 	}
 
 	vTaskDelete(NULL);
 }
 
-void encoder_task(void* _params) {
-	char data[50] = { 0, };
+void encoder_task(void* _params)
+{
 	uint8_t count = 0;
 	//Encoders_t encoders;
 	MotorMeasuredSpeed_t motorMeasuredSpeeds;
@@ -306,10 +312,9 @@ void encoder_task(void* _params) {
 		//if (count >= ENCODER_MEASUREMENT_PERIOD_MS/2) {
 		if (count >= 1) {
 			count = 0;
-			sprintf(data, "%3.3f,%3.3f\r\n",
-				motorMeasuredSpeeds.speed[MOTOR1],
-				motorMeasuredSpeeds.speed[MOTOR2]);
-			//print_msg((uint8_t*)data, strlen(data));
+			// printf("%3.3f,%3.3f\r\n",
+			// 	motorMeasuredSpeeds.speed[MOTOR1],
+			// 	motorMeasuredSpeeds.speed[MOTOR2]);
 		}
 
 		vTaskDelayUntil(&xLastWakeTime, xPeriod);

@@ -10,7 +10,8 @@ static TIM_OC_InitTypeDef sConfigBuzzer;
 static const uint32_t timerClockFreq = 180000000; // 180MHz
 static uint32_t buzzerPeriod = 0; // (180MHz/10kHz) - 1
 
-int init_buzzer(void) {
+int init_buzzer(void)
+{
     int ret = 0;
 
     buzzerPeriod = timerClockFreq / 10000 - 1;
@@ -52,7 +53,8 @@ int init_buzzer(void) {
     return 0;
 }
 
-int set_buzzer_freq(uint32_t _freq) {
+int set_buzzer_freq(uint32_t _freq)
+{
     buzzerPeriod = ((timerClockFreq/_freq)-1);
 
     TimHandleBuzzer.Instance = TIM_BUZZER;
@@ -71,7 +73,8 @@ int set_buzzer_freq(uint32_t _freq) {
 /*
  * _dc \in [0,100] %
  */
-int set_buzzer_dutyCycle(uint16_t _dc) {
+int set_buzzer_dutyCycle(uint16_t _dc)
+{
     int ret = 0;
     _dc = (_dc*buzzerPeriod)/100;
 
@@ -89,16 +92,19 @@ int set_buzzer_dutyCycle(uint16_t _dc) {
     return 0;
 }
 
-int turn_on_buzzer(void) {
+int turn_on_buzzer(void)
+{
     return set_buzzer_dutyCycle(50);
 }
 
-int turn_off_buzzer(void) {
+int turn_off_buzzer(void)
+{
     return set_buzzer_dutyCycle(0);
     //return set_buzzer_dutyCycle(100);
 }
 
-void test_buzzer(void) {
+void test_buzzer(void)
+{
     uint32_t freqs[] = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
             2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000 }; // n=19
     for (int i=0;i<15;i++) {
@@ -108,7 +114,8 @@ void test_buzzer(void) {
     turn_off_buzzer();
 }
 
-void buzzer_task(void* _params) {
+void buzzer_task(void* _params)
+{
 
     if (_params != 0) { }
 

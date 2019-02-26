@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 
@@ -21,20 +22,19 @@ static Motor_t motors;
 static xQueueHandle motorQueue = 0;
 static float inputVoltage = 0.f;
 
-int init_motors(void) {
+int init_motors(void)
+{
 	int ret = 0;
 
 	memset((void*)&motors, 0, sizeof(Motor_t));
 
 	motorQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motor_t));
 	if (motorQueue == 0) {
-		char str[] = "init_motors: motorQueue creation NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_motors: motorQueue creation NOK\r\n");
 		return -1;
 	}
     else {
-        char str[] = "init_motors: motorQueue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
+        printf("init_motors: motorQueue creation OK\r\n");
     }
 
 	// PWM motors
@@ -47,8 +47,7 @@ int init_motors(void) {
 	TimHandleMotors.Init.RepetitionCounter = 0;
 	ret = HAL_TIM_PWM_Init(&TimHandleMotors);
 	if (ret != HAL_OK) {
-		char str[] = "init_motors: HAL_TIM_PWM_Init NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_motors: HAL_TIM_PWM_Init NOK\r\n");
 		return -1;
 	}
 
@@ -62,63 +61,60 @@ int init_motors(void) {
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "init_motors: HAL_TIM_PWM_ConfigChannel NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_motors: HAL_TIM_PWM_ConfigChannel NOK\r\n");
 		return -1;
 	}
 
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors,
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "init_motors: HAL_TIM_PWM_Start NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("init_motors: HAL_TIM_PWM_Start NOK\r\n");
 		return -1;
 	}
 
 	return 0;
 }
 
-int set_pwm1(uint16_t _pwm) {
+int set_pwm1(uint16_t _pwm)
+{
 	int ret = 0;
 	motors.motors[MOTOR1].pwm = _pwm;
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "set_pwm1: HAL_TIM_PWM_ConfigChannel NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("set_pwm1: HAL_TIM_PWM_ConfigChannel NOK\r\n");
 		return -1;
 	}
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR1_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "set_pwm1: HAL_TIM_PWM_Start NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("set_pwm1: HAL_TIM_PWM_Start NOK\r\n");
 		return -1;
 	}
 	return 0;
 }
 
-int set_pwm2(uint16_t _pwm) {
+int set_pwm2(uint16_t _pwm)
+{
 	int ret = 0;
 	motors.motors[MOTOR2].pwm = _pwm;
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "set_pwm2: HAL_TIM_PWM_ConfigChannel NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("set_pwm2: HAL_TIM_PWM_ConfigChannel NOK\r\n");
 		return -1;
 	}
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
-		char str[] = "set_pwm2: HAL_TIM_PWM_Start NOK\r\n";
-		print_msg((uint8_t*)str, strlen(str));
+		printf("set_pwm2: HAL_TIM_PWM_Start NOK\r\n");
 		return -1;
 	}
 	return 0;
 }
 
-int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
+int set_pwm12(uint16_t _pwm1, uint16_t _pwm2)
+{
 	int ret = 0;
 	motors.motors[MOTOR1].pwm = _pwm1;
 	sConfigMotors.Pulse = _pwm1;
@@ -148,19 +144,22 @@ int set_pwm12(uint16_t _pwm1, uint16_t _pwm2) {
 // pulse_length = ((TIM_Period + 1) * DutyCycle) / 100 - 1
 // where DutyCycle is in percent, between 0 and 100% 
 // 25% duty cycle:     pulse_length = ((8399 + 1) * 25) / 100 - 1 = 2099
-int set_dc_pwm1(float _dc) {
+int set_dc_pwm1(float _dc)
+{
 	motors.motors[MOTOR1].dutyCycle = _dc;
 	motors.motors[MOTOR1].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
 	return set_pwm1(motors.motors[MOTOR1].pwm);
 }
 
-int set_dc_pwm2(float _dc) {
+int set_dc_pwm2(float _dc)
+{
 	motors.motors[MOTOR2].dutyCycle = _dc;
 	motors.motors[MOTOR2].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
 	return set_pwm2(motors.motors[MOTOR2].pwm);
 }
 
-int set_dc_pwm12(float _dc1, float _dc2) {
+int set_dc_pwm12(float _dc1, float _dc2)
+{
 	if (set_dc_pwm1(_dc1) != 0)
 		return -1;
 	if (set_dc_pwm2(_dc2) != 0)
@@ -168,7 +167,8 @@ int set_dc_pwm12(float _dc1, float _dc2) {
 	return 0;
 }
 
-int set_m1_speed(int32_t _speed) {
+int set_m1_speed(int32_t _speed)
+{
 	int ret = 0;
 
 	// 1. Set motor direction
@@ -207,7 +207,8 @@ int set_m1_speed(int32_t _speed) {
 	return 0;
 }
 
-int set_m2_speed(int32_t _speed) {
+int set_m2_speed(int32_t _speed)
+{
 	int ret = 0;
 
 	// 1. Set motor direction
@@ -246,7 +247,8 @@ int set_m2_speed(int32_t _speed) {
 	return 0;
 }
 
-int set_m1_brake(int32_t _brake) {
+int set_m1_brake(int32_t _brake)
+{
 	int ret = 0;
 
 	// Normalize brake
@@ -272,7 +274,8 @@ int set_m1_brake(int32_t _brake) {
 	return 0;
 }
 
-int set_m2_brake(int32_t _brake) {
+int set_m2_brake(int32_t _brake)
+{
 	int ret = 0;
 
 	// Normalize brake
@@ -298,22 +301,26 @@ int set_m2_brake(int32_t _brake) {
 	return 0;
 }
 
-uint8_t get_m1_fault(void) {
+uint8_t get_m1_fault(void)
+{
 	motors.motors[MOTOR1].fault = !HAL_GPIO_ReadPin(MOTORS_GPIO, M1_EN_PIN); // 1 = fault
 	return motors.motors[MOTOR1].fault;
 }
 
-uint8_t get_m2_fault(void) {
+uint8_t get_m2_fault(void)
+{
 	motors.motors[MOTOR2].fault = !HAL_GPIO_ReadPin(MOTORS_GPIO, M2_EN_PIN); // 1 = fault
 	return motors.motors[MOTOR2].fault;
 }
 
-void brake_motor1(void) {
+void brake_motor1(void)
+{
 	HAL_GPIO_WritePin(MOTORS_GPIO, M1_INA_PIN, 0); // Make the motor coast no
 	HAL_GPIO_WritePin(MOTORS_GPIO, M1_INB_PIN, 0); // matter which direction it is spinning.
 }
 
-void brake_motor2(void) {
+void brake_motor2(void)
+{
 	HAL_GPIO_WritePin(MOTORS_GPIO, M2_INA_PIN, 0); // Make the motor coast no
 	HAL_GPIO_WritePin(MOTORS_GPIO, M2_INB_PIN, 0); // matter which direction it is spinning.
 }
@@ -371,7 +378,8 @@ void set_dir_motor12(uint8_t _sens1, uint8_t _sens2) {
 	}
 }
 
-void test_motor1(void) {
+void test_motor1(void)
+{
 	int32_t i = 0;
 
 	for (i = 0; i <= MOTORS_PWM_PERIOD; i++) {
@@ -390,7 +398,8 @@ void test_motor1(void) {
 	}
 }
 
-void test_motor2(void) {
+void test_motor2(void)
+{
 	int32_t i = 0;
 
 	for (i = 0; i <= MOTORS_PWM_PERIOD; i++) {
@@ -409,7 +418,8 @@ void test_motor2(void) {
 	}
 }
 
-void test_motor12(void) {
+void test_motor12(void)
+{
 	int32_t i = 0;
 
 	for (i = 0; i <= MOTORS_PWM_PERIOD; i++) {
@@ -431,7 +441,8 @@ void test_motor12(void) {
 	}
 }
 
-void motor_test_task(void* _params) {
+void motor_test_task(void* _params)
+{
 	//int ret = 0;
 	int32_t i = 0;
 	uint8_t dir = FORWARD_DIR;
@@ -461,13 +472,13 @@ void motor_test_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
-void motor_ident_task(void* _params) {
+void motor_ident_task(void* _params)
+{
 	MotorMeasuredSpeed_t motorMeasuredSpeeds;
 	uint8_t ret = 0;
 	float t = 0.f;
 	float vBat = NOMINAL_BATTERY_VOLTAGE; // [V]
 	int32_t speeds[N_MOTORS] = { 0, };
-	char data[50] = { 0, };
 
 	if (_params != 0) { }
 
@@ -477,11 +488,10 @@ void motor_ident_task(void* _params) {
 		ret = encoder_read_motor_measured_speed(&motorMeasuredSpeeds, 
 				pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS));
 		if (ret) {
-			sprintf(data, "%3.3f,%3.3f,%3.3f\r\n",
+			printf("%3.3f,%3.3f,%3.3f\r\n",
 				inputVoltage,
 				motorMeasuredSpeeds.speed[MOTOR1],
 				motorMeasuredSpeeds.speed[MOTOR2]);
-			print_msg((uint8_t*)data, strlen(data));
 
 			t = (float)get_us_time() * (float)1e-6;
 			//inputVoltage = triangularSignal(.1, vBat, t);
@@ -500,7 +510,8 @@ void motor_ident_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
-void motor_task(void* _params) {
+void motor_task(void* _params)
+{
 	MotorDesiredVoltage_t desiredVoltages;
 	uint8_t ret = 0;
 	int32_t speeds[N_MOTORS] = { 0, };
@@ -560,11 +571,13 @@ void motor_task(void* _params) {
 	vTaskDelete(NULL);
 }
 
-int motor_read_motor_data(Motor_t* mot) {
+int motor_read_motor_data(Motor_t* mot)
+{
 	return (pdTRUE == xQueueReceive(motorQueue, mot, 0));
 }
 
-int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor) {
+int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor)
+{
 	float percentage = _volt / _vbat;
 	percentage = (percentage > 1.f) ? 1.f : percentage;
 	percentage = (percentage < -1.f) ? -1.f : percentage;
@@ -573,18 +586,21 @@ int32_t voltageToPwm(float _volt, float _vbat, uint8_t _motor) {
 	return (int32_t)round(pwmf);
 }
 
-float getInputVoltage(void) {
+float getInputVoltage(void)
+{
 	return inputVoltage;
 }
 
-float sinusoidSignal(float a, float t) {
+float sinusoidSignal(float a, float t)
+{
 	return a * (
 		sin(2.f*M_PI*t) + sin(2.f*M_PI*.1f*t) + 
 		sin(2.f*M_PI*.2f*t) + sin(2.f*M_PI*.3f*t) + 
 		sin(2.f*M_PI*.4f*t) + sin(2.f*M_PI*.5f*t));
 }
 
-float squareSignal(float f, float a, float t) {
+float squareSignal(float f, float a, float t)
+{
 	float voltage = sinf(2.f*M_PI*f*t);
 	if (voltage >= 0.f)
 		voltage = a;
@@ -593,6 +609,7 @@ float squareSignal(float f, float a, float t) {
 	return voltage;
 }
 
-float triangularSignal(float f, float a, float t) {
+float triangularSignal(float f, float a, float t)
+{
 	return (2.f * a / M_PI) * asinf(sinf(2.f*M_PI*f*t));
 }

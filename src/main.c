@@ -25,17 +25,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "stm32f4xx.h"
-
 // FreeRTOS
 #include "FreeRTOS.h"
 #include "task.h"
-#include "queue.h"
+//#include "queue.h"
 //#include "timers.h"
 //#include "semphr.h"
-
-// Defines
-#define DATASIZE 100
 
 // Function prototypes
 void SystemClock_Config(void);
@@ -43,13 +38,13 @@ void SystemClock_Config(void);
 // ---------------------------------------------------------------------------//
 // --- Main
 // ---------------------------------------------------------------------------//
-int main(void) {
+int main(void)
+{
   int ret = 0;
-  //uint8_t data[DATASIZE] = { 0, };
   //int32_t enc1 = 0, enc2 = 0;
   //uint32_t ticks = 0;
 
-  HAL_Init();
+  HAL_Init(); // Init systick
 
   // Configure system clock to 180 MHz
   SystemClock_Config();
@@ -73,17 +68,27 @@ int main(void) {
   // ------------------------------------------------------------------------ //
   // --- Init UART
   // ------------------------------------------------------------------------ //
-  ret = uart1_init();
-  if (ret == NOK) {
-    Error_Handler();
-  }
   ret = uart2_init();
   if (ret == NOK) {
     Error_Handler();
   }
+
+  ret = uart1_init();
+  if (ret == NOK) {
+    printf("uart1_init NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("uart1_init OK\r\n");
+  }
+
   ret = uart3_init();
   if (ret == NOK) {
+    printf("uart3_init NOK\r\n");
     Error_Handler();
+  }
+  else {
+    printf("uart3_init OK\r\n");
   }
 
   printf("\r\n--- Hello Twippy! ---\r\n");
@@ -125,7 +130,7 @@ int main(void) {
   // --- Init microsecond timer
   // ------------------------------------------------------------------------ //
   ret = init_us_timer();
-  if (ret != 0) {
+  if (ret == NOK) {
     printf("init_us_timer NOK\r\n");
     Error_Handler();
   }
@@ -264,17 +269,17 @@ int main(void) {
     goto hell;
   }
 
-  if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
-    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    printf("Failed to create uart2_task\r\n");
-    goto hell;
-  }
+  // if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
+  //   UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+  //   printf("Failed to create uart2_task\r\n");
+  //   goto hell;
+  // }
 
-  if (!(pdPASS == xTaskCreate(uart3_task, (const char*)"uart3_task",
-    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    printf("Failed to create uart3_task\r\n");
-    goto hell;
-  }
+  // if (!(pdPASS == xTaskCreate(uart3_task, (const char*)"uart3_task",
+  //   UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+  //   printf("Failed to create uart3_task\r\n");
+  //   goto hell;
+  // }
 
   if (!(pdPASS == xTaskCreate(encoder_task, (const char*)"encoder_task",
     ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL))) {
@@ -350,7 +355,8 @@ int main(void) {
     return 0;
 }
 
-void SystemClock_Config(void) {
+void SystemClock_Config(void)
+{
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
   HAL_StatusTypeDef ret = HAL_OK;
@@ -388,59 +394,13 @@ void SystemClock_Config(void) {
   }
 }
 
-void Error_Handler(void) {
-  uint8_t errorMsg[] = "ERROR!\r\n";
-  GPIO_InitTypeDef GPIO_InitStruct;
-
-  // Init LED D13 on PA5
-  __HAL_RCC_GPIOA_CLK_ENABLE();
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 0);
-
+void Error_Handler(void)
+{
   led_set_period(200);
 
   while (1) {
-    //UART1_WRITE(errorMsg, sizeof(errorMsg));
-    UART2_WRITE(errorMsg, sizeof(errorMsg));
+    printf("ERROR!\r\n");
     HAL_Delay(1000);
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    led_toggle(LED1);
   }
 }
-
-void print_msg(uint8_t* _msg, uint8_t _len) {
-  uint8_t end = 0;
-  while (_msg[end] != '\n')
-    end++;
-  _len = end+1;
-
-  if (xTaskGetSchedulerState() == taskSCHEDULER_RUNNING) {
-    //uart1_enque_data(_msg, _len);
-    //uart2_enque_data(_msg, _len);
-    //UART1_WRITE(_msg, _len);
-    UART2_WRITE(_msg, _len);
-  }
-  else {
-    //UART1_WRITE(_msg, _len);
-    UART2_WRITE(_msg, _len);
-  }
-}
-
-// void HAL_Delay(volatile uint32_t Delay) {
-//   if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) {
-//     uint32_t tickstart = HAL_GetTick();
-//     uint32_t wait = Delay;
-    
-//     // Add a period to guarantee minimum wait
-//     if (wait < HAL_MAX_DELAY)
-//        wait++;
-    
-//     while ((HAL_GetTick() - tickstart) < wait);
-//   }
-//   else
-//     vTaskDelay(Delay);
-// }
-

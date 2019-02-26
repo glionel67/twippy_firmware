@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "adc.h"
@@ -9,7 +10,8 @@ ADC_HandleTypeDef AdcHandle1;
 ADC_ChannelConfTypeDef sConfig1;
 //ADC_ChannelConfTypeDef sConfig2;
 
-int init_adc(void) {
+int init_adc(void)
+{
 	ADC_IMOT_CLK_ENABLE();
 
 	AdcHandle1.Instance = ADC_IMOT;
@@ -47,13 +49,15 @@ int init_adc(void) {
 	return 0;
 }
 
-void deinit_adc(void) {
+void deinit_adc(void)
+{
 	ADC_IMOT_FORCE_RESET();
 	ADC_IMOT_RELEASE_RESET();
 	HAL_ADC_DeInit(&AdcHandle1);
 }
 
-uint16_t get_adc_value(uint32_t _channel) {
+uint16_t get_adc_value(uint32_t _channel)
+{
 	uint16_t val = 0;
 
 	// Configure ADC regular channel
@@ -82,21 +86,25 @@ uint16_t get_adc_value(uint32_t _channel) {
 	return val;
 }
 
-uint16_t get_adc_imot1(void) {
+uint16_t get_adc_imot1(void)
+{
 	return get_adc_value(ADC_IMOT1_CHANNEL);
 }
 
-uint16_t get_adc_imot2(void) {
+uint16_t get_adc_imot2(void)
+{
 	return get_adc_value(ADC_IMOT2_CHANNEL);
 }
 
-void get_adc_imot12(uint16_t* _i1, uint16_t* _i2) {
+void get_adc_imot12(uint16_t* _i1, uint16_t* _i2)
+{
 	(*_i1) = (*_i2) = 65535;
 	(*_i1) = get_adc_value(ADC_IMOT1_CHANNEL);
 	(*_i2) = get_adc_value(ADC_IMOT2_CHANNEL);
 }
 
-void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2) {
+void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2)
+{
 	uint16_t adc = 0;
 	uint32_t volt = 0;
 	uint32_t ma = 0;
@@ -122,34 +130,37 @@ void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2) {
 	}
 }
 
-uint16_t get_adc_vbat(void) {
+uint16_t get_adc_vbat(void)
+{
 	return get_adc_value(ADC_VBAT_CHANNEL);
 }
 
-float get_vbat_volt(void) {
+float get_vbat_volt(void)
+{
 	uint16_t adc = get_adc_value(ADC_VBAT_CHANNEL);
 	float volt = ((float)adc * ADC_BAT_VREF) / ADC_BAT_RESOLUTION;
 	return (volt * VBAT_RATIO);
 }
 
-uint16_t get_adc_ibat(void) {
+uint16_t get_adc_ibat(void)
+{
 	return get_adc_value(ADC_IBAT_CHANNEL);
 }
 
-float get_ibat_amp(void) {
+float get_ibat_amp(void)
+{
 	uint16_t adc = get_adc_value(ADC_IBAT_CHANNEL);
 	float volt = ((float)adc * ADC_BAT_VREF) / ADC_BAT_RESOLUTION;
 	return ((volt - IBAT_ZERO) * IBAT_RATIO);
 }
 
-void test_bat(void) {
+void test_bat(void)
+{
 	float vbat = 0.f, ibat = 0.f;
-	char data[50] = { 0, };
 	for (int i=0;i<5;i++) {
 		vbat = get_vbat_volt();
 		ibat = get_ibat_amp();
-		sprintf(data, "vbat=%3.3f,ibat=%3.3f\r\n", (float)vbat, (float)ibat);
-		print_msg((uint8_t*)data, strlen(data));
+		printf("vbat=%3.3f,ibat=%3.3f\r\n", (float)vbat, (float)ibat);
 		HAL_Delay(1000);
 	}
 }

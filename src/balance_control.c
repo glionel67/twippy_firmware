@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "FreeRTOS.h"
@@ -38,7 +39,8 @@ static float pitchOutput = 0;
 
 static uint8_t isInit = 0;
 
-uint8_t balance_control_init(const float dt) {
+uint8_t balance_control_init(const float dt)
+{
   if (isInit)
     return 0;
 
@@ -55,12 +57,14 @@ uint8_t balance_control_init(const float dt) {
   return 1;
 }
 
-uint8_t balance_control_test(void) {
+uint8_t balance_control_test(void)
+{
   return isInit;
 }
 
 float balance_control_correct_pitch_rate(float pitchRateActual,
-        float pitchRateDesired, float _dt) {
+        float pitchRateDesired, float _dt)
+{
   float error = pitchRateDesired - pitchRateActual;
 
   pitchOutput = pid_update(&pidPitchRate, error, _dt);
@@ -69,24 +73,26 @@ float balance_control_correct_pitch_rate(float pitchRateActual,
 }
 
 void balance_control_correct_pitch(float pitchActual, 
-        float pitchDesired, float* pitchRateDesired, float _dt) {
+        float pitchDesired, float* pitchRateDesired, float _dt)
+{
   float error = pitchDesired - pitchActual;
 
   *pitchRateDesired = pid_update(&pidPitch, error, _dt);
 }
 
-void balance_control_reset(void) {
+void balance_control_reset(void)
+{
   pid_reset(&pidPitch);
   pid_reset(&pidPitchRate);
   isInit = 0;
 }
 
-void balance_control_task(void* _params) {
+void balance_control_task(void* _params)
+{
   uint8_t ret = 0;
   PitchAndRate_t pitchAndRate;
   float pitchRateDesired = 0.f;
   float prevTs = 0., dt = 0.;
-  char data[100] = { 0, };
 
   memset((void*)&pitchAndRate, 0, sizeof(PitchAndRate_t));
 
@@ -94,8 +100,7 @@ void balance_control_task(void* _params) {
 
   ret = balance_control_init(BALANCE_CONTROL_DT);
   if (!ret) {
-    char str[] = "balance_control_init error\r\n";
-    print_msg((uint8_t*)str, strlen(str));
+    printf("balance_control_init error\r\n");
     goto byeBye;
   }
 
@@ -116,9 +121,8 @@ void balance_control_task(void* _params) {
       pitchOutput = balance_control_correct_pitch_rate(pitchAndRate.pitchRate,
         pitchRateDesired, dt);
 
-      sprintf(data, "%s: t=%3.3f,out=%3.3f\r\n", DEBUG_MODULE,
+      printf("%s: t=%3.3f,out=%3.3f\r\n", DEBUG_MODULE,
         (float)pitchAndRate.timestamp, pitchOutput);
-      print_msg((uint8_t*)data, strlen(data));
 
       prevTs = pitchAndRate.timestamp;
     }
