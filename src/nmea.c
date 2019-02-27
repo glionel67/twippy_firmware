@@ -31,23 +31,25 @@ void decodeInit(void)
 
 bool decodeMsg(char* _msg)
 {
-    bool ret = true;
-    if (_msg[2] == 'G' && _msg[3] == 'G' && _msg[4] == 'A') {
+    //printf("decodeMsg: %s\r\n", _msg);
+
+    bool ret = false;
+    if (strncmp((const char*)(_msg+3), "GGA", 3) == 0) {
         ret = decodeGGA(_msg);
     }
-    else if (_msg[2] == 'G' && _msg[3] == 'L' && _msg[4] == 'L') {
+    else if (strncmp((const char*)(_msg+3), "GLL", 3) == 0) {
         ret = decodeGLL(_msg);
     }
-    else if (_msg[2] == 'G' && _msg[3] == 'N' && _msg[4] == 'S') {
+    else if (strncmp((const char*)(_msg+3), "GNS", 3) == 0) {
         ret = decodeGNS(_msg);
     }
-    else if (_msg[2] == 'G' && _msg[3] == 'S' && _msg[4] == 'A') {
+    else if (strncmp((const char*)(_msg+3), "GSA", 3) == 0) {
         ret = decodeGSA(_msg);
     }
-    else if (_msg[2] == 'G' && _msg[3] == 'S' && _msg[4] == 'T') {
+    else if (strncmp((const char*)(_msg+3), "GST", 3) == 0) {
         ret = decodeGST(_msg);
     }
-    else if (_msg[2] == 'R' && _msg[3] == 'M' && _msg[4] == 'C') {
+    else if (strncmp((const char*)(_msg+3), "RMC", 3) == 0) {
         ret = decodeRMC(_msg);
     }
     else {
@@ -70,7 +72,8 @@ bool decodeGGA(char* _msg)
     while (tmp != NULL) {
         switch (i) {
             case 0: // Message ID
-            memcpy((void*)ggaMsg.msgId, (const void*)tmp, NMEA_MSG_ID_LEN);
+            //memcpy((void*)ggaMsg.msgId, (const void*)tmp, NMEA_MSG_ID_LEN);
+            strncpy((char*)ggaMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
             break;
             case 1: // UTC time
             ret &= decodeUtcTime(tmp, &ggaMsg.hour, &ggaMsg.minute, &ggaMsg.second);
@@ -117,45 +120,285 @@ bool decodeGGA(char* _msg)
     }
 
     return ret;
-}
+} // decodeGGA
 
 bool decodeGLL(char* _msg)
 {
     printf("decodeGLL: %s\r\n", _msg);
 
+    uint8_t i = 0;
     bool ret = true;
+    NmeaGllMsg_t gllMsg;
+    char* tmp = strtok((char*)_msg, (const char*)',');
+
+    while (tmp != NULL) {
+        switch (i) {
+            case 0: // Message ID
+            //memcpy((void*)gllMsg.msgId, (const void*)tmp, NMEA_MSG_ID_LEN);
+            strncpy((char*)gllMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
+            break;
+            case 1: // Latitude
+            ret &= decodeLatitude(tmp, &gllMsg.latitude);
+            break;
+            case 2: // North/South indicator
+            ret &= decodeLatDir(tmp, &gllMsg.ns);
+            break;
+            case 3: // Longitude
+            ret &= decodeLongitude(tmp, &gllMsg.longitude);
+            break;
+            case 4: // East/West indicator
+            ret &= decodeLonDir(tmp, &gllMsg.ew);
+            break;
+            case 5: // UTC time
+            ret &= decodeUtcTime(tmp, &gllMsg.hour, &gllMsg.minute, &gllMsg.second);
+            break;
+            case 6: // Status
+            ret &= decodeChar(tmp, &gllMsg.status);
+            break;
+            case 7: // Positioning mode
+            ret &= decodeChar(tmp, &gllMsg.posMode);
+            break;
+            default:
+            break;
+        }
+
+        tmp = strtok((char*)NULL, (const char*)',');
+        i++;
+    }
 
     return ret;
-}
+} // decodeGLL
 
 bool decodeGNS(char* _msg)
 {
     printf("decodeGNS: %s\r\n", _msg);
+    uint8_t i = 0;
     bool ret = true;
+    NmeaGnsMsg_t gnsMsg;
+    char* tmp = strtok((char*)_msg, (const char*)',');
+
+    while (tmp != NULL) {
+        switch (i) {
+            case 0: // Message ID
+            strncpy((char*)gnsMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
+            break;
+            case 1: // UTC time
+            ret &= decodeUtcTime(tmp, &gnsMsg.hour, &gnsMsg.minute, &gnsMsg.second);
+            break;
+            case 2: // Latitude
+            ret &= decodeLatitude(tmp, &gnsMsg.latitude);
+            break;
+            case 3: // North/South indicator
+            ret &= decodeLatDir(tmp, &gnsMsg.ns);
+            break;
+            case 4: // Longitude
+            ret &= decodeLongitude(tmp, &gnsMsg.longitude);
+            break;
+            case 5: // East/West indicator
+            ret &= decodeLonDir(tmp, &gnsMsg.ew);
+            break;
+            case 6: // Positioning mode
+            ret &= decodeChar(tmp, &gnsMsg.posMode);
+            break;
+            case 7: // Number of satellites
+            ret &= decodeNumSat(tmp, &gnsMsg.nSatellites);
+            break;
+            case 8: // HDOP
+            ret &= decodeHdop(tmp, &gnsMsg.hdop);
+            break;
+            case 9: // Altitude
+            ret &= decodeAltitude(tmp, &gnsMsg.altitude);
+            break;
+            case 10: // Geoid separation
+            ret &= decodeGeoidSep(tmp, &gnsMsg.geoidSeparation);
+            break;
+            case 11: // Age of differential corrections
+            decodeDiffAge(tmp, &gnsMsg.diffAge);
+            break;
+            case 12: // ID of station providing differential corrections
+            decodeDiffSta(tmp, &gnsMsg.diffStation);
+            break;
+            case 13: // Navigational status indicator
+            ret &= decodeChar(tmp, &gnsMsg.navStatus);
+            break;
+            default:
+            break;
+        }
+
+        tmp = strtok((char*)NULL, (const char*)',');
+        i++;
+    }
 
     return ret;
-}
+} // decodeGNS
 
 bool decodeGSA(char* _msg)
 {
     printf("decodeGSA: %s\r\n", _msg);
+    uint8_t i = 0;
+    uint8_t n = 0;
     bool ret = true;
+    NmeaGsaMsg_t gsaMsg;
+    char* tmp = strtok((char*)_msg, (const char*)',');
+
+    while (tmp != NULL) {
+        switch (i) {
+            case 0: // Message ID
+            strncpy((char*)gsaMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
+            break;
+            case 1: // Operation mode
+            ret &= decodeChar(tmp, &gsaMsg.opMode);
+            break;
+            case 2: // Navigation mode
+            ret &= decodeUint8(tmp, &gsaMsg.navMode);
+            break;
+            case 3: // Satellite number [x12]
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+            case 10:
+            case 11:
+            case 12:
+            case 13:
+            case 14:
+            decodeUint8(tmp, &gsaMsg.satNum[n]);
+            n++;
+            break;
+            case 15: // Position dilution of precision
+            ret &= decodeFloat(tmp, &gsaMsg.pdop);
+            break;
+            case 16: // Horizontal dilution of precision
+            ret &= decodeFloat(tmp, &gsaMsg.hdop);
+            break;
+            case 17: // Vertical dilution of precision
+            ret &= decodeFloat(tmp, &gsaMsg.vdop);
+            break;
+            case 18: // Vertical dilution of precision
+            ret &= decodeUint8(tmp, &gsaMsg.systemId);
+            break;
+            default:
+            break;
+        }
+
+        tmp = strtok((char*)NULL, (const char*)',');
+        i++;
+    }
 
     return ret;
-}
+} // decodeGSA
 
 bool decodeGST(char* _msg)
 {
     printf("decodeGST: %s\r\n", _msg);
+
+    uint8_t i = 0;
     bool ret = true;
+    NmeaGstMsg_t gstMsg;
+    char* tmp = strtok((char*)_msg, (const char*)',');
+
+    while (tmp != NULL) {
+        switch (i) {
+            case 0: // Message ID
+            strncpy((char*)gstMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
+            break;
+            case 1: // UTC time
+            ret &= decodeUtcTime(tmp, &gstMsg.hour, &gstMsg.minute, &gstMsg.second);
+            break;
+            case 2: // RMS value of the standard deviation of the ranges
+            ret &= decodeFloat(tmp, &gstMsg.rangeRms);
+            break;
+            case 3: // Standard deviation of semi-major axis
+            ret &= decodeFloat(tmp, &gstMsg.stdMajor);
+            break;
+            case 4: // Standard deviation of semi-minor axis
+            ret &= decodeFloat(tmp, &gstMsg.stdMinor);
+            break;
+            case 5: // Orientation of semi-major axis
+            ret &= decodeFloat(tmp, &gstMsg.orient);
+            break;
+            case 6: // Standard deviation of latitude error
+            ret &= decodeFloat(tmp, &gstMsg.stdLat);
+            break;
+            case 7: // Standard deviation of longitude error
+            ret &= decodeFloat(tmp, &gstMsg.stdLon);
+            break;
+            case 8: // Standard deviation of altitde error
+            ret &= decodeFloat(tmp, &gstMsg.stdAlt);
+            break;
+            default:
+            break;
+        }
+
+        tmp = strtok((char*)NULL, (const char*)',');
+        i++;
+    }
 
     return ret;
-}
+} // decodeGST
 
 bool decodeRMC(char* _msg)
 {
     printf("decodeRMC: %s\r\n", _msg);
+    uint8_t i = 0;
     bool ret = true;
+    NmeaRmcMsg_t rmcMsg;
+    char* tmp = strtok((char*)_msg, (const char*)',');
+
+    while (tmp != NULL) {
+        switch (i) {
+            case 0: // Message ID
+            //memcpy((void*)rmcMsg.msgId, (const void*)tmp, NMEA_MSG_ID_LEN);
+            strncpy((char*)rmcMsg.msgId,(const char*)tmp, NMEA_MSG_ID_LEN);
+            break;
+            case 1: // UTC time
+            ret &= decodeUtcTime(tmp, &rmcMsg.hour, &rmcMsg.minute, &rmcMsg.second);
+            break;
+            case 2: // Status
+            ret &= decodeStatus(tmp, &rmcMsg.status);
+            break;
+            case 3: // Latitude
+            ret &= decodeLatitude(tmp, &rmcMsg.latitude);
+            break;
+            case 4: // North/South indicator
+            ret &= decodeLatDir(tmp, &rmcMsg.ns);
+            break;
+            case 5: // Longitude
+            ret &= decodeLongitude(tmp, &rmcMsg.longitude);
+            break;
+            case 6: // East/West indicator
+            ret &= decodeLonDir(tmp, &rmcMsg.ew);
+            break;
+            case 7: // Speed over ground
+            ret &= decodeSpeedOverGround(tmp, &rmcMsg.speedOverGround);
+            break;
+            case 8: // Course over ground
+            ret &= decodeCourseOverGround(tmp, &rmcMsg.courseOverGroung);
+            break;
+            case 9: // Date (day, month, year)
+            strncpy((char*)rmcMsg.date,(const char*)tmp, NMEA_MSG_DATE_LEN);
+            break;
+            case 10: // Magnetic variation value
+            ret &= decodeFloat(tmp, &rmcMsg.magVar);
+            break;
+            case 11: // Magnetic variation E/W indicator
+            ret &= decodeChar(tmp, &rmcMsg.magVarEW);
+            break;
+            case 12: // Mode Indicator
+            ret &= decodeChar(tmp, &rmcMsg.posMode);
+            break;
+            case 13: // Navigational status indicator
+            ret &= decodeChar(tmp, &rmcMsg.navStatus);
+            break;
+            default:
+            break;
+        }
+
+        tmp = strtok((char*)NULL, (const char*)',');
+        i++;
+    }
 
     return ret;
 }
@@ -261,7 +504,7 @@ bool decodeLatDir(char* msg, char* latDir)
     if (msg == 0)
         return false;
 
-    latDir[0] = (uint8_t)msg[0];
+    latDir[0] = (char)msg[0];
 #ifdef DEBUG
     printf("decodeLatDir=%c\r\n", latDir[0]);
 #endif
@@ -274,7 +517,7 @@ bool decodeLonDir(char* msg, char* lonDir)
     if (msg == 0)
         return false;
 
-    lonDir[0] = (uint8_t)msg[0];
+    lonDir[0] = (char)msg[0];
 #ifdef DEBUG
     printf("decodeLonDir=%c\r\n", lonDir[0]);
 #endif
@@ -368,6 +611,90 @@ bool decodeDiffSta(char* msg, uint8_t* diffSta)
     diffSta[0] = (uint8_t)msg[0];
 #ifdef DEBUG
     printf("decodeDiffSta=%d\r\n", diffSta[0]);
+#endif
+
+    return true;
+}
+
+bool decodeStatus(char* msg, char* stat)
+{
+    if (msg == 0)
+        return false;
+
+    stat[0] = (char)msg[0];
+#ifdef DEBUG
+    printf("decodeStatus=%c\r\n", stat[0]);
+#endif
+
+    return true;
+}
+
+bool decodeSpeedOverGround(char* msg, float* speed)
+{
+    if (msg == NULL)
+        return false;
+
+    *speed = atof((const char*)msg);
+#ifdef DEBUG
+    printf("decodeSpeedOverGround=%f\r\n", *speed);
+#endif
+
+    return true;
+}
+
+bool decodeCourseOverGround(char* msg, float* cog)
+{
+    if (msg == NULL)
+        return false;
+
+    *cog = atof((const char*)msg);
+#ifdef DEBUG
+    printf("decodeCourseOverGround=%f\r\n", *cog);
+#endif
+
+    return true;
+}
+
+bool decodeFloat(char* msg, float* f)
+{
+    if (msg == NULL) {
+        *f = 0.f;
+        return false;
+    }
+
+    *f = atof((const char*)msg);
+#ifdef DEBUG
+    printf("decodeFloat=%f\r\n", *f);
+#endif
+
+    return true;
+}
+
+bool decodeChar(char* msg, char* c)
+{
+    if (msg == 0) {
+        *c = 0;
+        return false;
+    }
+
+    c[0] = (char)msg[0];
+#ifdef DEBUG
+    printf("decodeChar=%c\r\n", c[0]);
+#endif
+
+    return true;
+}
+
+bool decodeUint8(char* msg, uint8_t* n)
+{
+    if (msg == 0) {
+        *n = 0;
+        return false;
+    }
+
+    n[0] = (uint8_t)msg[0];
+#ifdef DEBUG
+    printf("decodeUint8=%d\r\n", n[0]);
 #endif
 
     return true;
@@ -475,7 +802,7 @@ bool nmeaParseChar(char _c)
             uint8_t hn = checksumField[0] > '9' ? checksumField[0] - 'A' + 10 : checksumField[0] - '0';
             uint8_t ln = checksumField[1] > '9' ? checksumField[1] - 'A' + 10 : checksumField[1] - '0';
             uint8_t checksumMsg = (hn << 4 ) | ln;
-            printf("\r\nchecksumMsg=0x%X vs cheksum=0x%X\r\n", checksumMsg, checksum);
+            //printf("\r\nchecksumMsg=0x%X vs cheksum=0x%X\r\n", checksumMsg, checksum);
             if (checksum == checksumMsg) {
                 decodeState = NMEA_DECODE_END1;
             }

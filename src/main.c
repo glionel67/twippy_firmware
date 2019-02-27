@@ -215,23 +215,23 @@ int main(void)
   // ------------------------------------------------------------------------ //
   // --- Init Mavlink
   // ------------------------------------------------------------------------ //
-  // ret = mavlinkInit();
-  // if (!ret) {
-  //   printf("mavlinkInit NOK\r\n");
-  //   Error_Handler();
-  // }
-  // else {
-  //   printf("mavlinkInit OK\r\n");
-  // }
+  ret = mavlinkInit();
+  if (!ret) {
+    printf("mavlinkInit NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("mavlinkInit OK\r\n");
+  }
 
-  // ret = mavlinkStart();
-  // if (!ret) {
-  //   printf("mavlinkStart NOK\r\n");
-  //   Error_Handler();
-  // }
-  // else {
-  //   printf("mavlinkStart OK\r\n");
-  // }
+  ret = mavlinkStart();
+  if (!ret) {
+    printf("mavlinkStart NOK\r\n");
+    Error_Handler();
+  }
+  else {
+    printf("mavlinkStart OK\r\n");
+  }
 
   // ------------------------------------------------------------------------ //
   // --- Init GPS
@@ -361,6 +361,7 @@ void SystemClock_Config(void)
   RCC_OscInitTypeDef RCC_OscInitStruct;
   HAL_StatusTypeDef ret = HAL_OK;
 
+  __HAL_RCC_SYSCFG_CLK_ENABLE();
   __HAL_RCC_PWR_CLK_ENABLE();
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
@@ -384,7 +385,8 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | 
+        RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4; // To have a 45 MHz clock

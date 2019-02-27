@@ -13,7 +13,7 @@ int i2c1_init(void)
     I2cHandle1.Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
     I2cHandle1.Init.ClockSpeed      = I2C1_CLOCK_SPEED;
     I2cHandle1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-    I2cHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
+    I2cHandle1.Init.DutyCycle       = I2C_DUTYCYCLE_16_9; // or I2C_DUTYCYCLE_2 ?
     I2cHandle1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
     I2cHandle1.Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
     I2cHandle1.Init.OwnAddress1     = I2C1_OWN_ADDRESS;

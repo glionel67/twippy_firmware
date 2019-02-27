@@ -1,6 +1,6 @@
 /**
  * \file uart1.c
- * \brief GPS parser
+ * \brief USART1 communication
  * \author Lionel GENEVE
  * \date 22/02/2019
  * \version 1.0
@@ -8,7 +8,9 @@
 
 #include "uart1.h"
 
+// C lib
 #include <stdio.h>
+#include <string.h>
 
 // FreeRTOS
 #include "FreeRTOS.h"
@@ -85,16 +87,23 @@ bool uart1_is_init(void)
 
 int uart1_write(uint8_t* buf, uint32_t len)
 {
-  uint8_t res = HAL_UART_Transmit(&UartHandle1, buf, len, USART1_TIMEOUT);
+  uint8_t res = HAL_UART_Transmit(&UartHandle1, buf, (uint16_t)len, USART1_TIMEOUT);
   if (res == HAL_OK)
    return OK;
-  else
+  else {
+    if (res == HAL_ERROR)
+      printf("uart1_write: HAL_ERROR\r\n");
+    else if (res == HAL_BUSY)
+      printf("uart1_write: HAL_BUSY\r\n");
+    else if (res == HAL_TIMEOUT)
+      printf("uart1_write: HAL_TIMEOUT\r\n");
     return NOK;
+  }
 }
 
 int uart1_read(uint8_t* buf, uint32_t len)
 {
-  uint8_t res = HAL_UART_Receive(&UartHandle1, buf, len, USART1_TIMEOUT);
+  uint8_t res = HAL_UART_Receive(&UartHandle1, buf, (uint16_t)len, USART1_TIMEOUT);
   if (res == HAL_OK)
 	 return OK;
   else
@@ -151,6 +160,8 @@ void uart1_task(void* _params)
   uint8_t res = 0;
   bool keepOn = false;
 
+  char msg[] = "Hello World!\r\n";
+
   if (_params != 0) { }
 
   while (1) {
@@ -168,6 +179,17 @@ void uart1_task(void* _params)
       else
         keepOn = false;
     } while (keepOn);
+
+    res = HAL_UART_Transmit(&UartHandle1, (uint8_t*)msg, (uint16_t)strlen(msg), USART1_TIMEOUT);
+    if (res == HAL_OK) {
+      //printf("uart1_write: HAL_OK\r\n");
+    }
+    else if (res == HAL_ERROR)
+      printf("uart1_write: HAL_ERROR\r\n");
+    else if (res == HAL_BUSY)
+      printf("uart1_write: HAL_BUSY\r\n");
+    else if (res == HAL_TIMEOUT)
+      printf("uart1_write: HAL_TIMEOUT\r\n");
     
     vTaskDelay(10/portTICK_RATE_MS); // 100 Hz
   }
@@ -182,28 +204,28 @@ bool uart1_has_overrun(void)
   return result;
 }
 
-void __attribute__((used)) USART1_IRQHandler(void)
-{
-  uint8_t rxByte = 0;
-  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  if (USART1->SR & USART_SR_RXNE) {
-    rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF);
-    //printf("uart1_int: 0x%x\r\n", rxByte);
-    xQueueSendFromISR(uart1RxQueue, (const void*)&rxByte, &xHigherPriorityTaskWoken);
-    if (xHigherPriorityTaskWoken) {
-      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-    }
-  }
-  else {
-    printf("uart1_int: ERROR\r\n");
-    rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF); // Flush data register
-    /** if we get here, the error is most likely caused by an overrun!
-     * - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun error)
-     * - and IDLE (Idle line detected) pending bits are cleared by software sequence:
-     * - reading USART_SR register followed reading the USART_DR register.
-     */
-    //asm volatile ("" : "=m" (UART1_TYPE->SR) : "r" (UART1_TYPE->SR)); // force non-optimizable reads
-    //asm volatile ("" : "=m" (UART1_TYPE->DR) : "r" (UART1_TYPE->DR)); // of these two registers
-    hasOverrun = true;
-  }
-}
+// void __attribute__((used)) USART1_IRQHandler(void)
+// {
+//   uint8_t rxByte = 0;
+//   portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+//   if (USART1->SR & USART_SR_RXNE) {
+//     rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF);
+//     //printf("uart1_int: 0x%x\r\n", rxByte);
+//     xQueueSendFromISR(uart1RxQueue, (const void*)&rxByte, &xHigherPriorityTaskWoken);
+//     if (xHigherPriorityTaskWoken) {
+//       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+//     }
+//   }
+//   else {
+//     printf("uart1_int: ERROR\r\n");
+//     rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF); // Flush data register
+//     /** if we get here, the error is most likely caused by an overrun!
+//      * - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun error)
+//      * - and IDLE (Idle line detected) pending bits are cleared by software sequence:
+//      * - reading USART_SR register followed reading the USART_DR register.
+//      */
+//     //asm volatile ("" : "=m" (UART1_TYPE->SR) : "r" (UART1_TYPE->SR)); // force non-optimizable reads
+//     //asm volatile ("" : "=m" (UART1_TYPE->DR) : "r" (UART1_TYPE->DR)); // of these two registers
+//     hasOverrun = true;
+//   }
+// }

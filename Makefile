@@ -7,6 +7,7 @@ OPENOCD_INTERFACE ?= interface/stlink-v2.cfg
 OPENOCD_TARGET ?= target/stm32f4x_stlink.cfg
 DEBUG = 0# 0 or 1
 CPU = cortex-m4
+FPU = fpv4-sp-d16
 REV = A
 VERSION = 1
 BIN_DIR = bin
@@ -137,6 +138,7 @@ OBJS := $(addprefix $(BUILD_DIR)/,$(OBJS))
 
 
 ### Cross-compilation ###
+#PREFIX = arm-none-eabi-
 AS = arm-none-eabi-as
 AR = arm-none-eabi-ar
 CC = arm-none-eabi-gcc
@@ -149,8 +151,8 @@ NM = arm-none-eabi-nm
 GDB = arm-none-eabi-gdb
 
 # Compiler flags
-MCFLAGS = -mcpu=$(CPU) -mthumb -mthumb-interwork -mlittle-endian
-MCFLAGS+= -mfloat-abi=hard -mfpu=fpv4-sp-d16
+MCFLAGS = -mcpu=$(CPU) -mthumb -mthumb-interwork -mfpu=$(FPU)
+MCFLAGS+= -mfloat-abi=hard -mlittle-endian
 
 # ST flags
 STFLAGS = -DUSE_STDPERIPH_DRIVER
@@ -212,8 +214,9 @@ LDFLAGS+= -u_printf_float
 LDFLAGS+= --specs=nosys.specs
 #LDFLAGS+= --specs=rdimon.specs
 LDFLAGS+= -lm
-#LDFLAGS+= -lc
-#LDFLAGS+= -Wl,-Map=$(BIN_DIR)/$(PROJECT_NAME).map,--cref,--gc-sections
+LDFLAGS+= -lc
+LDFLAGS+= -lnosys 
+#LDFLAGS+= -Wl,-Map=$(BIN_DIR)/$(PROJECT_NAME).map,--cref -Wl,--gc-sections
 
 ELF = $(BIN_DIR)/$(PROJECT_NAME).elf
 HEX = $(BIN_DIR)/$(PROJECT_NAME).hex

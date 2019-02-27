@@ -9,8 +9,9 @@
 #include "usTimer.h"
 #include "uart1.h"
 #include "uart2.h"
+#include "uart3.h"
 
-#define UART_READ(__data__, __len__) uart1_read(__data__, __len__)
+#define UART_READ(__data__, __len__) uart3_read(__data__, __len__)
 #define UART_WRITE(__data__, __len__) uart1_write(__data__, __len__)
 
 static TaskHandle_t readTaskHandle = 0;
@@ -26,7 +27,8 @@ static int systemId = 0;
 static int autopilotId = 0;
 static int companionId = 0;
 
-void resetTimestamps(Timestamps* _ts) {
+void resetTimestamps(Timestamps* _ts)
+{
     _ts->heartbeat = 0;
     _ts->sys_status = 0;
     _ts->battery_status = 0;
@@ -69,7 +71,7 @@ int mavlinkStart(void)
             MAVLINK_READ_TASK_STACK_SIZE, NULL, MAVLINK_READ_TASK_PRIORITY, 
             &readTaskHandle))) {
         // TODO: ERROR
-        printf("mavlinkStart: failed to create mavlinkReadTask\n");
+        printf("mavlinkStart: failed to create mavlinkReadTask\r\n");
         return 0;
     }
 
@@ -78,7 +80,7 @@ int mavlinkStart(void)
             MAVLINK_WRITE_TASK_STACK_SIZE, NULL, MAVLINK_WRITE_TASK_PRIORITY, 
             &writeTaskHandle))) {
         // TODO: ERROR
-        printf("mavlinkStart: failed to create mavlinkWriteTask\n");
+        printf("mavlinkStart: failed to create mavlinkWriteTask\r\n");
         return 0;
     }
 
@@ -96,29 +98,28 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
     mavlink_status_t status;
     uint8_t msgReceived = 0;
 
-    int res = uart1_read(&cp, 1); // this function locks the port during read
-    //int res = UART_READ(&cp, 1);
+    //int res = uart1_read(&cp, 1); // this function locks the port during read
+    int res = UART_READ(&cp, 1);
 
     if (res == OK) { // PARSE MESSAGE
+        printf("mavlinkReadMessage: c=%c\r\n", cp);
         // the parsing
         msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp, _msg, &status);
 
         // check for dropped packets
         if (lastStatus.packet_rx_drop_count != status.packet_rx_drop_count) {
-            //printf("ERROR: DROPPED %d PACKETS\n", status.packet_rx_drop_count);
+            printf("ERROR: DROPPED %d PACKETS\n", status.packet_rx_drop_count);
         }
         lastStatus = status;
     }
     else { // Couldn't read from port
-        //fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
-        //char msg[] = "mavlinkReadMessage: could not read\n";
-        //print_msg((uint8_t*)msg, strlen(msg));
+        //printf("mavlinkReadMessage: could not read\r\n");
     }
 
     if (msgReceived) {
         // Report info
-        //printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n", 
-        //        message.msgid, message.sysid, message.compid);
+        printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n", 
+                _msg->msgid, _msg->sysid, _msg->compid);
 
         //fprintf(stderr,"Received serial data: ");
         
@@ -294,10 +295,11 @@ int mavlinkWriteMessage(const mavlink_message_t* _msg)
 
     // Translate message to buffer
     unsigned len = mavlink_msg_to_send_buffer(buf, _msg);
+    //printf("mavlinkWriteMessage: len=%u\r\n", len);
 
     // Write buffer to serial port, locks port while writing
-    int res = uart1_write(buf, len);
-    //int res = UART_WRITE(buf, len);
+    //int res = uart1_write(buf, len);
+    int res = UART_WRITE(buf, len);
 
     return res;
 }
@@ -335,7 +337,7 @@ void mavlinkWriteTask(void* _params)
     int res = 0;
     TickType_t prevTick = xTaskGetTickCount();
     TickType_t currTick = prevTick;
-    TickType_t deltaTick = 100;
+    TickType_t deltaTick = 1000;
 
     while (!timeToExit) {
         if (pdTRUE == xQueueReceive(mavlinkMsgQueue, &msg, (TickType_t)10)) {
@@ -355,8 +357,7 @@ void mavlinkWriteTask(void* _params)
             res = mavlinkWriteMessage(&msg);
             if (res == NOK) {
                 // TODO: handle error
-                //char msg[] = "mavlinkWriteTask: failed to write heartbeat message\r\n";
-                //print_msg((uint8_t*)msg, strlen(msg));
+                printf("mavlinkWriteTask: failed to write heartbeat message\r\n");
             }
 
             mavlink_msg_sys_status_pack(systemId, systemId, &msg, 0, 0, 0, 0,
@@ -364,8 +365,7 @@ void mavlinkWriteTask(void* _params)
             res = mavlinkWriteMessage(&msg);
             if (res == NOK) {
                 // TODO: handle error
-                //char msg[] = "mavlinkWriteTask: failed to write sys_status message\r\n";
-                //print_msg((uint8_t*)msg, strlen(msg));
+                printf("mavlinkWriteTask: failed to write sys_status message\r\n");
             }
 
             prevTick = currTick;

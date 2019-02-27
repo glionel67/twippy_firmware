@@ -316,7 +316,8 @@ void imu_calibrate_gyro_bias_task(void* _params)
     vTaskDelete(NULL);
 }
 
-void __attribute__((used)) EXTI2_IRQHandler(void) {
+void __attribute__((used)) EXTI2_IRQHandler(void)
+{
     if (__HAL_GPIO_EXTI_GET_IT(IMU_INT_PIN) != RESET) {
         __HAL_GPIO_EXTI_CLEAR_IT(IMU_INT_PIN);
         portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;

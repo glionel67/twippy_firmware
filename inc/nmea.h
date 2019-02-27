@@ -86,7 +86,7 @@ typedef struct NmeaGstMsg_s {
     float stdMinor; /** Standard deviation of semi-minor axis */
     float orient; /** Orientation of semi-major axis [deg] */
     float stdLat; /** Standard deviation of latitude error */
-    float stdLong; /** Standard deviation of longitude error */
+    float stdLon; /** Standard deviation of longitude error */
     float stdAlt; /** Standard deviation of altitude error */
     uint8_t checksum; /** Checksum */
 } NmeaGstMsg_t;
@@ -95,6 +95,7 @@ typedef struct NmeaRmcMsg_s {
     char msgId[6]; /**  Message ID */
     uint8_t hour; /** UTC time hour */
     uint8_t minute; /** UTC time minute */
+    float second; /** UTC time second */
     char status; /** Status, V = Navigation receiver warning, A = Data valid */
     float latitude; /** Latitude */
     char ns; /** North/South indicator */
@@ -137,6 +138,7 @@ typedef enum {
 #define NMEA_END2 '\n'
 
 #define NMEA_MSG_ID_LEN 6
+#define NMEA_MSG_DATE_LEN 6
 
 void decodeInit(void);
 
@@ -161,6 +163,14 @@ bool decodeHdop(char* msg, float* hdop);
 bool decodeGeoidSep(char* msg, float* geoSep);
 bool decodeDiffAge(char* msg, float* diffAge);
 bool decodeDiffSta(char* msg, uint8_t* diffSta);
+bool decodeStatus(char* msg, char* stat);
+bool decodeSpeedOverGround(char* msg, float* speed);
+bool decodeCourseOverGround(char* msg, float* cog);
+bool decodeMagneticVariation(char* msg, float* mv);
+
+bool decodeFloat(char* msg, float* f);
+bool decodeChar(char* msg, char* c);
+bool decodeUint8(char* msg, uint8_t* c);
 
 bool nmeaParseChar(char _c);
 

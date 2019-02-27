@@ -1,5 +1,18 @@
+/**
+ * \file uart2.c
+ * \brief USART2 communication
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ */
+
 #include "uart2.h"
 
+// C lib
+#include <stdio.h>
+//#include <string.h>
+
+// FreeRTOS
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -36,10 +49,10 @@ int uart2_init(void)
     return NOK;
   }
 
-  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  HAL_NVIC_SetPriority(USART2_IRQ, 11, 0);
-  //HAL_NVIC_EnableIRQ(USART2_IRQn);
-  __HAL_UART_ENABLE_IT(&UartHandle2, UART_IT_RXNE);
+  // HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  // HAL_NVIC_SetPriority(USART2_IRQ, 11, 0);
+  // HAL_NVIC_EnableIRQ(USART2_IRQn);
+  // __HAL_UART_ENABLE_IT(&UartHandle2, UART_IT_RXNE);
 
   return OK;
 }
