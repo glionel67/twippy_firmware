@@ -1,3 +1,11 @@
+/**
+ * \file main.c
+ * \brief main file
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ */
+
 // Includes
 #include "main.h"
 #include "config.h"
@@ -41,8 +49,6 @@ void SystemClock_Config(void);
 int main(void)
 {
   int ret = 0;
-  //int32_t enc1 = 0, enc2 = 0;
-  //uint32_t ticks = 0;
 
   HAL_Init(); // Init systick
 

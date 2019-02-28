@@ -519,6 +519,32 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "src/main_test.c",
+			"settings":
+			{
+				"buffer_size": 4067,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "src/uart1.c",
+			"settings":
+			{
+				"buffer_size": 5974,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "Makefile",
+			"settings":
+			{
+				"buffer_size": 7573,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -559,6 +585,8 @@
 	"file_history":
 	[
 		"/home/user/Workspace/twippy_firmware/src/main.c",
+		"/home/user/Workspace/twippy_firmware/inc/nmea.h",
+		"/home/user/Workspace/twippy_firmware/src/nmea.c",
 		"/home/user/Workspace/twippy_firmware/inc/main.h",
 		"/home/user/Workspace/twippy_firmware/src/uart2.c",
 		"/home/user/Workspace/twippy_firmware/src/uart1.c",
@@ -581,8 +609,6 @@
 		"/home/user/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/src/i2c2.c",
 		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
-		"/home/user/Workspace/twippy_firmware/src/nmea.c",
-		"/home/user/Workspace/twippy_firmware/inc/nmea.h",
 		"/home/user/Workspace/twippy_firmware/README.md",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
@@ -863,8 +889,97 @@
 	"groups":
 	[
 		{
+			"selected": 2,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "src/main_test.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4067,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1277,
+								1277
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 120.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "src/uart1.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5974,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 2880.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "Makefile",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7573,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1975,
+								1975
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1740.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],

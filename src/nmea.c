@@ -1,3 +1,11 @@
+/**
+ * \file nmea.c
+ * \brief NMEA GPS message definition
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ */
+
 #include "nmea.h"
 
 // C lib
