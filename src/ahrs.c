@@ -17,12 +17,19 @@ static xQueueHandle pitchAndRateQueue = 0;
 
 static float beta = .1f;
 static float q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
-
+static Attitude_t attitude;
 
 uint8_t ahrs_init(void)
 {
     // Init. attitude
     q0 = 1.f, q1 = 0.f, q2 = 0.f, q3 = 0.f;
+
+    attitude.timestamp = 0.;
+    attitude.qw = q0;
+    attitude.qx = q1;
+    attitude.qy = q2;
+    attitude.qz = q3;
+    attitude.wx = attitude.wy = attitude.wz = 0.;
 
     return 1;
 }
@@ -112,6 +119,15 @@ void ahrs_task(void* _params)
             xQueueOverwrite(pitchAndRateQueue, &pitchAndRate);
             //xTaskResumeAll();
 
+            attitude.timestamp = imu.timestamp;
+            attitude.qw = q0;
+            attitude.qx = q1;
+            attitude.qy = q2;
+            attitude.qz = q3;
+            attitude.wx = imu.g[0];
+            attitude.wy = imu.g[1];
+            attitude.wz = imu.g[2];
+
             prevTs = quaternion.timestamp;
         }
         //vTaskDelay(200/portTICK_RATE_MS);
@@ -119,6 +135,18 @@ void ahrs_task(void* _params)
 
     byeBye:
     vTaskDelete(NULL);
+}
+
+void ahrs_get_attitude(Attitude_t* _att)
+{
+    _att->timestamp = attitude.timestamp;
+    _att->qw = attitude.qw;
+    _att->qx = attitude.qx;
+    _att->qy = attitude.qy;
+    _att->qz = attitude.qz;
+    _att->wx = attitude.wx;
+    _att->wy = attitude.wy;
+    _att->wz = attitude.wz;
 }
 
 uint8_t ahrs_get_quaternion(Quaternion_t* quat)

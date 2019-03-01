@@ -1,5 +1,8 @@
 #include "mavlink_uart.h"
 
+// C lib
+#include <math.h>
+
 // FreeRTOS
 #include "FreeRTOS.h"
 #include "task.h"
@@ -10,9 +13,14 @@
 #include "uart1.h"
 #include "uart2.h"
 #include "uart3.h"
+#include "imu.h"
+#include "ahrs.h"
 
 #define UART_READ(__data__, __len__) uart3_read(__data__, __len__)
 #define UART_WRITE(__data__, __len__) uart1_write(__data__, __len__)
+
+static bool sendImuData = true;
+static bool sendBatteryData = true;
 
 static TaskHandle_t readTaskHandle = 0;
 static TaskHandle_t writeTaskHandle = 0;
@@ -337,9 +345,12 @@ void mavlinkWriteTask(void* _params)
     int res = 0;
     TickType_t prevTick = xTaskGetTickCount();
     TickType_t currTick = prevTick;
-    TickType_t deltaTick = 1000;
+    TickType_t deltaTick = 1000; // 1 Hz for heartbeat and system status
 
     while (!timeToExit) {
+        // Send heartbeat and system status message
+        currTick = xTaskGetTickCount();
+
         if (pdTRUE == xQueueReceive(mavlinkMsgQueue, &msg, (TickType_t)10)) {
             res = mavlinkWriteMessage(&msg);
             if (res == NOK) {
@@ -347,11 +358,23 @@ void mavlinkWriteTask(void* _params)
                 printf("mavlinkWriteTask: failed to write message\r\n");
             }
         }
+
+        if (sendImuData) {
+            res = mavlinkSendImuMessage();
+            if (res == NOK) {
+                printf("mavlinkWriteTask: mavlinkSendImuMessage failed!\r\n");
+            }
+        }
+
+        if (sendBatteryData) {
+            res = mavlinkSendBatteryMessage();
+            if (res == NOK) {
+                printf("mavlinkWriteTask: sendBatteryData failed!\r\n");
+            }
+        }
         
-        // Send heartbeat and system status message
-        currTick = xTaskGetTickCount();
         if (currTick - prevTick >= deltaTick) {
-            mavlink_msg_heartbeat_pack(systemId, systemId, &msg, 
+            mavlink_msg_heartbeat_pack(systemId, MAV_COMP_ID_AUTOPILOT1, &msg, 
                 MAV_TYPE_GROUND_ROVER, MAV_AUTOPILOT_GENERIC,
                 MAV_MODE_PREFLIGHT, 0, MAV_STATE_STANDBY);
             res = mavlinkWriteMessage(&msg);
@@ -360,8 +383,8 @@ void mavlinkWriteTask(void* _params)
                 printf("mavlinkWriteTask: failed to write heartbeat message\r\n");
             }
 
-            mavlink_msg_sys_status_pack(systemId, systemId, &msg, 0, 0, 0, 0,
-                    12000, -1, -1, 0, 0, 0, 0, 0, 0);
+            mavlink_msg_sys_status_pack(systemId, MAV_COMP_ID_AUTOPILOT1, &msg,
+                    0, 0, 0, 0, 12000, -1, -1, 0, 0, 0, 0, 0, 0);
             res = mavlinkWriteMessage(&msg);
             if (res == NOK) {
                 // TODO: handle error
@@ -381,6 +404,111 @@ void mavlinkWriteTask(void* _params)
     mavlinkMsgQueue = 0;
 
     vTaskDelete(NULL);
+}
+
+int mavlinkSendImuMessage(void)
+{
+    // Get IMU data
+    Imu9_t imu9;
+    get_imu9_data(&imu9);
+
+    // Get current time [ms]
+    TickType_t ticks = xTaskGetTickCount();
+    
+    // Scale data
+    uint16_t ax = (uint16_t)round(imu9.a[0] / GRAVITY * 1000.);
+    uint16_t ay = (uint16_t)round(imu9.a[1] / GRAVITY * 1000.);
+    uint16_t az = (uint16_t)round(imu9.a[2] / GRAVITY * 1000.);
+
+    uint16_t gx = (uint16_t)round(imu9.g[0] * 1000.);
+    uint16_t gy = (uint16_t)round(imu9.g[1] * 1000.);
+    uint16_t gz = (uint16_t)round(imu9.g[2] * 1000.);
+    
+    uint16_t mx = (uint16_t)round(imu9.m[0] * 1000.);
+    uint16_t my = (uint16_t)round(imu9.m[1] * 1000.);
+    uint16_t mz = (uint16_t)round(imu9.m[2] * 1000.);
+
+    // Create mavlink message   
+    mavlink_message_t msg;
+    uint16_t msgLen = mavlink_msg_scaled_imu_pack(systemId, MAV_COMP_ID_IMU, 
+        &msg, (uint32_t)ticks, ax, ay, az, gx, gy, gz, mx, my, mz);
+    printf("mavlinkSendImuMessage: msgLen=%u\r\n", msgLen);
+    if (msgLen <= 0)
+        return NOK;
+    
+    // Send message
+    int res = mavlinkWriteMessage(&msg);
+    if (res == NOK) {
+        printf("mavlinkSendImuMessage: failed to write message\r\n");
+        return NOK;
+    }
+
+    return OK;
+}
+
+int mavlinkSendAttitudeMessage(void)
+{
+    // Get attitude data
+    Attitude_t att;
+    ahrs_get_attitude(&att);
+
+    // Get current time [ms]
+    TickType_t ticks = xTaskGetTickCount();
+    
+    // Create mavlink message   
+    mavlink_message_t msg;
+    uint16_t msgLen = mavlink_msg_attitude_quaternion_pack(systemId, 
+        MAV_COMP_ID_AUTOPILOT1, &msg, (uint32_t)ticks, att.qw, att.qx, att.qy,
+        att.qz, att.wx, att.wy, att.wz);
+    printf("mavlinkSendAttitudeMessage: msgLen=%u\r\n", msgLen);
+    if (msgLen <= 0)
+        return NOK;
+
+    //mavlink_msg_attitude_pack
+    
+    // Send message
+    int res = mavlinkWriteMessage(&msg);
+    if (res == NOK) {
+        printf("mavlinkSendAttitudeMessage: failed to write message\r\n");
+        return NOK;
+    }
+
+    return OK;
+}
+
+int mavlinkSendBatteryMessage(void)
+{
+    // Get battery data
+
+    uint8_t battId = 0;
+    uint8_t battFct = MAV_BATTERY_FUNCTION_PROPULSION;
+    uint8_t battType = MAV_BATTERY_TYPE_LIPO;
+    int16_t temp = INT16_MAX;
+    uint16_t volts[10] = { 0, };
+    volts[0] = 12000; // @TODO get_vbat_mv();
+    int16_t curr = -1; // @TODO get_ibat_ma();
+    int32_t currCons = -1;
+    int32_t nrjCons = -1;
+    int8_t battRem = -1;
+    int32_t timeRem = 0;
+    uint8_t battState = MAV_BATTERY_CHARGE_STATE_OK;
+    // Create mavlink message   
+    mavlink_message_t msg;
+    uint16_t msgLen = mavlink_msg_battery_status_pack(systemId,
+        MAV_COMP_ID_AUTOPILOT1, &msg, battId, battFct, battType, temp, volts,
+        curr, currCons, nrjCons, battRem, timeRem, battState);
+    printf("mavlinkSendBatteryMessage: msgLen=%u\r\n", msgLen);
+    if (msgLen <= 0)
+        return NOK;
+    
+    // Send message
+    int res = mavlinkWriteMessage(&msg);
+    if (res == NOK) {
+        printf("mavlinkSendBatteryMessage: failed to write message\r\n");
+        return NOK;
+    }
+
+    return OK;
 }
 
 uint8_t enqueueMavlinkMessage(mavlink_message_t _msg)

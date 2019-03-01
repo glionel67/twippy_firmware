@@ -54,6 +54,12 @@ typedef struct RollPitchYawAndRate_s {
     float wx, wy, wz;
 } RollPitchYawAndRate_t;
 
+typedef struct Attitude_s {
+    float timestamp;
+    float qw, qx, qy, qz; // Quaternion attitude
+    float wx, wy, wz; // Angular velocity [rad/s]
+} Attitude_t;
+
 // -------------------------------------------------------------------------- //
 // --- Prototypes
 // -------------------------------------------------------------------------- //
@@ -66,6 +72,8 @@ void ahrs_reset(void);
 void ahrs_task(void* _params);
 
 //uint8_t ahrs_test(void);
+
+void ahrs_get_attitude(Attitude_t* _att);
 
 uint8_t ahrs_get_quaternion(Quaternion_t* quat);
 

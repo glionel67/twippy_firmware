@@ -75,4 +75,10 @@ int mavlinkWriteMessage(const mavlink_message_t* _msg);
 void mavlinkReadTask(void* _params);
 void mavlinkWriteTask(void* _params);
 
+int mavlinkSendImuMessage(void);
+int mavlinkSendAttitudeMessage(void);
+int mavlinkSendGpsMessage(void); // @TODO
+int mavlinkSendWheelDistMessage(void); // @TODO
+int mavlinkSendBatteryMessage(void);
+
 uint8_t enqueueMavlinkMessage(mavlink_message_t _msg);

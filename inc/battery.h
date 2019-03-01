@@ -8,7 +8,7 @@ enum {
     BAT_OK=0, BAT_VLOW, BAT_VCRITIC, BAT_IMAX
 };
 
-typedef struct {
+typedef struct Battery_s {
     uint16_t vbat; // [mV]
     uint16_t ibat; // [mA]
     uint8_t status;
@@ -25,8 +25,10 @@ typedef struct {
     uint16_t capacity_mah;
 } Battery_t;
 
-int init_battery(Battery_t* _bat);
+int init_battery(void);
 
-int check_battery(Battery_t* _bat);
+int check_battery(void);
 
 void battery_task(void* _params);
+
+void get_battery(Battery_t* _bat);
