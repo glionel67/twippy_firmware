@@ -2,6 +2,7 @@
 
 # Build
 cd twippy_firmware
+mkdir bin build
 make
 
 # Flash with dfu
