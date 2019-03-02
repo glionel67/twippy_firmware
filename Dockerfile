@@ -4,15 +4,20 @@ FROM ubuntu:16.04
 MAINTAINER Lionel <lionel.geneve@gmail.com>
 
 RUN apt-get update
+
 RUN apt-get install -y --no-install-recommends apt-utils
-RUN apt-get install -y software-properties-common
-RUN apt-get install -y cmake build-essential git openocd
-RUN apt-get clean
+RUN apt-get install -y \
+	software-properties-common \
+	cmake \
+	build-essential \
+	git \
+	openocd
+
+#RUN apt-get clean
 
 # Install cross-compilation toolchain
 RUN add-apt-repository ppa:team-gcc-arm-embedded/ppa
-RUN apt-get update
-RUN apt-get install -y gcc-arm-embedded
+RUN apt-get update && apt-get install -y gcc-arm-none-eabi
 
 RUN mkdir -p /home/twippy/Workspace
 
