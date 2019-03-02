@@ -7,4 +7,6 @@ services:
 
 before_install:
 	- docker build -t ubuntu/xenial .
-	
+
+script:
+	- docker run --rm -v ${PWD}:/home/twippy/Workspace -w /home/twippy/Workspace -i -t twippy_docker make clean && make
