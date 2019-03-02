@@ -5,19 +5,22 @@ MAINTAINER Lionel <lionel.geneve@gmail.com>
 
 RUN apt-get update
 
+RUN dpkg --add-architecture i386
 RUN apt-get install -y --no-install-recommends apt-utils
 RUN apt-get install -y \
 	software-properties-common \
 	cmake \
 	build-essential \
 	git \
+	libncurses5 \
+	zip unzip \
 	openocd
 
 #RUN apt-get clean
 
 # Install cross-compilation toolchain
 RUN add-apt-repository ppa:team-gcc-arm-embedded/ppa
-RUN apt-get update && apt-get install -y gcc-arm-none-eabi
+RUN apt-get update && apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
 
 RUN mkdir -p /home/twippy/Workspace
 
