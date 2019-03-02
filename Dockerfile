@@ -22,7 +22,7 @@ RUN apt-get install -y \
 RUN add-apt-repository ppa:team-gcc-arm-embedded/ppa
 RUN apt-get update && apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi
 
-RUN mkdir -p /home/twippy/Workspace
+RUN mkdir -p /home/twippy/Workspace/
 
 # Set the working directory to Workspace
 #WORKDIR /home/twippy/Workspace
