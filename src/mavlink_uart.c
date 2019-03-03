@@ -476,6 +476,61 @@ int mavlinkSendAttitudeMessage(void)
     return OK;
 }
 
+int mavlinkSendGpsMessage(void)
+{
+    // Get GPS data
+    float latDeg = 7.0; // [deg]
+    float lonDeg = 40.; // [deg]
+    float altMet = 1.; // [m]
+    float hdop = 1.;
+    float vdop = 1.;
+    float speedOfGround = 1.; // [knot/s] or [m/s] ?
+    float courseOfGround = 0.; // [degrees] ?
+    float ellipsoidAlt = 1.;
+    float xyUncertainty = 1.;
+    float zUncertainty = 1.;
+    float speedUncertainty = 1.;
+    float headingUncertainty = 1.;
+
+    // Get current time [us]
+    uint64_t usTime = get_us_time();
+    // GPS fix type: GPS_FIX_TYPE_NO_GPS, GPS_FIX_TYPE_NO_FIX,
+    // GPS_FIX_TYPE_2D_FIX, GPS_FIX_TYPE_3D_FIX, GPS_FIX_TYPE_DGPS,
+    // GPS_FIX_TYPE_RTK_FLOAT, GPS_FIX_TYPE_RTK_FIXED, GPS_FIX_TYPE_STATIC, GPS_FIX_TYPE_PPP
+    uint8_t fixType = GPS_FIX_TYPE_2D_FIX; 
+    int32_t lat = (int32_t)round(latDeg * 1e7);
+    int32_t lon = (int32_t)round(lonDeg * 1e7);
+    int32_t alt = (int32_t)round(altMet * 1e3);
+    uint16_t eph = (uint16_t)round(hdop); //  If unknown, set to: UINT16_MAX
+    uint16_t epv = (uint16_t)round(vdop); //  If unknown, set to: UINT16_MAX
+    uint16_t vel = (uint16_t)round(speedOfGround * 1e2); // [cm/s]  If unknown, set to: UINT16_MAX
+    uint16_t cog = (uint16_t)round(courseOfGround * 1e2); // [cdeg]  If unknown, set to: UINT16_MAX
+    uint8_t nSats = 6; // If unknown, set to 255
+    int32_t ellAlt = (int32_t)round(ellipsoidAlt * 1e3);
+    uint32_t hAcc = (int32_t)round(xyUncertainty * 1e3); // [mm] Position uncertainty. Positive for up.
+    uint32_t vAcc = (int32_t)round(zUncertainty * 1e3); // [mm] Altitude uncertainty. Positive for up.
+    uint32_t velAcc = (int32_t)round(speedUncertainty * 1e3); // [mm] Speed uncertainty. Positive for up.
+    uint32_t hdgAcc = (int32_t)round(headingUncertainty * 1e5); // [degE5] Heading / track uncertainty
+
+    // Create mavlink message   
+    mavlink_message_t msg;
+    uint16_t msgLen = mavlink_msg_gps_raw_int_pack(systemId, MAV_COMP_ID_GPS,
+        &msg, usTime, fixType, lat, lon, alt, eph, epv, vel, cog, nSats, ellAlt,
+        hAcc, vAcc,  velAcc, hdgAcc);
+    printf("mavlinkSendGpsMessage: msgLen=%u\r\n", msgLen);
+    if (msgLen <= 0)
+        return NOK;
+
+    // Send message
+    int res = mavlinkWriteMessage(&msg);
+    if (res == NOK) {
+        printf("mavlinkSendAttitudeMessage: failed to write message\r\n");
+        return NOK;
+    }
+
+    return OK;
+}
+
 int mavlinkSendBatteryMessage(void)
 {
     // Get battery data
