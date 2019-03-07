@@ -9,7 +9,6 @@
 #include "gps.h"
 #include "config.h"
 #include "uart1.h"
-#include "uart3.h"
 #include "nmea.h"
 
 // C lib
@@ -75,8 +74,7 @@ void gps_task(void* _params)
 
     while (isRunning) {
         do {
-            //res = uart1_deque_byte(&byte, 1);
-            res = uart3_deque_byte(&byte, 1);
+            res = uart1_deque_byte(&byte, 1);
             if (res == OK) {
                 //printf("gps_task: rcv c=0x%X from uart queue\r\n", byte);
                 // Parse char

@@ -93,7 +93,7 @@ FREERTOS_SRCS+= port.c
 FREERTOS_SRCS+= freeRtosUtils.c
 
 # PROJECT
-PROJECT_SRCS = main_test.c # main.c
+PROJECT_SRCS = main.c # main_test.c
 PROJECT_SRCS+= stm32f4xx_it.c
 PROJECT_SRCS+= gpio.c
 PROJECT_SRCS+= uart1.c uart2.c uart3.c

@@ -10,14 +10,14 @@
 
 #include "config.h"
 #include "usTimer.h"
-#include "uart1.h"
-#include "uart2.h"
+//#include "uart1.h"
+//#include "uart2.h"
 #include "uart3.h"
 #include "imu.h"
 #include "ahrs.h"
 
 #define UART_READ(__data__, __len__) uart3_read(__data__, __len__)
-#define UART_WRITE(__data__, __len__) uart1_write(__data__, __len__)
+#define UART_WRITE(__data__, __len__) uart3_write(__data__, __len__)
 
 static bool sendImuData = true;
 static bool sendBatteryData = true;
@@ -106,7 +106,6 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
     mavlink_status_t status;
     uint8_t msgReceived = 0;
 
-    //int res = uart1_read(&cp, 1); // this function locks the port during read
     int res = UART_READ(&cp, 1);
 
     if (res == OK) { // PARSE MESSAGE
@@ -306,7 +305,6 @@ int mavlinkWriteMessage(const mavlink_message_t* _msg)
     //printf("mavlinkWriteMessage: len=%u\r\n", len);
 
     // Write buffer to serial port, locks port while writing
-    //int res = uart1_write(buf, len);
     int res = UART_WRITE(buf, len);
 
     return res;

@@ -18,9 +18,9 @@ typedef struct GpsData_s {
     uint8_t heure, minute;
     float seconde;
     float latitude; /** [degrees] */
-    char ns;
+    char ns; /** 'N' or 'S' */
     float longitude; /** [degrees] */
-    char ew;
+    char ew; /** 'E' or 'W' */
     float altitude; /** [m] */
     float speedOverGround; /** [knot s] */
     float courseOverGroung; /** [degrees] */

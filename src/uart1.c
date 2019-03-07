@@ -55,11 +55,11 @@ int uart1_init(void)
   }
 
   // Enable UART RX interrupt
-  // HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-  // HAL_NVIC_SetPriority(USART1_IRQ, 10, 0);
-  // HAL_NVIC_EnableIRQ(USART1_IRQ);
-  // __HAL_UART_ENABLE_IT(&UartHandle1, UART_IT_RXNE);
-  // __HAL_UART_ENABLE_IT(&UartHandle1, UART_IT_ERR);
+  HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
+  HAL_NVIC_SetPriority(USART1_IRQ, 10, 0);
+  HAL_NVIC_EnableIRQ(USART1_IRQ);
+  __HAL_UART_ENABLE_IT(&UartHandle1, UART_IT_RXNE);
+  __HAL_UART_ENABLE_IT(&UartHandle1, UART_IT_ERR);
 
   isInit = true;
   hasOverrun = false;
@@ -204,28 +204,27 @@ bool uart1_has_overrun(void)
   return result;
 }
 
-// void __attribute__((used)) USART1_IRQHandler(void)
-// {
-//   uint8_t rxByte = 0;
-//   portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-//   if (USART1->SR & USART_SR_RXNE) {
-//     rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF);
-//     //printf("uart1_int: 0x%x\r\n", rxByte);
-//     xQueueSendFromISR(uart1RxQueue, (const void*)&rxByte, &xHigherPriorityTaskWoken);
-//     if (xHigherPriorityTaskWoken) {
-//       portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-//     }
-//   }
-//   else {
-//     printf("uart1_int: ERROR\r\n");
-//     rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF); // Flush data register
-//     /** if we get here, the error is most likely caused by an overrun!
-//      * - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun error)
-//      * - and IDLE (Idle line detected) pending bits are cleared by software sequence:
-//      * - reading USART_SR register followed reading the USART_DR register.
-//      */
-//     //asm volatile ("" : "=m" (UART1_TYPE->SR) : "r" (UART1_TYPE->SR)); // force non-optimizable reads
-//     //asm volatile ("" : "=m" (UART1_TYPE->DR) : "r" (UART1_TYPE->DR)); // of these two registers
-//     hasOverrun = true;
-//   }
-// }
+void __attribute__((used)) USART1_IRQHandler(void)
+{
+  uint8_t rxByte = 0;
+  portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
+  if (USART1->SR & USART_SR_RXNE) {
+    rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF);
+    xQueueSendFromISR(uart1RxQueue, (const void*)&rxByte, &xHigherPriorityTaskWoken);
+    if (xHigherPriorityTaskWoken) {
+      portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+  }
+  else {
+    printf("uart1_int: ERROR\r\n");
+    rxByte = (uint8_t)(USART1->DR & (uint8_t)0x00FF); // Flush data register
+    /** if we get here, the error is most likely caused by an overrun!
+     * - PE (Parity error), FE (Framing error), NE (Noise error), ORE (OverRun error)
+     * - and IDLE (Idle line detected) pending bits are cleared by software sequence:
+     * - reading USART_SR register followed reading the USART_DR register.
+     */
+    //asm volatile ("" : "=m" (UART1_TYPE->SR) : "r" (UART1_TYPE->SR)); // force non-optimizable reads
+    //asm volatile ("" : "=m" (UART1_TYPE->DR) : "r" (UART1_TYPE->DR)); // of these two registers
+    hasOverrun = true;
+  }
+}

@@ -269,11 +269,11 @@ int main(void)
     goto hell;
   }
 
-  if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
-    UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
-    printf("Failed to create uart1_task\r\n");
-    goto hell;
-  }
+  // if (!(pdPASS == xTaskCreate(uart1_task, (const char*)"uart1_task",
+  //   UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
+  //   printf("Failed to create uart1_task\r\n");
+  //   goto hell;
+  // }
 
   // if (!(pdPASS == xTaskCreate(uart2_task, (const char*)"uart2_task",
   //   UART_TASK_STACK_SIZE, NULL, UART_TASK_PRIORITY, NULL))) {
@@ -292,7 +292,6 @@ int main(void)
     printf("Failed to create encoder_task\r\n");
     goto hell;
   }
-
 
   if (!(pdPASS == xTaskCreate(imu_task, (const char*)"imu_task",
     IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
@@ -368,24 +367,26 @@ void SystemClock_Config(void)
   HAL_StatusTypeDef ret = HAL_OK;
 
   __HAL_RCC_SYSCFG_CLK_ENABLE();
-  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_RCC_PWR_CLK_ENABLE(); // Enable Power Control clock
 
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  RCC_OscInitStruct.OscillatorType      = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState        = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue   = 0x10;
-  RCC_OscInitStruct.PLL.PLLState      = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM        = 16;
-  RCC_OscInitStruct.PLL.PLLN        = 360;
-  RCC_OscInitStruct.PLL.PLLP        = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ        = 7;
-  RCC_OscInitStruct.PLL.PLLR        = 6;
+  // Enable HSI Oscillator and activate PLL with HSI as source
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT; //0x10;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 360;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 7;
+  RCC_OscInitStruct.PLL.PLLR = 6;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
     Error_Handler();
   }
 
+  // Activate the OverDrive to reach the 180 MHz Frequency
   ret = HAL_PWREx_EnableOverDrive();
   if (ret != HAL_OK) {
     Error_Handler();
@@ -396,7 +397,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4; // To have a 45 MHz clock
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1; // To have a 90 MHz clock
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2; // To have a 90 MHz clock
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
     Error_Handler();
   }

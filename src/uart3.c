@@ -32,11 +32,13 @@ int uart3_init(void)
     return NOK;
   }
 
+  // UART TX FreeRTOS queue
   // uart3TxQueue = xQueueCreate(UART3_QUEUE_SIZE, sizeof(uint8_t));
   // if (uart3TxQueue == 0) {
   //   return NOK;
   // }
 
+  // UART RX FreeRTOS queue
   uart3RxQueue = xQueueCreate(UART3_QUEUE_SIZE, sizeof(uint8_t));
   if (uart3RxQueue == 0) {
     return NOK;
