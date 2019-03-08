@@ -1,3 +1,11 @@
+/**
+ * \file usTimer.h
+ * \brief Microsecond [us] timer
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ */
+
 #pragma once
 
 #include <stdint.h>

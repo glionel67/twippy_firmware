@@ -74,6 +74,7 @@ int mavlinkWriteMessage(const mavlink_message_t* _msg);
 
 void mavlinkReadTask(void* _params);
 void mavlinkWriteTask(void* _params);
+//void mavlinkTask(void* _params);
 
 int mavlinkSendImuMessage(void);
 int mavlinkSendAttitudeMessage(void);

@@ -4,12 +4,12 @@
 		"selected_items":
 		[
 			[
-				"uit",
+				"uint",
 				"uint32_t"
 			],
 			[
-				"uint",
-				"uint16_t"
+				"uit",
+				"uint32_t"
 			],
 			[
 				"al",
@@ -520,54 +520,37 @@
 	"buffers":
 	[
 		{
-			"file": "src/main_test.c",
+			"file": "src/main.c",
 			"settings":
 			{
-				"buffer_size": 4067,
+				"buffer_size": 11635,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/uart1.c",
-			"settings":
-			{
-				"buffer_size": 5974,
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "inc/imu.h",
+			"file": "src/buzzer.c",
 			"settings":
 			{
-				"buffer_size": 1772,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "inc/mavlink_uart.h",
-			"settings":
-			{
-				"buffer_size": 1960,
+				"buffer_size": 3048,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "src/mavlink_uart.c",
+			"file": "inc/motor.h",
 			"settings":
 			{
-				"buffer_size": 19234,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
+				"buffer_size": 2694,
+				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "inc/usTimer.h",
+			"file": "inc/main.h",
 			"settings":
 			{
-				"buffer_size": 231,
-				"line_ending": "Unix"
+				"buffer_size": 11489,
+				"line_ending": "Windows"
 			}
 		}
 	],
@@ -603,12 +586,48 @@
 	},
 	"expanded_folders":
 	[
-		"/home/ellion/Workspace/twippy_firmware",
-		"/home/ellion/Workspace/twippy_firmware/inc",
-		"/home/ellion/Workspace/twippy_firmware/src"
+		"/home/user/Workspace/twippy_firmware",
+		"/home/user/Workspace/twippy_firmware/inc",
+		"/home/user/Workspace/twippy_firmware/src"
 	],
 	"file_history":
 	[
+		"/home/user/Workspace/twippy_firmware/src/motor.c",
+		"/home/user/Workspace/twippy_firmware/inc/servo.h",
+		"/home/user/Workspace/twippy_firmware/src/servo.c",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc_ex.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc.h",
+		"/home/user/Workspace/twippy_firmware/src/led.c",
+		"/home/user/Workspace/twippy_firmware/src/i2c1.c",
+		"/home/user/Workspace/twippy_firmware/src/encoder.c",
+		"/home/user/Workspace/twippy_firmware/inc/main.h",
+		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
+		"/home/user/Workspace/twippy_firmware/src/battery.c",
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
+		"/home/user/Workspace/twippy_firmware/src/buzzer.c",
+		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
+		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
+		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.c",
+		"/home/user/Workspace/twippy_firmware/src/uart3.c",
+		"/home/user/Workspace/twippy_firmware/inc/mavlink_uart.h",
+		"/home/user/Workspace/twippy_firmware/src/imu.c",
+		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
+		"/home/user/Workspace/twippy_firmware/src/uart1.c",
+		"/home/user/Workspace/twippy_firmware/src/gps.c",
+		"/home/user/Workspace/twippy_firmware/README.md",
+		"/home/user/Workspace/twippy_firmware/inc/usTimer.h",
+		"/home/user/Workspace/twippy_firmware/inc/gps.h",
+		"/home/user/Workspace/twippy_firmware/Makefile",
+		"/home/user/Workspace/twippy_firmware/src/main_test.c",
+		"/home/user/Workspace/twippy_firmware/inc/motor.h",
+		"/home/user/Workspace/twippy_firmware/src/main.c",
+		"/home/user/Workspace/twippy_firmware/src/adc.c",
+		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
+		"/home/user/Workspace/twippy_firmware/src/gpio.c",
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_uart.c",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_uart.h",
+		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
+		"/home/user/Workspace/twippy_firmware/inc/imu.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/nmea.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/ahrs.h",
 		"/home/ellion/Workspace/twippy_firmware/src/ahrs.c",
@@ -620,64 +639,36 @@
 		"/home/ellion/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/ellion/Workspace/twippy_firmware/src/mpu9250.c",
 		"/home/ellion/Workspace/twippy_firmware/Makefile",
-		"/home/user/Workspace/twippy_firmware/src/main.c",
 		"/home/user/Workspace/twippy_firmware/inc/nmea.h",
 		"/home/user/Workspace/twippy_firmware/src/nmea.c",
-		"/home/user/Workspace/twippy_firmware/inc/main.h",
 		"/home/user/Workspace/twippy_firmware/src/uart2.c",
-		"/home/user/Workspace/twippy_firmware/src/uart1.c",
-		"/home/user/Workspace/twippy_firmware/src/gpio.c",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_gpio.c",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/mavlink/protocol.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio_ex.h",
-		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.c",
-		"/home/user/Workspace/twippy_firmware/inc/mavlink_uart.h",
 		"/home/user/Workspace/twippy_firmware/mavlink/mavlink_helpers.h",
 		"/home/user/Workspace/twippy_firmware/mavlink/common/mavlink_msg_heartbeat.h",
 		"/home/user/Workspace/twippy_firmware/mavlink/mavlink_types.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_uart.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
 		"/home/user/Workspace/twippy_firmware/inc/uart1.h",
-		"/home/user/Workspace/twippy_firmware/src/uart3.c",
-		"/home/user/Workspace/twippy_firmware/src/imu.c",
-		"/home/user/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/src/i2c2.c",
-		"/home/user/Workspace/twippy_firmware/src/mpu9250.c",
-		"/home/user/Workspace/twippy_firmware/README.md",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/Legacy/stm32_hal_legacy.h",
-		"/home/user/Workspace/twippy_firmware/src/i2c1.c",
 		"/home/user/Workspace/twippy_firmware/src/spi.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_i2c.h",
 		"/home/user/Workspace/twippy_firmware/inc/i2c2.h",
-		"/home/user/Workspace/twippy_firmware/src/gps.c",
 		"/home/user/Workspace/twippy_firmware/inc/uart3.h",
 		"/home/user/Workspace/twippy_firmware/inc/uart2.h",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_uart.c",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/queue.h",
 		"/home/user/Workspace/twippy_firmware/CMSIS/inc/stm32f446xx.h",
 		"/home/user/Workspace/twippy_firmware/src/syscalls.c",
-		"/home/user/Workspace/twippy_firmware/src/usTimer.c",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_usart.h",
 		"/home/user/Workspace/twippy_firmware/src/pid_controller.c",
-		"/home/user/Workspace/twippy_firmware/src/balance_control.c",
-		"/home/user/Workspace/twippy_firmware/src/motor.c",
 		"/home/user/Workspace/twippy_firmware/src/motor_control.c",
-		"/home/user/Workspace/twippy_firmware/src/led.c",
-		"/home/user/Workspace/twippy_firmware/src/encoder.c",
 		"/home/user/Workspace/twippy_firmware/src/com.c",
-		"/home/user/Workspace/twippy_firmware/src/buzzer.c",
-		"/home/user/Workspace/twippy_firmware/src/battery.c",
-		"/home/user/Workspace/twippy_firmware/src/ahrs.c",
-		"/home/user/Workspace/twippy_firmware/src/adc.c",
-		"/home/user/Workspace/twippy_firmware/src/servo.c",
 		"/home/user/Workspace/twippy_firmware/inc/led.h",
 		"/home/user/Workspace/twippy_firmware/src/stm32f4xx_it.c",
 		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_it.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/portmacro.h",
-		"/home/user/Workspace/twippy_firmware/inc/gps.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_cortex.c",
 		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_hal_conf.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_conf_template.h",
@@ -698,22 +689,17 @@
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/task.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/FreeRTOS.h",
 		"/home/user/Workspace/twippy_firmware/src/mavlink_uart.cpp",
-		"/home/user/Workspace/twippy_firmware/inc/encoder.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/mpu_wrappers.h",
 		"/home/user/Workspace/twippy_firmware/FreeRTOS/inc/projdefs.h",
-		"/home/user/Workspace/twippy_firmware/inc/usTimer.h",
 		"/home/user/Workspace/twippy_firmware/inc/adc.h",
 		"/home/user/Workspace/twippy_firmware/inc/battery.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_adc_ex.c",
 		"/home/user/Workspace/twippy_firmware/inc/buzzer.h",
-		"/home/user/Workspace/twippy_firmware/inc/motor.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
 		"/media/user/TINYKEY/MapBuilder/testOffline.cpp",
-		"/home/user/Workspace/twippy_firmware/inc/servo.h",
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
 		"/home/user/Workspace/twippy_firmware/inc/spi.h",
 		"/home/user/Workspace/twippy_firmware/inc/ahrs.h",
-		"/home/user/Workspace/twippy_firmware/inc/imu.h",
 		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/user/Workspace/twippy_firmware/inc/motor_control.h",
 		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
@@ -722,8 +708,6 @@
 		"/home/user/Workspace/twippy_firmware/src/encoders.c",
 		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
 		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_rcc_ex.h",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_rcc.c",
 		"/home/user/Workspace/twippy_firmware/src/balance_controller.c",
 		"/home/user/Workspace/twippy_firmware/inc/balance_controller.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_cortex.h",
@@ -735,8 +719,7 @@
 		"/home/user/Workspace/catkin_ws/src/alfs/scripts/publish_global_pose.py",
 		"/home/user/Workspace/stm32f446/inc/uart.h",
 		"/home/user/Workspace/stm32f446/src/stm32f4xx_it.c",
-		"/home/user/Workspace/stm32f446/hal/src/stm32f4xx_hal.c",
-		"/home/user/Workspace/stm32f446/FreeRTOS/src/port.c"
+		"/home/user/Workspace/stm32f446/hal/src/stm32f4xx_hal.c"
 	],
 	"find":
 	{
@@ -755,6 +738,16 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"imuDataReady",
+			"mavlinkReadMessage",
+			"sendImuData",
+			"send",
+			"mavlinkS",
+			"uart",
+			"uart3",
+			"__HAL_RCC_UART3_CLK_ENABLE",
+			"__HAL_RCC_USART3_CLK_ENABLE",
+			"GPIO_PIN_9",
 			"_bat->",
 			"mavlinkWriteMessage",
 			"UART_WRITE",
@@ -872,17 +865,7 @@
 			"PBxn",
 			"x",
 			"normalize",
-			"lock",
-			"watchd",
-			"imu",
-			"lock",
-			"sensorsDataReady",
-			"twrTagInit",
-			"sensorsDataReady",
-			"xSemaphoreHandle",
-			"sensorsDataReady",
-			"SemaphoreHandle_t",
-			"xSemaphoreCreateMutex"
+			"lock"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -915,24 +898,24 @@
 	"groups":
 	[
 		{
-			"selected": 4,
+			"selected": 1,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "src/main_test.c",
+					"file": "src/main.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4067,
+						"buffer_size": 11635,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1277,
-								1277
+								6623,
+								6623
 							]
 						],
 						"settings":
@@ -942,85 +925,57 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 120.0,
+						"translation.y": 4966.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 5,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "src/uart1.c",
+					"file": "src/buzzer.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5974,
+						"buffer_size": 3048,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2076,
+								2076
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 2,
+							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2880.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
+					"stack_index": 0,
 					"type": "text"
 				},
 				{
 					"buffer": 2,
-					"file": "inc/imu.h",
+					"file": "inc/motor.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1772,
+						"buffer_size": 2694,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								854,
-								854
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 600.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "inc/mavlink_uart.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1960,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1778,
-								1778
+								587,
+								587
 							]
 						],
 						"settings":
@@ -1030,57 +985,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1108.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "src/mavlink_uart.c",
+					"buffer": 3,
+					"file": "inc/main.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 19234,
+						"buffer_size": 11489,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								17380,
-								17380
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 7192.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "inc/usTimer.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 231,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								110,
-								110
+								9375,
+								9375
 							]
 						],
 						"settings":
@@ -1088,10 +1013,10 @@
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 3730.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 3,
 					"type": "text"
 				}
 			]

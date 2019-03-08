@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "config.h"
 #include "usTimer.h"
@@ -19,8 +20,13 @@
 #define UART_READ(__data__, __len__) uart3_read(__data__, __len__)
 #define UART_WRITE(__data__, __len__) uart3_write(__data__, __len__)
 
-static bool sendImuData = true;
-static bool sendBatteryData = true;
+
+static xSemaphoreHandle mutex = NULL;
+
+static bool sendImuData = false;
+static bool sendAttitudeData = false;
+static bool sendGpsData = false;
+static bool sendBatteryData = false;
 
 static TaskHandle_t readTaskHandle = 0;
 static TaskHandle_t writeTaskHandle = 0;
@@ -65,7 +71,17 @@ int mavlinkInit(void)
     resetTimestamps(&mavlinkMessages.timestamps);
 
     lastStatus.packet_rx_drop_count = 0;
-    return 1;
+
+    mutex = xSemaphoreCreateMutex();
+    if (mutex == NULL) {
+        printf("mavlinkInit: mutex creation NOK\r\n");
+        return 0;
+    }
+    else {
+        printf("mavlinkInit: mutex creation OK\r\n");
+    }
+
+    return OK;
 }
 
 int mavlinkStart(void)
@@ -106,7 +122,11 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
     mavlink_status_t status;
     uint8_t msgReceived = 0;
 
+    while (xSemaphoreTake(mutex, (TickType_t)200) != pdTRUE);
+
     int res = UART_READ(&cp, 1);
+
+    xSemaphoreGive(mutex);
 
     if (res == OK) { // PARSE MESSAGE
         printf("mavlinkReadMessage: c=%c\r\n", cp);
@@ -304,8 +324,12 @@ int mavlinkWriteMessage(const mavlink_message_t* _msg)
     unsigned len = mavlink_msg_to_send_buffer(buf, _msg);
     //printf("mavlinkWriteMessage: len=%u\r\n", len);
 
-    // Write buffer to serial port, locks port while writing
+    // Write buffer to serial port
+    while (xSemaphoreTake(mutex, (TickType_t)200) != pdTRUE);
+
     int res = UART_WRITE(buf, len);
+    
+    xSemaphoreGive(mutex);
 
     return res;
 }
@@ -364,6 +388,20 @@ void mavlinkWriteTask(void* _params)
             }
         }
 
+        if (sendAttitudeData) {
+            res = mavlinkSendAttitudeMessage();
+            if (res == NOK) {
+                printf("mavlinkWriteTask: mavlinkSendAttitudeMessage failed!\r\n");
+            }
+        }
+
+        if (sendGpsData) {
+            res = mavlinkSendGpsMessage();
+            if (res == NOK) {
+                printf("mavlinkWriteTask: mavlinkSendGpsMessage failed!\r\n");
+            }
+        }
+
         if (sendBatteryData) {
             res = mavlinkSendBatteryMessage();
             if (res == NOK) {
@@ -403,6 +441,8 @@ void mavlinkWriteTask(void* _params)
 
     vTaskDelete(NULL);
 }
+
+//void mavlinkTask(void* _params) { }
 
 int mavlinkSendImuMessage(void)
 {

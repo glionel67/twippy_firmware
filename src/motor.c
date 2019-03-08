@@ -24,14 +24,14 @@ static float inputVoltage = 0.f;
 
 int init_motors(void)
 {
-	int ret = 0;
+	int ret = NOK;
 
 	memset((void*)&motors, 0, sizeof(Motor_t));
 
 	motorQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motor_t));
 	if (motorQueue == 0) {
 		printf("init_motors: motorQueue creation NOK\r\n");
-		return -1;
+		return NOK;
 	}
     else {
         printf("init_motors: motorQueue creation OK\r\n");
@@ -48,7 +48,7 @@ int init_motors(void)
 	ret = HAL_TIM_PWM_Init(&TimHandleMotors);
 	if (ret != HAL_OK) {
 		printf("init_motors: HAL_TIM_PWM_Init NOK\r\n");
-		return -1;
+		return NOK;
 	}
 
 	sConfigMotors.OCMode = TIM_OCMODE_PWM1;
@@ -62,17 +62,17 @@ int init_motors(void)
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
 		printf("init_motors: HAL_TIM_PWM_ConfigChannel NOK\r\n");
-		return -1;
+		return NOK;
 	}
 
 	ret = HAL_TIM_PWM_Start(&TimHandleMotors,
 			TIM_PWM_MOTOR1_CHANNEL | TIM_PWM_MOTOR2_CHANNEL);
 	if (ret != HAL_OK) {
 		printf("init_motors: HAL_TIM_PWM_Start NOK\r\n");
-		return -1;
+		return NOK;
 	}
 
-	return 0;
+	return OK;
 }
 
 int set_pwm1(uint16_t _pwm)
@@ -147,14 +147,14 @@ int set_pwm12(uint16_t _pwm1, uint16_t _pwm2)
 int set_dc_pwm1(float _dc)
 {
 	motors.motors[MOTOR1].dutyCycle = _dc;
-	motors.motors[MOTOR1].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
+	motors.motors[MOTOR1].pwm = (uint16_t)round(_dc * (float)MOTORS_PWM_PERIOD);
 	return set_pwm1(motors.motors[MOTOR1].pwm);
 }
 
 int set_dc_pwm2(float _dc)
 {
 	motors.motors[MOTOR2].dutyCycle = _dc;
-	motors.motors[MOTOR2].pwm = (uint16_t)(_dc * (float) MOTORS_PWM_PERIOD);
+	motors.motors[MOTOR2].pwm = (uint16_t)round(_dc * (float)MOTORS_PWM_PERIOD);
 	return set_pwm2(motors.motors[MOTOR2].pwm);
 }
 

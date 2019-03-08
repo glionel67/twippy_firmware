@@ -7,13 +7,14 @@
 TIM_HandleTypeDef TimHandleBuzzer;
 static TIM_OC_InitTypeDef sConfigBuzzer;
 
-static const uint32_t timerClockFreq = 180000000; // 180MHz
-static uint32_t buzzerPeriod = 0; // (180MHz/10kHz) - 1
+static uint32_t timerClockFreq = 0;
+static uint32_t buzzerPeriod = 0;
 
 int init_buzzer(void)
 {
     int ret = 0;
 
+    timerClockFreq = 2 * HAL_RCC_GetPCLK1Freq();
     buzzerPeriod = timerClockFreq / 10000 - 1;
 
     // Init. GPIO done in init_gpios
@@ -76,7 +77,7 @@ int set_buzzer_freq(uint32_t _freq)
 int set_buzzer_dutyCycle(uint16_t _dc)
 {
     int ret = 0;
-    _dc = (_dc*buzzerPeriod)/100;
+    _dc = (_dc * buzzerPeriod) / 100;
 
     sConfigBuzzer.Pulse = _dc;
     ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, 

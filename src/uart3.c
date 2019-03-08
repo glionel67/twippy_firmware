@@ -77,8 +77,15 @@ int uart3_write(uint8_t* buf, uint32_t len)
   uint8_t res = HAL_UART_Transmit(&UartHandle3, buf, len, USART3_TIMEOUT);
   if (res == HAL_OK)
    return OK;
-  else
+  else {
+    if (res == HAL_ERROR)
+      printf("uart3_write: HAL_ERROR\r\n");
+    else if (res == HAL_BUSY)
+      printf("uart3_write: HAL_BUSY\r\n");
+    else if (res == HAL_TIMEOUT)
+      printf("uart3_write: HAL_TIMEOUT\r\n");
     return NOK;
+  }
 }
 
 int uart3_read(uint8_t* buf, uint32_t len)
@@ -86,8 +93,15 @@ int uart3_read(uint8_t* buf, uint32_t len)
   uint8_t res = HAL_UART_Receive(&UartHandle3, buf, len, USART3_TIMEOUT);
   if (res == HAL_OK)
      return OK;
-  else
+  else {
+    // if (res == HAL_ERROR)
+    //   printf("uart3_read: HAL_ERROR\r\n");
+    // else if (res == HAL_BUSY)
+    //   printf("uart3_read: HAL_BUSY\r\n");
+    // else if (res == HAL_TIMEOUT)
+    //   printf("uart3_read: HAL_TIMEOUT\r\n");
     return NOK;
+  }
 }
 
 void uart3_send_data(uint8_t* data, uint32_t size)

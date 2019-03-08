@@ -174,7 +174,7 @@ int main(void)
   // --- Init encoder
   // ------------------------------------------------------------------------ //
   ret = init_encoders();
-  if (ret != 0) {
+  if (ret == NOK) {
     printf("init_encoders NOK\r\n");
     Error_Handler();
   }
@@ -186,7 +186,7 @@ int main(void)
   // --- Init motor
   // ------------------------------------------------------------------------ //
   ret = init_motors();
-  if (ret != 0) {
+  if (ret == NOK) {
     printf("init_motors NOK\r\n");
     Error_Handler();
   }
@@ -222,7 +222,7 @@ int main(void)
   // --- Init Mavlink
   // ------------------------------------------------------------------------ //
   ret = mavlinkInit();
-  if (!ret) {
+  if (ret == NOK) {
     printf("mavlinkInit NOK\r\n");
     Error_Handler();
   }
@@ -258,6 +258,23 @@ int main(void)
   }
   else {
     printf("gps_start OK\r\n");
+  }
+
+  uint32_t hclkFreq = HAL_RCC_GetHCLKFreq();
+  uint32_t pclk1Freq = HAL_RCC_GetPCLK1Freq();
+  uint32_t pclk2Freq = HAL_RCC_GetPCLK2Freq();
+  printf("hclkFreq=%lu, pclk1Freq=%lu, pclk2Freq=%lu\r\n", hclkFreq, pclk1Freq, pclk2Freq);
+
+  ret = set_dc_pwm1(.5);
+  if (ret == -1) {
+    printf("set_dc_pwm1 NOK\r\n");
+    Error_Handler();
+  }
+
+  ret = set_buzzer_dutyCycle(50);
+  if (ret == -1) {
+    printf("set_buzzer_dutyCycle NOK\r\n");
+    Error_Handler();
   }
 
   // ------------------------------------------------------------------------ //

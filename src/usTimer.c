@@ -1,11 +1,18 @@
+/**
+ * \file usTimer.c
+ * \brief Microsecond [us] timer
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ */
+
 #include <string.h>
 
 #include "usTimer.h"
 #include "main.h"
 
 // Timer handler declaration
-TIM_HandleTypeDef TimHandle6;
-
+static TIM_HandleTypeDef TimHandle6;
 
 static uint64_t usTime = 0;
 
@@ -27,7 +34,7 @@ int init_us_timer(void)
     if (uwAPB1Prescaler == RCC_HCLK_DIV1)
       uwTimclock = HAL_RCC_GetPCLK1Freq();
     else
-      uwTimclock = 2*HAL_RCC_GetPCLK1Freq();
+      uwTimclock = 2 * HAL_RCC_GetPCLK1Freq();
   
     // Compute the prescaler value to have TIM6 counter clock equal to 1MHz
     uwPrescalerValue = (uint32_t) ((uwTimclock / 1000000U) - 1U);

@@ -37,7 +37,7 @@ static xQueueHandle motorMeasuredSpeedQueue = 0;
 
 int init_encoders(void) 
 {
-	int ret = 0;
+	int ret = NOK;
 	/*
 	encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
 	if (encoderQueue == 0) {
@@ -51,7 +51,7 @@ int init_encoders(void)
 	motorMeasuredSpeedQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(MotorMeasuredSpeed_t));
 	if (motorMeasuredSpeedQueue == 0) {
 		printf("init_encoders: motorMeasuredSpeedQueue creation NOK\r\n");
-		return -1;
+		return NOK;
 	}
     else {
         printf("init_encoders: motorMeasuredSpeedQueue creation OK\r\n");
@@ -79,14 +79,14 @@ int init_encoders(void)
 
 	ret = HAL_TIM_Encoder_Init(&TimHandleEnc1, &enc1);
 	if (ret != HAL_OK)
-		return -1;
+		return NOK;
 
 	TIM_ENC1->CNT = enc1_now = enc1_old;
 	t1_old = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
 	ret = HAL_TIM_Encoder_Start(&TimHandleEnc1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL
 	//ret = HAL_TIM_Encoder_Start_IT(TimHandleEnc1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL
 	if (ret != HAL_OK)
-		return -1;
+		return NOK;
 
 	// TIM4
 	TIM_ENC2_CLK_ENABLE();
@@ -109,17 +109,18 @@ int init_encoders(void)
 
 	ret = HAL_TIM_Encoder_Init(&TimHandleEnc2, &enc2);
 	if (ret != HAL_OK)
-		return -1;
+		return NOK;
 
 	TIM_ENC2->CNT = enc2_now = enc2_old;
 	t2_old = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();
 	ret = HAL_TIM_Encoder_Start(&TimHandleEnc2, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL
 	//ret = HAL_TIM_Encoder_Start_IT(TimHandleEnc2, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL
 	if (ret != HAL_OK)
-		return -1;
+		return NOK;
 
 	enc1_sum = 0, enc2_sum = 0;
-	return 0;
+	
+	return OK;
 }
 
 uint32_t enc1_get_direction(void)
