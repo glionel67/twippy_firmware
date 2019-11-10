@@ -8,7 +8,7 @@ typedef struct Pid_s {
 	float error, prevError; // Current and previous error
 	float integ; // Integral term
 	float deriv; // Derivative tern
-	float dt; // Sampling time [s]
+    float dt; // Controller sampling period [s]
 	float outP, outI, outD; // Output from the proportional, integral and derivative terms
 	float outF; // Output from the feedforward term
 	float iSat; // Integral saturation term
@@ -16,6 +16,7 @@ typedef struct Pid_s {
 	uint8_t enableFilter; // Enable/disable Low-pass filter
 	float cutoffFreq; // Low-pass filter cut-off frequency
 	float rc; // Low-pass filter rc coefficient
+    //float lastCall; // Last time the PID controller was called
 } Pid_t;
 
 typedef struct PidParams_s {
@@ -30,7 +31,7 @@ typedef struct PidParams_s {
 
 void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
 		float _sat, float _isat, float _dt);
-float pid_update(Pid_t* _pid, float _e, float _dt);
+float pid_update(Pid_t* _pid, float _ref, float _fdbk, float _dt);
 void pid_reset(Pid_t* _pid);
 void pid_set_filter(Pid_t* _pid, float _cutoffFreq);
 void pid_set_dt(Pid_t* _pid, float _dt);

@@ -1,0 +1,17 @@
+CMSIS/inc
+FreeRTOS/inc
+hal/inc
+hal/inc/Legacy
+inc
+mavlink
+mavlink/ardupilotmega
+mavlink/ASLUAV
+mavlink/autoquad
+mavlink/common
+mavlink/icarous
+mavlink/matrixpilot
+mavlink/minimal
+mavlink/slugs
+mavlink/standard
+mavlink/test
+mavlink/uAvionix

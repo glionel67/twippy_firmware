@@ -26,13 +26,15 @@ void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
 /*
  * dt in seconds [s]
  */
-float pid_update(Pid_t* _pid, float _e, float _dt)
+float pid_update(Pid_t* _pid, float _ref, float _fdbk, float _dt)
 {
 	float cmd = 0;
 	float alpha = 0, deriv = 0;
 
+    float error = _ref - _fdbk;
+
 	// Check validity of error
-	if (isnan(_e)) {
+    if (isnan(error)) {
 		return cmd;
 	}
 
@@ -42,7 +44,10 @@ float pid_update(Pid_t* _pid, float _e, float _dt)
 	}
 
 	// Error
-	_pid->error = _e;
+    _pid->error = error;
+
+    // Feedforward term
+    _pid->outF = _pid->kffwd * _ref;
 
 	// Proportional term
 	_pid->outP = _pid->kp * _pid->error;
@@ -71,8 +76,6 @@ float pid_update(Pid_t* _pid, float _e, float _dt)
 		_pid->deriv = deriv;
 	}
 	_pid->outD = _pid->kd * _pid->deriv;
-
-	//_pid->outF = _pid->kffwd * ref;
 
 	// Final command output
 	cmd = _pid->outF +_pid->outP + _pid->outI + _pid->outD;
@@ -123,6 +126,10 @@ void pid_set_ki(Pid_t* _pid, float _ki) {
 
 void pid_set_kd(Pid_t* _pid, float _kd) {
 	_pid->kd = _kd;
+}
+
+void pid_set_kffwd(Pid_t* _pid, float _kffwd) {
+    _pid->kffwd = _kffwd;
 }
 
 void pid_set_kpid(Pid_t* _pid, float _kp, float _ki, float _kd) {

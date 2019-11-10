@@ -541,7 +541,7 @@
 			"file": "src/pid_controller.c",
 			"settings":
 			{
-				"buffer_size": 2655,
+				"buffer_size": 2732,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -985,15 +985,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 2655,
+						"buffer_size": 2732,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1148,
-								1148
+								530,
+								530
 							]
 						],
 						"settings":

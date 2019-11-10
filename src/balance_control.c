@@ -15,6 +15,7 @@
 #define PID_PITCH_RATE_KP 1.
 #define PID_PITCH_RATE_KI .1
 #define PID_PITCH_RATE_KD .1
+#define PID_PITCH_RATE_KFFWD .1
 
 #define PID_PITCH_RATE_ISAT 1000
 #define PID_PITCH_RATE_SAT 1000
@@ -22,6 +23,7 @@
 #define PID_PITCH_KP 1.
 #define PID_PITCH_KI .1
 #define PID_PITCH_KD .1
+#define PID_PITCH_KFFWD .1
 
 #define PID_PITCH_ISAT 1000
 #define PID_PITCH_SAT 1000
@@ -46,11 +48,11 @@ uint8_t balance_control_init(const float dt)
 
   // Pitch rate controller
   pid_init(&pidPitchRate, PID_PITCH_RATE_KP, PID_PITCH_RATE_KI, PID_PITCH_RATE_KD,
-    PID_PITCH_RATE_SAT, PID_PITCH_RATE_ISAT, dt);
+    PID_PITCH_RATE_KFFWD, PID_PITCH_RATE_SAT, PID_PITCH_RATE_ISAT, dt);
 
   // Pitch controller
   pid_init(&pidPitch, PID_PITCH_KP, PID_PITCH_KI, PID_PITCH_KD, PID_PITCH_SAT, 
-    PID_PITCH_ISAT, dt);
+    PID_PITCH_KFFWD, PID_PITCH_ISAT, dt);
 
   isInit = 1;
 
@@ -65,9 +67,7 @@ uint8_t balance_control_test(void)
 float balance_control_correct_pitch_rate(float pitchRateActual,
         float pitchRateDesired, float _dt)
 {
-  float error = pitchRateDesired - pitchRateActual;
-
-  pitchOutput = pid_update(&pidPitchRate, error, _dt);
+  pitchOutput = pid_update(&pidPitchRate, pitchRateDesired, pitchRateActual, _dt);
 
   return pitchOutput;
 }
@@ -75,9 +75,7 @@ float balance_control_correct_pitch_rate(float pitchRateActual,
 void balance_control_correct_pitch(float pitchActual, 
         float pitchDesired, float* pitchRateDesired, float _dt)
 {
-  float error = pitchDesired - pitchActual;
-
-  *pitchRateDesired = pid_update(&pidPitch, error, _dt);
+  *pitchRateDesired = pid_update(&pidPitch, pitchDesired, pitchActual, _dt);
 }
 
 void balance_control_reset(void)
