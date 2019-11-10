@@ -2,17 +2,25 @@
 
 #include <math.h>
 
-void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _sat,
-		float _isat, float _dt)
+/*
+ * Initialize the pid controller structure
+ */
+void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
+		float _sat, float _isat, float _dt)
 {
 	_pid->kp = _kp;
 	_pid->ki = _ki;
 	_pid->kd = _kd;
+	_pid->kffwd = _kffwd;
 	_pid->iSat = _isat;
 	_pid->sat = _sat;
 	_pid->dt = _dt;
 	_pid->integ = _pid->deriv = 0;
 	_pid->error = _pid->prevError = 0;
+	_pid->outP = 0.;
+	_pid->outI = 0.;
+	_pid->outD = 0.;
+	_pid->outF = 0.;
 }
 
 /*
@@ -51,6 +59,8 @@ float pid_update(Pid_t* _pid, float _e, float _dt)
 	*/
 	_pid->outI = _pid->integ;
 
+	// TODO: implement integral freeze control
+
 	// Derivative term + LPF
 	deriv = (_pid->error - _pid->prevError) / _pid->dt;
 	if (_pid->enableFilter) {
@@ -60,12 +70,14 @@ float pid_update(Pid_t* _pid, float _e, float _dt)
 	else {
 		_pid->deriv = deriv;
 	}
-	_pid->outD = _pid->kd*_pid->deriv;
+	_pid->outD = _pid->kd * _pid->deriv;
+
+	//_pid->outF = _pid->kffwd * ref;
 
 	// Final command output
-	cmd = _pid->outP + _pid->outI + _pid->outD;
+	cmd = _pid->outF +_pid->outP + _pid->outI + _pid->outD;
 
-	// Command saturation
+	// Command saturation with anti wind-up
 	if (cmd > _pid->sat) {
 		_pid->integ += _pid->sat - cmd;
 		cmd = _pid->sat;
