@@ -11,6 +11,7 @@ typedef struct Pid_s {
     float dt; // Controller sampling period [s]
 	float outP, outI, outD; // Output from the proportional, integral and derivative terms
 	float outF; // Output from the feedforward term
+    float freezeIntegralThresh; // Freeze integration when the error is below this threshold
 	float iSat; // Integral saturation term
 	float sat; // Output saturation term
 	uint8_t enableFilter; // Enable/disable Low-pass filter

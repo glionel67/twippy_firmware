@@ -15,6 +15,7 @@ void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
 	_pid->iSat = _isat;
 	_pid->sat = _sat;
 	_pid->dt = _dt;
+    _pid->freezeIntegralThresh = 0.1;
 	_pid->integ = _pid->deriv = 0;
 	_pid->error = _pid->prevError = 0;
 	_pid->outP = 0.;
@@ -23,27 +24,34 @@ void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
 	_pid->outF = 0.;
 }
 
-/*
- * dt in seconds [s]
- */
+/**
+ * \fn pid_update
+ * \brief PID command computation
+ * \param _pid PID structure
+ * \param _ref reference/setpoint to reach
+ * \param _fdbk feedback/measurement
+ * \param _dt control sampling interval in seconds [s]
+ * */
 float pid_update(Pid_t* _pid, float _ref, float _fdbk, float _dt)
 {
 	float cmd = 0;
 	float alpha = 0, deriv = 0;
 
-    float error = _ref - _fdbk;
-
-	// Check validity of error
-    if (isnan(error)) {
-		return cmd;
-	}
-
 	// Check validity of dt
 	if (_dt > 2.f * _pid->dt) {
 		_dt = _pid->dt;
 	}
+    
+    // Compute PID error
+    float error = _ref - _fdbk;
 
-	// Error
+	// Check validity of error
+    if (isnan(error))
+    {
+		return cmd;
+	}
+    
+	// Save error
     _pid->error = error;
 
     // Feedforward term
@@ -52,21 +60,26 @@ float pid_update(Pid_t* _pid, float _ref, float _fdbk, float _dt)
 	// Proportional term
 	_pid->outP = _pid->kp * _pid->error;
 
-	// Integral term
-	_pid->integ += _pid->ki * _pid->error * _pid->dt;
-	/*
-	if (_pid->iSat != 0) {
-		if (_pid->integ > _pid->iSat)
-			_pid->integ = _pid->iSat;
-		else if (_pid->integ < -_pid->iSat)
-			_pid->integ = -_pid->iSat;
-	}
-	*/
-	_pid->outI = _pid->integ;
+	// Integral term (sum of errors over time)
+	// Integral freeze control
+    if (fabsf(_pid->error) > _pid->freezeIntegralThresh)
+    {
+        _pid->integ += _pid->error * _pid->dt;
+        
+        // Integral saturation
+        if (_pid->integ > _pid->iSat)
+            _pid->integ = _pid->iSat;
+        else if (_pid->integ < -_pid->iSat)
+            _pid->integ = -_pid->iSat;
+        
+        _pid->outI = _pid->ki * _pid->integ;
+    }
+    else
+    {
+        _pid->outI = 0.;
+    }
 
-	// TODO: implement integral freeze control
-
-	// Derivative term + LPF
+	// Derivative term + low pass filter (LPF)
 	deriv = (_pid->error - _pid->prevError) / _pid->dt;
 	if (_pid->enableFilter) {
 		alpha = _pid->dt / (_pid->dt + _pid->rc);
@@ -82,28 +95,33 @@ float pid_update(Pid_t* _pid, float _ref, float _fdbk, float _dt)
 
 	// Command saturation with anti wind-up
 	if (cmd > _pid->sat) {
-		_pid->integ += _pid->sat - cmd;
+		//_pid->integ += _pid->sat - cmd;
+        _pid->integ -= _pid->error * _pid->dt;
 		cmd = _pid->sat;
 	}
 	else if (cmd < -_pid->sat) {
-		_pid->integ += -_pid->sat - cmd;
+		//_pid->integ += -_pid->sat - cmd;
+        _pid->integ -= _pid->error * _pid->dt;
 		cmd = -_pid->sat;
 	}
 
-	// Save old error
+	// Save previous error
 	_pid->prevError = _pid->error;
 
 	// Check output command validity
-	if (isnan(cmd)) {
+	if (isnan(cmd))
 		return 0;
-	}
 
 	return cmd;
 }
 
 void pid_reset(Pid_t* _pid) {
-	_pid->integ = _pid->deriv = 0;
-	_pid->error = _pid->prevError = 0;
+	_pid->integ = _pid->deriv = 0.;
+	_pid->error = _pid->prevError = 0.;
+    _pid->outF = 0.;
+    _pid->outP = 0.;
+    _pid->outI = 0.;
+    _pid->outD = 0.;
 }
 
 void pid_set_filter(Pid_t* _pid, float _cutoffFreq) {
