@@ -1,3 +1,11 @@
+/**
+ * \file main.h
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Mapping and configuration of the GPIOs
+ */
+
 #pragma once
 
 #include "stm32f4xx_hal.h"
@@ -237,8 +245,8 @@
 #define LEDS_GPIO_CLK_DISABLE()             __HAL_RCC_GPIOC_CLK_DISABLE()
 
 #define LED1_PIN                            GPIO_PIN_13
-//#define LED2_PIN                            GPIO_PIN_14
-//#define LED3_PIN                            GPIO_PIN_15
+#define LED2_PIN                            GPIO_PIN_14
+#define LED3_PIN                            GPIO_PIN_15
 
 /******************************************************************************/
 /* Definition for dummies  */

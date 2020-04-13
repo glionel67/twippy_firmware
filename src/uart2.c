@@ -35,19 +35,16 @@ int uart2_init(void)
   UartHandle2.Init.Mode       = UART_MODE_TX_RX;
   UartHandle2.Init.OverSampling = UART_OVERSAMPLING_16;
 
-  if (HAL_UART_Init(&UartHandle2) != HAL_OK) {
+  if (HAL_UART_Init(&UartHandle2) != HAL_OK)
     return NOK;
-  }
 
   uart2TxQueue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart2TxQueue == 0) {
+  if (uart2TxQueue == 0)
     return NOK;
-  }
 
   uart2RxQueue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart2RxQueue == 0) {
+  if (uart2RxQueue == 0)
     return NOK;
-  }
 
   // HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
   // HAL_NVIC_SetPriority(USART2_IRQ, 11, 0);
@@ -88,7 +85,8 @@ void uart2_send_data(uint8_t* data, uint32_t size)
 {
   uint32_t i = 0;
 
-  for (i=0;i<size;i++) {
+  for (i=0;i<size;i++)
+  {
       while (!(USART2->SR & USART_FLAG_TXE));
       USART2->DR = (data[i] & 0x00FF);
    }
@@ -97,10 +95,10 @@ void uart2_send_data(uint8_t* data, uint32_t size)
 uint32_t uart2_enque_data(uint8_t* data, uint32_t size)
 {
   uint32_t i = 0;
-  for (i=0;i<size;i++) {
-    if (xQueueSend(uart2TxQueue, data+i, 10) == errQUEUE_FULL) {
+  for (i=0;i<size;i++)
+  {
+    if (xQueueSend(uart2TxQueue, data+i, 10) == errQUEUE_FULL)
       return i;
-    }
   }
   return 0;
 }
@@ -113,23 +111,29 @@ void uart2_task(void* _params)
 
   if (_params != 0) { }
 
-  while (1) {
-    if (pdTRUE == xQueueReceive(uart2TxQueue, &data, 0)) {
+  while (1)
+  {
+    if (pdTRUE == xQueueReceive(uart2TxQueue, &data, 0))
+    {
       HAL_UART_Transmit(&UartHandle2, &data, 1, USART2_TIMEOUT);
     }
-    if (pdTRUE == xQueueReceive(uart2RxQueue, rxBuffer+rxIdx, 0)) {
+    if (pdTRUE == xQueueReceive(uart2RxQueue, rxBuffer+rxIdx, 0))
+    {
       // Check end of transmission character: \n
-      if (rxBuffer[rxIdx] == '\n') {
+      if (rxBuffer[rxIdx] == '\n')
+      {
         // TODO
 
         // Reset idx
         rxIdx = 0;
       }
-      else {
+      else
+      {
         rxIdx++;
       }
     }
-    else {
+    else
+    {
       vTaskDelay(10/portTICK_RATE_MS);
     }
   }
@@ -141,7 +145,8 @@ void __attribute__((used)) USART2_IRQHandler(void)
 {
   uint8_t rxByte = 0;
   portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
-  if (__HAL_UART_GET_FLAG(&UartHandle2, UART_FLAG_RXNE)) {
+  if (__HAL_UART_GET_FLAG(&UartHandle2, UART_FLAG_RXNE))
+  {
     rxByte = (uint8_t)(USART2->DR & (uint8_t)0x00FF);
     xQueueSendFromISR(uart2RxQueue, &rxByte, &xHigherPriorityTaskWoken);
   }

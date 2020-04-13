@@ -42,7 +42,7 @@ static xQueueHandle motorDesiredVoltageQueue = 0;
 uint8_t motor_control_init(void)
 {
     if (isInit)
-        return 0;
+        return OK;
 
     /*
     motorControlQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorControls_t));
@@ -57,13 +57,13 @@ uint8_t motor_control_init(void)
     }
     */
     motorDesiredVoltageQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorDesiredVoltage_t));
-    if (motorDesiredVoltageQueue == 0) {
+    if (motorDesiredVoltageQueue == 0)
+    {
         printf("motors_control_init: motorDesiredVoltageQueue creation NOK\r\n");
-        return -1;
+        return NOK;
     }
-    else {
+    else
         printf("motors_control_init: motorDesiredVoltageQueue creation OK\r\n");
-    }
 
     // Init. motor 1 PID
     float dt = (float)MOTOR_CONTROL_PERIOD_MS / 1000.f;
@@ -74,7 +74,7 @@ uint8_t motor_control_init(void)
             PID_MOTOR2_KFFWD, PID_MOTOR2_SAT, PID_MOTOR2_ISAT, dt);
 
     isInit = 1;
-    return 1;
+    return OK;
 }
 
 uint8_t motor_control_test(void)
@@ -107,7 +107,8 @@ void motor_control_task(void* _params)
         // 1. Get encoder data
         ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
                 pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
-        if (ret) {
+        if (ret)
+        {
             //motorControls.timestamp = measuredSpeeds.timestamp;
             motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
             motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
@@ -132,7 +133,8 @@ void motor_control_task(void* _params)
             motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR1]);
         }
-        else {
+        else
+        {
             motorControls.controlState[MOTOR1].out = 
                 pid_update(&pidMotors[MOTOR1], motorControls.controlState[MOTOR1].des,
                            motorControls.controlState[MOTOR1].mes, dt);
@@ -143,7 +145,8 @@ void motor_control_task(void* _params)
             motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR2]);
         }
-        else {
+        else
+        {
             motorControls.controlState[MOTOR2].out = 
                 pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des,
                            motorControls.controlState[MOTOR2].mes, dt);

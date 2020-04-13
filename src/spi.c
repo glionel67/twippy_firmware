@@ -5,8 +5,8 @@
 
 SPI_HandleTypeDef Spi1Handle;
 
-uint8_t spi1_init(void) {
-  
+uint8_t spi1_init(void)
+{
   // Enable SPI clock
   SPI1_CLK_ENABLE();
 
@@ -24,14 +24,14 @@ uint8_t spi1_init(void) {
   Spi1Handle.Init.NSS               = SPI_NSS_SOFT; // SPI_NSS_HARD_OUTPUT
   Spi1Handle.Init.TIMode            = SPI_TIMODE_DISABLE;
 
-  if (HAL_SPI_Init(&Spi1Handle) != HAL_OK) {
-      return 0;
-  }
+  if (HAL_OK != HAL_SPI_Init(&Spi1Handle))
+      return NOK;
 
-  return 1;
+  return OK;
 }
 
-void spi1_deInit(void) {
+void spi1_deInit(void)
+{
   // ##-1- Reset peripherals
   __HAL_RCC_SPI1_FORCE_RESET();
   __HAL_RCC_SPI1_RELEASE_RESET();
@@ -45,8 +45,8 @@ void spi1_deInit(void) {
   HAL_SPI_DeInit(&Spi1Handle);
 }
 
-uint8_t spi1_set_speed(uint32_t baudratePrescaler) {
-
+uint8_t spi1_set_speed(uint32_t baudratePrescaler)
+{
   SPI1_IMU->CR1 = (SPI1_IMU->CR1 & ~SPI_BAUDRATEPRESCALER_256) | baudratePrescaler;
   /*
   HAL_SPI_DeInit(&Spi1Handle);
@@ -73,10 +73,11 @@ uint8_t spi1_set_speed(uint32_t baudratePrescaler) {
       return 0;
   }
 */
-  return 1;
+  return OK;
 }
 
-uint8_t write_byte_spi1(uint8_t reg, uint8_t data) {
+uint8_t write_byte_spi1(uint8_t reg, uint8_t data)
+{
   uint8_t ret = 0;
   uint8_t tx[2] = {reg, data};
 
@@ -86,14 +87,15 @@ uint8_t write_byte_spi1(uint8_t reg, uint8_t data) {
 
   HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
 
-  if (ret != HAL_OK)
-    return 0;
+  if (HAL_OK != ret)
+    return NOK;
   else
-    return 1;
+    return OK;
 }
 
 
-uint8_t read_byte_spi1(uint8_t reg, uint8_t* data) {
+uint8_t read_byte_spi1(uint8_t reg, uint8_t* data)
+{
   uint8_t ret = 0;
   uint8_t tx[2] = {reg | SPI_READ_WRITE_BIT, 0};
   uint8_t rx[2] = {0, 0};
@@ -106,10 +108,10 @@ uint8_t read_byte_spi1(uint8_t reg, uint8_t* data) {
 
   *data = rx[1];
 
-  if (ret != HAL_OK)
-    return 0;
+  if (HAL_OK != ret)
+    return NOK;
   else
-    return 1;
+    return OK;
 
   //if (HAL_SPI_Transmit(&Spi1Handle, &reg, 1, SPI1_TIMEOUT) != HAL_OK)
   //    return 0;
@@ -118,7 +120,8 @@ uint8_t read_byte_spi1(uint8_t reg, uint8_t* data) {
 }
 
 
-uint8_t write_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
+uint8_t write_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length)
+{
   uint8_t ret = 0;
 
   HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_RESET);
@@ -128,14 +131,15 @@ uint8_t write_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
 
   HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
 
-  if (ret != HAL_OK)
-    return 0;
+  if (HAL_OK != ret)
+    return NOK;
   else
-    return 1;
+    return OK;
 }
 
 
-uint8_t read_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
+uint8_t read_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length)
+{
   uint8_t ret = 0;
 
   reg |= SPI_READ_WRITE_BIT;
@@ -147,8 +151,8 @@ uint8_t read_bytes_spi1(uint8_t reg, uint8_t* data, uint8_t length) {
 
   HAL_GPIO_WritePin(SPI1_GPIO_PORT, SPI1_SS_PIN, GPIO_PIN_SET);
 
-  if (ret != HAL_OK)
-    return 0;
+  if (HAL_OK != ret)
+    return NOK;
   else
-    return 1;
+    return OK;
 }

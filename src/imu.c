@@ -25,58 +25,58 @@ uint8_t init_imu(void)
     uint8_t ret = 0; 
 
     ret = mpu9250_init(&mpu9250);
-    if (!ret) {
+    if (!ret)
+    {
         printf("mpu9250_init NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("mpu9250_init OK\r\n");
-    }
 
     // Augment SPI baudrate to access IMU data register
     ret = spi1_set_speed(SPI_BAUDRATE_11MHZ); //);
-    if (!ret) {
+    if (!ret)
+    {
         printf("spi1_set_speed NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("spi1_set_speed OK\r\n");
-    }
 
     // Create imu queue
     imu9Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu9_t));
-    if (imu9Queue == 0) {
+    if (imu9Queue == 0)
+    {
         printf("imu9Queue creation NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("imu9Queue creation OK\r\n");
-    }
 
     imu6Queue = xQueueCreate(IMU_QUEUE_SIZE, sizeof(Imu6_t));
-    if (imu6Queue == 0) {
+    if (imu6Queue == 0)
+    {
         printf("imu6Queue creation NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("imu6Queue creation OK\r\n");
-    }
 
     // Create imu semaphore for interrupt synchronisation
     imuDataReady = xSemaphoreCreateBinary();
-    if (imuDataReady == NULL) {
+    if (NULL == imuDataReady)
+    {
         printf("imuDataReady semaphore creation NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("imuDataReady semaphore creation OK\r\n");
-    }
 
     // Activate IMU INT PIN
     HAL_NVIC_SetPriority(IMU_INT_IRQ, 5, 0);
     HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
-    return 1;
+    return OK;
 }
 
 uint8_t test_imu(void)
@@ -85,23 +85,20 @@ uint8_t test_imu(void)
     uint8_t pass = 0;
 
     ret = mpu9250_check_devId(&mpu9250);
-    if (!ret) {
+    if (!ret)
         printf("mpu9250_check_devId error\r\n");
-    }
     else
         pass++;
 
     ret = mpu9250_check_mag_devId(&mpu9250);
-    if (!ret) {
+    if (!ret)
         printf("mpu9250_check_mag_devId error\r\n");
-    }
     else
         pass++;
 
     ret = mpu9250_get_acc_gyro_mag_temp(&mpu9250);
-    if (!ret) {
+    if (!ret)
         printf("mpu9250_get_acc_gyro_mag_temp error\r\n");
-    }
     else
         pass++;
 
@@ -118,14 +115,17 @@ void imu_test_task(void* _params)
 
     if (_params != 0) { }
   
-    while (1) {
-        if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY)) {
+    while (1)
+    {
+        if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY))
+        {
             // Read data
             vTaskSuspendAll();
             ret = mpu9250_read_data_register(&mpu9250);
             xTaskResumeAll();
 
-            if (ret) {
+            if (ret)
+            {
                 // Get timestamp
                 imu9.timestamp = (float)get_us_time() * (float)1e-6;
 
@@ -133,7 +133,8 @@ void imu_test_task(void* _params)
                 mpu9250_extract_data_register(&mpu9250);
 
                 // Copy data
-                for (i=0;i<N_AXES;i++) {
+                for (i=0;i<N_AXES;i++)
+                {
                     imu9.a[i] = mpu9250.a_raw[i];
                     imu9.g[i] = mpu9250.g_raw[i];
                     imu9.m[i] = mpu9250.m_raw[i];
@@ -146,8 +147,10 @@ void imu_test_task(void* _params)
                     (float)imu9.a[0], (float)imu9.a[1], (float)imu9.a[2],
                     (float)imu9.g[0], (float)imu9.g[1], (float)imu9.g[2]);
             }
-            else {
-                if (!mpu9250.isImuInit) {
+            else
+            {
+                if (!mpu9250.isImuInit)
+                {
                     // TODO: emergency stop ?!
                 }
             }
@@ -172,14 +175,17 @@ void imu_task(void* _params)
 
     if (_params != 0) { }
 
-    while (1) {
-        if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY)) {
+    while (1)
+    {
+        if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY))
+        {
             // Read data
             vTaskSuspendAll();
             ret = mpu9250_read_data_register(&mpu9250);
             xTaskResumeAll();
 
-            if (ret) {
+            if (ret)
+            {
                 // Get timestamp
                 imu9.timestamp = (float)get_us_time() * (float)1e-6;
                 imu6.timestamp = imu9.timestamp;
@@ -188,8 +194,10 @@ void imu_task(void* _params)
                 mpu9250_extract_data_register(&mpu9250);
 
                 // Copy data
-                if (mpu9250.isCalibrated) {
-                    for (i=0;i<N_AXES;i++) {
+                if (mpu9250.isCalibrated)
+                {
+                    for (i=0;i<N_AXES;i++)
+                    {
                         imu9.a[i] = mpu9250.a_raw[i];
                         imu9.g[i] = mpu9250.g_raw[i] - mpu9250.bg[i];
                         imu9.m[i] = mpu9250.m_raw[i];
@@ -197,8 +205,10 @@ void imu_task(void* _params)
                         imu6.g[i] = imu9.g[i];
                     }
                 }
-                else {
-                    for (i=0;i<N_AXES;i++) {
+                else
+                {
+                    for (i=0;i<N_AXES;i++)
+                    {
                         imu9.a[i] = mpu9250.a_raw[i];
                         imu9.g[i] = mpu9250.g_raw[i];
                         imu9.m[i] = mpu9250.m_raw[i];
@@ -211,8 +221,10 @@ void imu_task(void* _params)
                 xQueueOverwrite(imu6Queue, &imu6);
                 xQueueOverwrite(imu9Queue, &imu9);
             }
-            else {
-                if (!mpu9250.isImuInit) {
+            else
+            {
+                if (!mpu9250.isImuInit)
+                {
                     // TODO: emergency stop ?!
                 }
             }
@@ -241,7 +253,8 @@ uint8_t is_imu_calibrated(void)
 void get_imu9_data(Imu9_t* imu)
 {
     uint8_t i = 0;
-    for (i=0;i<N_AXES;i++) {
+    for (i=0;i<N_AXES;i++)
+    {
         imu->a[i] = mpu9250.a[i];
         imu->g[i] = mpu9250.g[i];
         imu->m[i] = mpu9250.m[i];
@@ -251,7 +264,8 @@ void get_imu9_data(Imu9_t* imu)
  void get_imu6_data(Imu6_t* imu)
  {
     uint8_t i = 0;
-    for (i=0;i<N_AXES;i++) {
+    for (i=0;i<N_AXES;i++)
+    {
         imu->a[i] = mpu9250.a[i];
         imu->g[i] = mpu9250.g[i];
     }

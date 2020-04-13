@@ -1,3 +1,11 @@
+/**
+ * \file motor.h
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Functions and structs related to the motors
+ */
+
 #pragma once
 
 // -------------------------------------------------------------------------- //
@@ -25,11 +33,16 @@
 // -------------------------------------------------------------------------- //
 // --- Structs/enums
 // -------------------------------------------------------------------------- //
-enum {
+enum
+{
     MOTOR1=0, MOTOR2, N_MOTORS
 } Motors_e;
 
-typedef struct MotorState_s {
+/**
+ * \struct MotorState_t
+ */
+typedef struct MotorState_s
+{
     float desiredVoltage;
     uint8_t direction; // = FORWARD_DIR or REVERSE_DIR
     uint16_t pwm;
@@ -41,7 +54,11 @@ typedef struct MotorState_s {
     uint8_t fault; // 0 = no, 1 = yes
 } MotorState_t;
 
-typedef struct Motor_s {
+/**
+ * \struct Motor_t
+ */
+typedef struct Motor_s
+{
     float timestamp; // [s]
     MotorState_t motors[N_MOTORS];
 } Motor_t;

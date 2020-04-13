@@ -2,8 +2,9 @@
 
 #include <math.h>
 
-/*
- * Initialize the pid controller structure
+/**
+ * \fn pid_init
+ * \brief Initialize the pid controller structure
  */
 void pid_init(Pid_t* _pid, float _kp, float _ki, float _kd, float _kffwd,
 		float _sat, float _isat, float _dt)

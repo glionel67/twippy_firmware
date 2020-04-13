@@ -82,12 +82,13 @@ int set_pwm1(uint16_t _pwm)
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR1_CHANNEL);
-	if (ret != HAL_OK) {
+	if (HAL_OK != ret)
+	{
 		printf("set_pwm1: HAL_TIM_PWM_ConfigChannel NOK\r\n");
 		return -1;
 	}
-	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR1_CHANNEL);
-	if (ret != HAL_OK) {
+	if (HAL_OK != HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR1_CHANNEL))
+	{
 		printf("set_pwm1: HAL_TIM_PWM_Start NOK\r\n");
 		return -1;
 	}
@@ -101,12 +102,14 @@ int set_pwm2(uint16_t _pwm)
 	sConfigMotors.Pulse = _pwm;
 	ret = HAL_TIM_PWM_ConfigChannel(&TimHandleMotors, &sConfigMotors,
 			TIM_PWM_MOTOR2_CHANNEL);
-	if (ret != HAL_OK) {
+	if (HAL_OK != ret)
+	{
 		printf("set_pwm2: HAL_TIM_PWM_ConfigChannel NOK\r\n");
 		return -1;
 	}
-	ret = HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR2_CHANNEL);
-	if (ret != HAL_OK) {
+
+	if (HAL_OK != HAL_TIM_PWM_Start(&TimHandleMotors, TIM_PWM_MOTOR2_CHANNEL))
+	{
 		printf("set_pwm2: HAL_TIM_PWM_Start NOK\r\n");
 		return -1;
 	}

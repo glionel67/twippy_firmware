@@ -1,9 +1,9 @@
 /**
  * \file usTimer.c
- * \brief Microsecond [us] timer
  * \author Lionel GENEVE
  * \date 22/02/2019
  * \version 1.0
+ * \brief Microsecond [us] timer
  */
 
 #include <string.h>
@@ -49,9 +49,8 @@ int init_us_timer(void)
     TimHandle6.Init.RepetitionCounter    = 0;
 
     ret = HAL_TIM_Base_Init(&TimHandle6);
-    if (ret != HAL_OK) {
+    if (ret != HAL_OK)
         return NOK;
-    }
 
     // Set timer IRQ priority
     HAL_NVIC_SetPriority(TIM6_DAC_IRQn, 1 ,0U);
@@ -61,9 +60,8 @@ int init_us_timer(void)
 
     // Start the timer in interrupt mode
     ret = HAL_TIM_Base_Start_IT(&TimHandle6);
-    if (ret != HAL_OK) {
+    if (ret != HAL_OK)
         return NOK;
-    }
 
     usTime = 0;
     

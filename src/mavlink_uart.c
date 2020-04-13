@@ -73,13 +73,13 @@ int mavlinkInit(void)
     lastStatus.packet_rx_drop_count = 0;
 
     mutex = xSemaphoreCreateMutex();
-    if (mutex == NULL) {
+    if (NULL == mutex)
+    {
         printf("mavlinkInit: mutex creation NOK\r\n");
-        return 0;
+        return NOK;
     }
-    else {
+    else
         printf("mavlinkInit: mutex creation OK\r\n");
-    }
 
     return OK;
 }
@@ -93,22 +93,24 @@ int mavlinkStart(void)
     // Read task
     if (!(pdPASS == xTaskCreate(mavlinkReadTask, (const char*)"mavlinkReadTask",
             MAVLINK_READ_TASK_STACK_SIZE, NULL, MAVLINK_READ_TASK_PRIORITY, 
-            &readTaskHandle))) {
+            &readTaskHandle)))
+    {
         // TODO: ERROR
         printf("mavlinkStart: failed to create mavlinkReadTask\r\n");
-        return 0;
+        return NOK;
     }
 
     // Write task
     if (!(pdPASS == xTaskCreate(mavlinkWriteTask, (const char*)"mavlinkWriteTask",
             MAVLINK_WRITE_TASK_STACK_SIZE, NULL, MAVLINK_WRITE_TASK_PRIORITY, 
-            &writeTaskHandle))) {
+            &writeTaskHandle)))
+    {
         // TODO: ERROR
         printf("mavlinkStart: failed to create mavlinkWriteTask\r\n");
-        return 0;
+        return NOK;
     }
 
-    return 1;
+    return OK;
 }
 
 void mavlinkStop(void)

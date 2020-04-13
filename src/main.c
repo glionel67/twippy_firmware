@@ -1,9 +1,9 @@
 /**
  * \file main.c
- * \brief main file
  * \author Lionel GENEVE
  * \date 22/02/2019
  * \version 1.0
+ * \brief main file
  */
 
 // Includes
@@ -28,6 +28,7 @@
 #include "buzzer.h"
 #include "mavlink_uart.h"
 #include "gps.h"
+#include "state_machine.h"
 
 // libc
 #include <stdio.h>
@@ -41,7 +42,14 @@
 //#include "semphr.h"
 
 // Function prototypes
+/**
+ * \fn SystemClock_Config
+ * \brief Configure system clock to 180 MHz
+ */
 void SystemClock_Config(void);
+
+//static uint8_t current_state = INIT_LL;
+//static uint8_t previous_state = INIT_LL;
 
 // ---------------------------------------------------------------------------//
 // --- Main
@@ -50,7 +58,27 @@ int main(void)
 {
   int ret = 0;
 
-  HAL_Init(); // Init systick
+  /*switch (current_state)
+  {
+    case INIT_LL:
+      break;
+    case INIT_HL:
+      break;
+    case WAITING:
+      break;
+    case BALANCING:
+      break;
+    case DEBUG:
+      break;
+    case DEFAULT:
+      break;
+    default:
+      break;
+  }*/
+
+  ret = HAL_Init(); // Init systick
+  if (HAL_OK != ret)
+    Error_Handler();
 
   // Configure system clock to 180 MHz
   SystemClock_Config();
@@ -59,43 +87,42 @@ int main(void)
   // --- Init GPIO
   // ------------------------------------------------------------------------ //
   ret = init_gpios();
-  if (ret != OK) {
+  if (OK != ret)
     Error_Handler();
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init LED
   // ------------------------------------------------------------------------ //
   ret = led_init();
-  if (ret != OK) {
+  if (OK != ret)
     Error_Handler();
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init UART
   // ------------------------------------------------------------------------ //
   ret = uart2_init();
-  if (ret == NOK) {
+  if (OK != ret)
     Error_Handler();
-  }
+
+  HAL_Delay(5000);
 
   ret = uart1_init();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("uart1_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("uart1_init OK\r\n");
-  }
 
   ret = uart3_init();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("uart3_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("uart3_init OK\r\n");
-  }
 
   printf("\r\n--- Hello Twippy! ---\r\n");
 
@@ -103,46 +130,46 @@ int main(void)
   // --- Init I2C
   // ------------------------------------------------------------------------ //
   ret = i2c1_init();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("i2c1_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("i2c1_init OK\r\n");
-  }
 
   ret = i2c2_init();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("i2c2_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("i2c2_init OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init SPI
   // ------------------------------------------------------------------------ //
   ret = spi1_init();
-  if (!ret) {
+  if (OK != ret)
+  {
     printf("spi1_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("spi1_init OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init microsecond timer
   // ------------------------------------------------------------------------ //
   ret = init_us_timer();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("init_us_timer NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_us_timer OK\r\n");
-  }
 
   test_us_timer();
 
@@ -150,115 +177,115 @@ int main(void)
   // --- Init buzzer
   // ------------------------------------------------------------------------ //
   ret = init_buzzer();
-  if (ret != 0) {
+  if (OK != ret)
+  {
     printf("init_buzzer NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_buzzer OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init ADC
   // ------------------------------------------------------------------------ //
   ret = init_adc();
-  if (ret != 0) {
+  if (OK != ret)
+  {
     printf("init_adc NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_adc OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init encoder
   // ------------------------------------------------------------------------ //
   ret = init_encoders();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("init_encoders NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_encoders OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init motor
   // ------------------------------------------------------------------------ //
   ret = init_motors();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("init_motors NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_motors OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init motor control
   // ------------------------------------------------------------------------ //
   ret = motor_control_init();
-  if (!ret) {
+  if (OK != ret)
+  {
     printf("motor_control_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("motor_control_init OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init IMU
   // ------------------------------------------------------------------------ //
   ret = init_imu();
-  if (!ret) {
+  if (OK != ret)
+  {
     printf("init_imu NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("init_imu OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init Mavlink
   // ------------------------------------------------------------------------ //
   ret = mavlinkInit();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("mavlinkInit NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("mavlinkInit OK\r\n");
-  }
 
   ret = mavlinkStart();
-  if (!ret) {
+  if (OK != ret)
+  {
     printf("mavlinkStart NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("mavlinkStart OK\r\n");
-  }
 
   // ------------------------------------------------------------------------ //
   // --- Init GPS
   // ------------------------------------------------------------------------ //
   ret = gps_init();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("gps_init NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("gps_init OK\r\n");
-  }
 
   ret = gps_start();
-  if (ret == NOK) {
+  if (OK != ret)
+  {
     printf("gps_start NOK\r\n");
     Error_Handler();
   }
-  else {
+  else
     printf("gps_start OK\r\n");
-  }
 
   uint32_t hclkFreq = HAL_RCC_GetHCLKFreq();
   uint32_t pclk1Freq = HAL_RCC_GetPCLK1Freq();
@@ -266,13 +293,15 @@ int main(void)
   printf("hclkFreq=%lu, pclk1Freq=%lu, pclk2Freq=%lu\r\n", hclkFreq, pclk1Freq, pclk2Freq);
 
   ret = set_dc_pwm1(.5);
-  if (ret == -1) {
+  if (ret == -1)
+  {
     printf("set_dc_pwm1 NOK\r\n");
     Error_Handler();
   }
 
   ret = set_buzzer_dutyCycle(50);
-  if (ret == -1) {
+  if (OK != ret)
+  {
     printf("set_buzzer_dutyCycle NOK\r\n");
     Error_Handler();
   }
@@ -366,7 +395,8 @@ int main(void)
   // Start FreeRTOS scheduler
   vTaskStartScheduler();
 
-  while (1) {
+  while (1)
+  {
     printf("Error: should not reach here!\r\n");
     goto hell;
   }
@@ -381,7 +411,6 @@ void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
-  HAL_StatusTypeDef ret = HAL_OK;
 
   __HAL_RCC_SYSCFG_CLK_ENABLE();
   __HAL_RCC_PWR_CLK_ENABLE(); // Enable Power Control clock
@@ -399,15 +428,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   RCC_OscInitStruct.PLL.PLLR = 6;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+  if (HAL_OK != HAL_RCC_OscConfig(&RCC_OscInitStruct))
     Error_Handler();
-  }
 
   // Activate the OverDrive to reach the 180 MHz Frequency
-  ret = HAL_PWREx_EnableOverDrive();
-  if (ret != HAL_OK) {
+  if (HAL_OK != HAL_PWREx_EnableOverDrive())
     Error_Handler();
-  }
 
   RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | 
         RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
@@ -415,18 +441,22 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4; // To have a 45 MHz clock
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2; // To have a 90 MHz clock
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK) {
+  if (HAL_OK != HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5))
     Error_Handler();
-  }
 }
 
 void Error_Handler(void)
 {
-  led_set_period(200);
+  led_set_period(LED1, 100000000);
+  led_set_period(LED2, 100000000);
+  led_set_period(LED3, 100000000);
 
-  while (1) {
+  while (1)
+  {
     printf("ERROR!\r\n");
     HAL_Delay(1000);
     led_toggle(LED1);
+    led_toggle(LED2);
+    led_toggle(LED3);
   }
 }

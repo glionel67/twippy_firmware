@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"HAL",
+				"HAL_GetTick"
+			],
+			[
 				"out",
 				"outP"
 			],
@@ -62,10 +66,6 @@
 			[
 				"de",
 				"decodeState"
-			],
-			[
-				"HAL",
-				"HAL_OK"
 			],
 			[
 				"uar",
@@ -519,58 +519,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "src/main.c",
-			"settings":
-			{
-				"buffer_size": 11635,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "src/buzzer.c",
-			"settings":
-			{
-				"buffer_size": 3048,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "src/pid_controller.c",
-			"settings":
-			{
-				"buffer_size": 2732,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/pid_controller.h",
-			"settings":
-			{
-				"buffer_size": 1596,
-				"encoding": "UTF-8",
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/motor.h",
-			"settings":
-			{
-				"buffer_size": 2694,
-				"line_ending": "Windows"
-			}
-		},
-		{
-			"file": "inc/main.h",
-			"settings":
-			{
-				"buffer_size": 11489,
-				"line_ending": "Windows"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -610,6 +558,32 @@
 	],
 	"file_history":
 	[
+		"/home/ellion/Workspace/twippy_firmware/src/main.c",
+		"/home/ellion/Workspace/twippy_firmware/src/led.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/led.h",
+		"/home/ellion/Workspace/twippy_firmware/src/gpio.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/main.h",
+		"/home/ellion/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal.h",
+		"/home/ellion/Workspace/twippy_firmware/src/imu.c",
+		"/home/ellion/Workspace/twippy_firmware/src/mavlink_uart.c",
+		"/home/ellion/Workspace/twippy_firmware/src/motor_control.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/state_machine.h",
+		"/home/ellion/Workspace/twippy_firmware/src/gps.c",
+		"/home/ellion/Workspace/twippy_firmware/src/motor.c",
+		"/home/ellion/Workspace/twippy_firmware/src/buzzer.c",
+		"/home/ellion/Workspace/twippy_firmware/README.md",
+		"/home/ellion/Workspace/twippy_firmware/src/uart2.c",
+		"/home/ellion/Workspace/twippy_firmware/src/spi.c",
+		"/home/ellion/Workspace/twippy_firmware/src/usTimer.c",
+		"/home/ellion/Workspace/twippy_firmware/src/adc.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/adc.h",
+		"/home/ellion/Workspace/twippy_firmware/Makefile",
+		"/home/ellion/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_def.h",
+		"/home/ellion/Workspace/twippy_firmware/inc/motor.h",
+		"/home/ellion/Workspace/twippy_firmware/inc/pid_controller.h",
+		"/home/ellion/Workspace/twippy_firmware/src/pid_controller.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/gpio.h",
+		"/home/ellion/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_gpio.h",
 		"/home/user/Workspace/twippy_firmware/src/motor.c",
 		"/home/user/Workspace/twippy_firmware/inc/servo.h",
 		"/home/user/Workspace/twippy_firmware/src/servo.c",
@@ -649,14 +623,10 @@
 		"/home/ellion/Workspace/twippy_firmware/inc/nmea.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/ahrs.h",
 		"/home/ellion/Workspace/twippy_firmware/src/ahrs.c",
-		"/home/ellion/Workspace/twippy_firmware/src/imu.c",
-		"/home/ellion/Workspace/twippy_firmware/inc/adc.h",
 		"/home/ellion/Workspace/twippy_firmware/src/battery.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/battery.h",
-		"/home/ellion/Workspace/twippy_firmware/src/mavlink_uart.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/ellion/Workspace/twippy_firmware/src/mpu9250.c",
-		"/home/ellion/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/inc/nmea.h",
 		"/home/user/Workspace/twippy_firmware/src/nmea.c",
 		"/home/user/Workspace/twippy_firmware/src/uart2.c",
@@ -715,37 +685,15 @@
 		"/home/user/Workspace/twippy_firmware/inc/buzzer.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
 		"/media/user/TINYKEY/MapBuilder/testOffline.cpp",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c",
-		"/home/user/Workspace/twippy_firmware/inc/spi.h",
-		"/home/user/Workspace/twippy_firmware/inc/ahrs.h",
-		"/home/user/Workspace/twippy_firmware/inc/mpu9250.h",
-		"/home/user/Workspace/twippy_firmware/inc/motor_control.h",
-		"/home/user/Workspace/twippy_firmware/inc/pid_controller.h",
-		"/home/user/Workspace/twippy_firmware/src/motors_control.c",
-		"/home/user/Workspace/twippy_firmware/inc/motors_control.h",
-		"/home/user/Workspace/twippy_firmware/src/encoders.c",
-		"/home/user/Workspace/twippy_firmware/inc/encoders.h",
-		"/home/user/Workspace/twippy_firmware/inc/balance_control.h",
-		"/home/user/Workspace/twippy_firmware/src/balance_controller.c",
-		"/home/user/Workspace/twippy_firmware/inc/balance_controller.h",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_cortex.h",
-		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_timebase_tim_template.c",
-		"/home/user/Workspace/twippy_firmware/inc/uart.h",
-		"/home/user/Workspace/twippy_firmware/src/uart.c",
-		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal.h",
-		"/home/user/Workspace/twippy_firmware/src/freeRtosUtils.c",
-		"/home/user/Workspace/catkin_ws/src/alfs/scripts/publish_global_pose.py",
-		"/home/user/Workspace/stm32f446/inc/uart.h",
-		"/home/user/Workspace/stm32f446/src/stm32f4xx_it.c",
-		"/home/user/Workspace/stm32f446/hal/src/stm32f4xx_hal.c"
+		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_tim.c"
 	],
 	"find":
 	{
-		"height": 28.0
+		"height": 81.0
 	},
 	"find_in_files":
 	{
-		"height": 96.0,
+		"height": 152.0,
 		"where_history":
 		[
 			""
@@ -756,6 +704,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"LED1",
 			"imuDataReady",
 			"mavlinkReadMessage",
 			"sendImuData",
@@ -882,8 +831,7 @@
 			"finalizeUpdate",
 			"PBxn",
 			"x",
-			"normalize",
-			"lock"
+			"normalize"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -916,194 +864,18 @@
 	"groups":
 	[
 		{
-			"selected": 2,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "src/main.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11635,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6623,
-								6623
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4966.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "src/buzzer.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3048,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2076,
-								2076
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "src/pid_controller.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2732,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								530,
-								530
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "inc/pid_controller.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1596,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								968,
-								968
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "inc/motor.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2694,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								587,
-								587
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "inc/main.h",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 11489,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								9375,
-								9375
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 3730.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 28.0
+		"height": 56.0
 	},
 	"input":
 	{
-		"height": 34.0
+		"height": 56.0
 	},
 	"layout":
 	{
@@ -1136,7 +908,7 @@
 	"project": "twippy_firmware.sublime-project",
 	"replace":
 	{
-		"height": 52.0
+		"height": 104.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -1174,7 +946,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 215.0,
+	"side_bar_width": 408.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

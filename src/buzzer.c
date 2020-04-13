@@ -27,9 +27,8 @@ int init_buzzer(void)
     TimHandleBuzzer.Init.ClockDivision = 0;
     TimHandleBuzzer.Init.CounterMode = TIM_COUNTERMODE_UP;
     TimHandleBuzzer.Init.RepetitionCounter = 0;
-    if (HAL_TIM_Base_Init(&TimHandleBuzzer) != HAL_OK) {
-        return -1;
-    }
+    if (HAL_OK != HAL_TIM_Base_Init(&TimHandleBuzzer))
+        return NOK;
 
     sConfigBuzzer.OCMode        = TIM_OCMODE_PWM1;
     sConfigBuzzer.OCPolarity    = TIM_OCPOLARITY_HIGH;
@@ -40,18 +39,15 @@ int init_buzzer(void)
     sConfigBuzzer.Pulse = 0;
     ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, 
             &sConfigBuzzer, TIM_BUZZER_CHANNEL);
-    if (ret != HAL_OK) {
-        return -1;
-    }
+    if (HAL_OK != ret)
+        return NOK;
 
-    ret = HAL_TIM_PWM_Start(&TimHandleBuzzer, TIM_BUZZER_CHANNEL);
-    if (ret != HAL_OK) {
-        return -1;
-    }
+    if (HAL_OK != HAL_TIM_PWM_Start(&TimHandleBuzzer, TIM_BUZZER_CHANNEL))
+        return NOK;
 
     turn_off_buzzer();
 
-    return 0;
+    return OK;
 }
 
 int set_buzzer_freq(uint32_t _freq)
@@ -64,9 +60,8 @@ int set_buzzer_freq(uint32_t _freq)
     TimHandleBuzzer.Init.ClockDivision = 0;
     TimHandleBuzzer.Init.CounterMode = TIM_COUNTERMODE_UP;
     TimHandleBuzzer.Init.RepetitionCounter = 0;
-    if (HAL_TIM_Base_Init(&TimHandleBuzzer) != HAL_OK) {
-        return -1;
-    }
+    if (HAL_OK != HAL_TIM_Base_Init(&TimHandleBuzzer))
+        return NOK;
 
     return set_buzzer_dutyCycle(50);
 }
@@ -82,15 +77,13 @@ int set_buzzer_dutyCycle(uint16_t _dc)
     sConfigBuzzer.Pulse = _dc;
     ret = HAL_TIM_PWM_ConfigChannel(&TimHandleBuzzer, 
             &sConfigBuzzer, TIM_BUZZER_CHANNEL);
-    if (ret != HAL_OK) {
-        return -1;
-    }
+    if (HAL_OK != ret)
+        return NOK;
 
-    ret = HAL_TIM_PWM_Start(&TimHandleBuzzer, TIM_BUZZER_CHANNEL);
-    if (ret != HAL_OK) {
-        return -1;
-    }
-    return 0;
+    if (HAL_OK != HAL_TIM_PWM_Start(&TimHandleBuzzer, TIM_BUZZER_CHANNEL))
+        return NOK;
+
+    return OK;
 }
 
 int turn_on_buzzer(void)
@@ -108,7 +101,8 @@ void test_buzzer(void)
 {
     uint32_t freqs[] = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000,
             2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000 }; // n=19
-    for (int i=0;i<15;i++) {
+    for (int i = 0; i < 15; i++)
+    {
         set_buzzer_freq(freqs[i]);
         HAL_Delay(200);
     }
@@ -120,7 +114,8 @@ void buzzer_task(void* _params)
 
     if (_params != 0) { }
 
-    while (1) {
+    while (1)
+    {
         vTaskDelay(500/portTICK_RATE_MS);
     }
 

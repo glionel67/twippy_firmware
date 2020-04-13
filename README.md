@@ -22,3 +22,6 @@ make release <br />
 cd build/Release/ <br />
 ./st-flash write ../bin/twippy_firmware.bin 0x8000000 <br />
 st-flash write bin/twippy_firmware.bin 0x8000000 <br />
+
+# To access serial port
+picocom /dev/ttyUSB0 -b 115200

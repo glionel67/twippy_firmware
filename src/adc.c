@@ -15,8 +15,8 @@ int init_adc(void)
 	ADC_IMOT_CLK_ENABLE();
 
 	AdcHandle1.Instance = ADC_IMOT;
-	if (HAL_ADC_DeInit(&AdcHandle1) != HAL_OK) // ADC de-initialization Error
-		return -1;
+	if (HAL_OK != HAL_ADC_DeInit(&AdcHandle1)) // ADC de-initialization Error
+		return NOK;
 
 	AdcHandle1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4; /* Asynchronous clock mode, input ADC clock not divided */
 	AdcHandle1.Init.Resolution = ADC_RESOLUTION_12B; /* 12-bit resolution for converted data */
@@ -31,8 +31,8 @@ int init_adc(void)
 	AdcHandle1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE; /* Parameter discarded because software trigger chosen */
 	AdcHandle1.Init.DMAContinuousRequests = DISABLE; /* DMA one-shot mode selected (not applied to this example) */
 
-	if (HAL_ADC_Init(&AdcHandle1) != HAL_OK) // ADC initialization Error
-		return -1;
+	if (HAL_OK != HAL_ADC_Init(&AdcHandle1)) // ADC initialization Error
+		return NOK;
 
 	// Configure ADC regular channel
 	sConfig1.Channel = ADC_IMOT1_CHANNEL; // Sampled channel number
@@ -40,13 +40,13 @@ int init_adc(void)
 	sConfig1.SamplingTime = ADC_IMOT_SAMPLING_TIME; // Sampling time (number of clock cycles unit)
 	sConfig1.Offset = 0; // Parameter discarded because offset correction is disabled
 
-	if (HAL_ADC_ConfigChannel(&AdcHandle1, &sConfig1) != HAL_OK) // Channel Configuration Error
-		return -1;
+	if (HAL_OK != HAL_ADC_ConfigChannel(&AdcHandle1, &sConfig1))
+		return NOK; // Channel Configuration Error
 
 	//HAL_NVIC_SetPriority(ADC_IRQn, 2, 0);
 	//HAL_NVIC_EnableIRQ(ADC_IRQn);
 
-	return 0;
+	return OK;
 }
 
 void deinit_adc(void)
@@ -63,15 +63,15 @@ uint16_t get_adc_value(uint32_t _channel)
 	// Configure ADC regular channel
 	sConfig1.Channel = _channel; // Sampled channel number
 
-	if (HAL_ADC_ConfigChannel(&AdcHandle1, &sConfig1) != HAL_OK)
+	if (HAL_OK != HAL_ADC_ConfigChannel(&AdcHandle1, &sConfig1))
 		return 65535; // Channel Configuration Error
 
 	// Start the conversion process
-	if (HAL_ADC_Start(&AdcHandle1) != HAL_OK) // Start Conversation Error
+	if (HAL_OK != HAL_ADC_Start(&AdcHandle1)) // Start Conversation Error
 		return 65535;
 
 	// End Of Conversion flag not set on time
-	if (HAL_ADC_PollForConversion(&AdcHandle1, 10) != HAL_OK)
+	if (HAL_OK != HAL_ADC_PollForConversion(&AdcHandle1, 10))
 		return 65535;
 
 	// Check if the continuous conversion of regular channel is finished
@@ -157,7 +157,8 @@ float get_ibat_amp(void)
 void test_bat(void)
 {
 	float vbat = 0.f, ibat = 0.f;
-	for (int i=0;i<5;i++) {
+	for (int i = 0; i < 5; i++)
+	{
 		vbat = get_vbat_volt();
 		ibat = get_ibat_amp();
 		printf("vbat=%3.3f,ibat=%3.3f\r\n", (float)vbat, (float)ibat);

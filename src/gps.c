@@ -47,7 +47,8 @@ int gps_start(void)
     isRunning = false;
 
     if (!(pdPASS == xTaskCreate(gps_task, (const char*)"gps_task",
-            GPS_TASK_STACK_SIZE, NULL, GPS_TASK_PRIORITY, &gpsTaskHandle))) {
+            GPS_TASK_STACK_SIZE, NULL, GPS_TASK_PRIORITY, &gpsTaskHandle)))
+    {
         printf("gps_start: failed to create gps_task\n");
         return NOK;
     }
