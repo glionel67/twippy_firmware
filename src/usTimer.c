@@ -3,7 +3,7 @@
  * \author Lionel GENEVE
  * \date 22/02/2019
  * \version 1.0
- * \brief Microsecond [us] timer
+ * \brief Microsecond [us] timer for precision timing
  */
 
 #include <string.h>
@@ -18,8 +18,6 @@ static uint64_t usTime = 0;
 
 int init_us_timer(void)
 {
-    int ret = 0;
-
     RCC_ClkInitTypeDef clkconfig;
     uint32_t uwTimclock = 0U, uwAPB1Prescaler = 0U;
     uint32_t pFLatency = 0U, uwPrescalerValue = 0U;
@@ -31,7 +29,7 @@ int init_us_timer(void)
     uwAPB1Prescaler = clkconfig.APB1CLKDivider;
   
     // Compute TIM6 clock
-    if (uwAPB1Prescaler == RCC_HCLK_DIV1)
+    if (RCC_HCLK_DIV1 == uwAPB1Prescaler)
       uwTimclock = HAL_RCC_GetPCLK1Freq();
     else
       uwTimclock = 2 * HAL_RCC_GetPCLK1Freq();
@@ -48,8 +46,7 @@ int init_us_timer(void)
     TimHandle6.Init.CounterMode          = TIM_COUNTERMODE_UP;
     TimHandle6.Init.RepetitionCounter    = 0;
 
-    ret = HAL_TIM_Base_Init(&TimHandle6);
-    if (ret != HAL_OK)
+    if (HAL_OK != HAL_TIM_Base_Init(&TimHandle6))
         return NOK;
 
     // Set timer IRQ priority
@@ -59,8 +56,7 @@ int init_us_timer(void)
     HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
 
     // Start the timer in interrupt mode
-    ret = HAL_TIM_Base_Start_IT(&TimHandle6);
-    if (ret != HAL_OK)
+    if (HAL_OK != HAL_TIM_Base_Start_IT(&TimHandle6))
         return NOK;
 
     usTime = 0;

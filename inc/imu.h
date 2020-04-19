@@ -1,3 +1,11 @@
+/**
+ * \file imu.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief IMU MPU9250 functions
+ */
+
 #pragma once
 
 // -------------------------------------------------------------------------- //
@@ -12,7 +20,7 @@
 // -------------------------------------------------------------------------- //
 // --- Defines
 // -------------------------------------------------------------------------- //
-#define IMU_MEASUREMENT_PERIOD_MS (2)
+#define IMU_MEASUREMENT_PERIOD_MS (2) // 2 ms <=> 500 Hz
 
 #define IMU_QUEUE_SIZE 1
 
@@ -35,6 +43,12 @@ typedef struct Imu9_s {
 // -------------------------------------------------------------------------- //
 // --- Prototypes
 // -------------------------------------------------------------------------- //
+
+/**
+ * \fn init_imu
+ * \brief initialize and configure the IMU
+ * \return OK if success, NOK otherwise
+ */
 uint8_t init_imu(void);
 
 void imu_test_task(void* _params);

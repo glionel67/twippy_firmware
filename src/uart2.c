@@ -1,9 +1,9 @@
 /**
  * \file uart2.c
- * \brief USART2 communication
  * \author Lionel GENEVE
  * \date 22/02/2019
  * \version 1.0
+ * \brief UART2 functions
  */
 
 #include "uart2.h"
@@ -35,15 +35,15 @@ int uart2_init(void)
   UartHandle2.Init.Mode       = UART_MODE_TX_RX;
   UartHandle2.Init.OverSampling = UART_OVERSAMPLING_16;
 
-  if (HAL_UART_Init(&UartHandle2) != HAL_OK)
+  if (HAL_OK != HAL_UART_Init(&UartHandle2))
     return NOK;
 
   uart2TxQueue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart2TxQueue == 0)
+  if (0 == uart2TxQueue)
     return NOK;
 
   uart2RxQueue = xQueueCreate(UART2_QUEUE_SIZE, sizeof(uint8_t));
-  if (uart2RxQueue == 0)
+  if (0 == uart2RxQueue)
     return NOK;
 
   // HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
@@ -52,7 +52,7 @@ int uart2_init(void)
   // __HAL_UART_ENABLE_IT(&UartHandle2, UART_IT_RXNE);
 
   return OK;
-}
+} // uart2_init
 
 void uart2_deInit(void)
 {
@@ -65,27 +65,45 @@ void uart2_deInit(void)
 
 int uart2_write(uint8_t* buf, uint32_t len)
 {
-  uint8_t res = HAL_UART_Transmit(&UartHandle2, buf, len, USART2_TIMEOUT);
-  if (res == HAL_OK)
-    return OK;
+  uint8_t res = HAL_UART_Transmit(&UartHandle2, buf, (uint16_t)len, USART2_TIMEOUT);
+
+  if (HAL_OK == res)
+   return OK;
+  else if (HAL_ERROR == res)
+    printf("uart2_write: HAL_ERROR\r\n");
+  else if (HAL_BUSY == res)
+    printf("uart2_write: HAL_BUSY\r\n");
+  else if (HAL_TIMEOUT == res)
+    printf("uart2_write: HAL_TIMEOUT\r\n");
   else
-    return NOK;
-}
+    printf("uart2_write: unknown problem\r\n");
+
+  return NOK;
+} // uart2_write
 
 int uart2_read(uint8_t* buf, uint32_t len)
 {
-  uint8_t res = HAL_UART_Receive(&UartHandle2, buf, len, USART2_TIMEOUT);
-  if (res == HAL_OK)
-    return OK;
+  uint8_t res = HAL_UART_Receive(&UartHandle2, buf, (uint16_t)len, USART2_TIMEOUT);
+
+  if (HAL_OK == res)
+   return OK;
+  else if (HAL_ERROR == res)
+    printf("uart2_read: HAL_ERROR\r\n");
+  else if (HAL_BUSY == res)
+    printf("uart2_read: HAL_BUSY\r\n");
+  else if (HAL_TIMEOUT == res)
+    printf("uart2_read: HAL_TIMEOUT\r\n");
   else
-    return NOK;
-}
+    printf("uart2_read: unknown problem\r\n");
+
+  return NOK;
+} // uart2_read
 
 void uart2_send_data(uint8_t* data, uint32_t size)
 {
   uint32_t i = 0;
 
-  for (i=0;i<size;i++)
+  for (i = 0; i < size; i++)
   {
       while (!(USART2->SR & USART_FLAG_TXE));
       USART2->DR = (data[i] & 0x00FF);
@@ -95,9 +113,9 @@ void uart2_send_data(uint8_t* data, uint32_t size)
 uint32_t uart2_enque_data(uint8_t* data, uint32_t size)
 {
   uint32_t i = 0;
-  for (i=0;i<size;i++)
+  for (i = 0; i < size; i++)
   {
-    if (xQueueSend(uart2TxQueue, data+i, 10) == errQUEUE_FULL)
+    if (errQUEUE_FULL == xQueueSend(uart2TxQueue, data+i, 10))
       return i;
   }
   return 0;

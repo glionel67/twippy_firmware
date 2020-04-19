@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 
+/*
+ * \enum Led_e
+ * \brief Enumeration of the LEDs
+ */
 enum { LED1=0, LED2, LED3, N_LEDS };
 
 /*
@@ -27,6 +31,7 @@ typedef struct
 /**
  * \fn led_init
  * \brief Initialize the LEDs
+ * \return OK if success, NOK otherwise
  */
 int led_init(void);
 

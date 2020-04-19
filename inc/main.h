@@ -155,25 +155,25 @@
 /******************************************************************************/
 // Definition for ADC1 clock resources
 #define ADC_IMOT                        ADC1
-#define ADC_IMOT_CLK_ENABLE()               __HAL_RCC_ADC1_CLK_ENABLE()
-#define ADC_IMOT_FORCE_RESET()              __HAL_RCC_ADC_FORCE_RESET()
-#define ADC_IMOT_RELEASE_RESET()            __HAL_RCC_ADC_RELEASE_RESET()
-#define ADC_IMOT_SAMPLING_TIME          ADC_SAMPLETIME_15CYCLES
-#define ADC_IMOT_RESOLUTION         4096 // 12 bits, ((uint32_t)4095)
-#define ADC_IMOT_VREF             3300 // [mV]
+#define ADC_IMOT_CLK_ENABLE()           __HAL_RCC_ADC1_CLK_ENABLE()
+#define ADC_IMOT_FORCE_RESET()          __HAL_RCC_ADC_FORCE_RESET()
+#define ADC_IMOT_RELEASE_RESET()        __HAL_RCC_ADC_RELEASE_RESET()
+#define ADC_IMOT_SAMPLING_TIME         	ADC_SAMPLETIME_15CYCLES
+#define ADC_IMOT_RESOLUTION         	4096 // 12 bits, ((uint32_t)4095)
+#define ADC_IMOT_VREF             		3300 // [mV]
 
 // Definition for motor ISENSE
-#define ADC_IMOT_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define ADC_IMOT_GPIO             GPIOA
-#define ADC_IMOT1_PIN             GPIO_PIN_0
-#define ADC_IMOT2_PIN             GPIO_PIN_1
-#define ADC_IMOT1_CHANNEL           ADC_CHANNEL_1
-#define ADC_IMOT2_CHANNEL           ADC_CHANNEL_2
+#define ADC_IMOT_GPIO_CLK_ENABLE()	__HAL_RCC_GPIOA_CLK_ENABLE()
+#define ADC_IMOT_GPIO             	GPIOA
+#define ADC_IMOT1_PIN             	GPIO_PIN_0
+#define ADC_IMOT2_PIN             	GPIO_PIN_1
+#define ADC_IMOT1_CHANNEL         	ADC_CHANNEL_1
+#define ADC_IMOT2_CHANNEL         	ADC_CHANNEL_2
 
-#define IMOT_RATIO_NUM            100 //1.65V/A
-#define IMOT_RATIO_DEN            165
+#define IMOT_RATIO_NUM            	100 //1.65V/A
+#define IMOT_RATIO_DEN            	165
 
-#define IMOT_MAX                1600 // [mA]
+#define IMOT_MAX                	1600 // [mA]
 
 // Definition for Vbat and Ibat
 #define ADC_BAT_GPIO_CLK_ENABLE()   __HAL_RCC_GPIOB_CLK_ENABLE()
@@ -188,7 +188,6 @@
 #define VBAT_RATIO                  (6.f)
 #define IBAT_RATIO                  (15.1515f) // (66 mV/A) centered at 2.5 V
 #define IBAT_ZERO                   (2.5f) // [Volt]
-
 
 /******************************************************************************/
 /* Definition for SPI1 (IMU MPU9250) */

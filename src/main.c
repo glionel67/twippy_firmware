@@ -28,6 +28,7 @@
 #include "buzzer.h"
 #include "mavlink_uart.h"
 #include "gps.h"
+#include "battery.h"
 #include "state_machine.h"
 
 // libc
@@ -310,7 +311,8 @@ int main(void)
   // --- Create FreeRTOS tasks
   // ------------------------------------------------------------------------ //
   if (!(pdPASS == xTaskCreate(led_task, (const char*)"led_task",
-    LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, NULL))) {
+    LED_TASK_STACK_SIZE, NULL, LED_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create led_task\r\n");
     goto hell;
   }
@@ -333,27 +335,38 @@ int main(void)
   //   goto hell;
   // }
 
+  if (!(pdPASS == xTaskCreate(battery_task, (const char*)"battery_task",
+    BATTERY_TASK_STACK_SIZE, NULL, BATTERY_TASK_PRIORITY, NULL)))
+  {
+    printf("Failed to create battery_task\r\n");
+    goto hell;
+  }
+
   if (!(pdPASS == xTaskCreate(encoder_task, (const char*)"encoder_task",
-    ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL))) {
+    ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create encoder_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(imu_task, (const char*)"imu_task",
-    IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+    IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create imu_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
       (const char*)"imu_calibrate_gyro_bias_task",
-      IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+      IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create imu_calibrate_gyro_bias_task\r\n");
     goto hell;
   }
 
   if (!(pdPASS == xTaskCreate(ahrs_task, (const char*)"ahrs_task",
-    AHRS_TASK_STACK_SIZE, NULL, AHRS_TASK_PRIORITY, NULL))) {
+    AHRS_TASK_STACK_SIZE, NULL, AHRS_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create ahrs_task\r\n");
     goto hell;
   }
@@ -443,7 +456,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2; // To have a 90 MHz clock
   if (HAL_OK != HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5))
     Error_Handler();
-}
+} // SystemClock_Config
 
 void Error_Handler(void)
 {
@@ -459,4 +472,4 @@ void Error_Handler(void)
     led_toggle(LED2);
     led_toggle(LED3);
   }
-}
+} // Error_Handler

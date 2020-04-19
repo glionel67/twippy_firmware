@@ -1,3 +1,11 @@
+/**
+ * \file motor_control.h
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Motor control functions
+ */
+
 #pragma once
 
 // -------------------------------------------------------------------------- //
@@ -17,18 +25,21 @@
 // -------------------------------------------------------------------------- //
 // --- Structs/enums
 // -------------------------------------------------------------------------- //
-typedef struct ControlState_s {
+typedef struct ControlState_s
+{
     float des; // in [rpm] or [rad/s] ?
     float mes; // in [rpm] or [rad/s] ?
     float out; // Output of the PID
 } ControlState_t;
 
-typedef struct MotorControl_s {
+typedef struct MotorControl_s
+{
     float timestamp;
     ControlState_t controlState[N_MOTORS];
 } MotorControl_t;
 
-typedef struct MotorDesiredVoltage_s {
+typedef struct MotorDesiredVoltage_s
+{
     float timestamp;
     float voltage[N_MOTORS];
 } MotorDesiredVoltage_t;

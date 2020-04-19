@@ -1,3 +1,11 @@
+/**
+ * \file uart3.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief UART3 functions
+ */
+
 #pragma once
 
 // C lib

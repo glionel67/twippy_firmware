@@ -1,3 +1,11 @@
+/**
+ * \file i2c1.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief I2C1 functions
+ */
+
 #pragma once
 
 #include <stdint.h>

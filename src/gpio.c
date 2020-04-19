@@ -97,7 +97,7 @@ int init_gpios(void)
     HAL_GPIO_Init(ENC2A_GPIO, &GPIO_InitStruct);
 
     // Enable motor Isense
-    ADC_IMOT_GPIO_CLK_ENABLE(); // Enable GPIO clock
+    ADC_IMOT_GPIO_CLK_ENABLE();
     GPIO_InitStruct.Pin = ADC_IMOT1_PIN | ADC_IMOT2_PIN;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
@@ -179,7 +179,7 @@ int init_gpios(void)
     // Enable LEDs
     LEDS_GPIO_CLK_ENABLE();
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull = GPIO_PULLUP; //GPIO_PULLDOWN
+    GPIO_InitStruct.Pull = GPIO_PULLUP; // GPIO_PULLDOWN
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
     GPIO_InitStruct.Pin = LED1_PIN | LED2_PIN | LED3_PIN;
     HAL_GPIO_Init(LEDS_GPIO_PORT, &GPIO_InitStruct);

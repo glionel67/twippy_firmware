@@ -1,9 +1,16 @@
+/**
+ * \file uart1.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief UART1 functions
+ */
+
 #pragma once
 
 // C lib
 #include <stdint.h>
 #include <stdbool.h>
-
 
 #include "main.h"
 
@@ -12,7 +19,6 @@ extern UART_HandleTypeDef UartHandle1;
 #define UART1_BUSY (HAL_UART_GetState(&UartHandle1)==(HAL_UART_STATE_BUSY))
 #define UART1_WRITE(__data__, __len__) HAL_UART_Transmit(&UartHandle1, __data__, __len__, USART1_TIMEOUT)
 #define UART1_READ(__data__, __len__) HAL_UART_Receive(&UartHandle1, __data__, __len__, USART1_TIMEOUT)
-
 
 #define UART1_QUEUE_SIZE    512
 

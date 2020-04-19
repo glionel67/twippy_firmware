@@ -1,3 +1,11 @@
+/**
+ * \file servo.h
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Servo(motor) functions
+ */
+
 #pragma once
 
 // -------------------------------------------------------------------------- //

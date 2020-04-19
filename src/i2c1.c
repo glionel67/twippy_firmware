@@ -19,9 +19,9 @@ int i2c1_init(void)
     I2cHandle1.Init.OwnAddress1     = I2C1_OWN_ADDRESS;
     I2cHandle1.Init.OwnAddress2     = 0xFE;
 
-    if (HAL_I2C_Init(&I2cHandle1) != HAL_OK) { // Initialization Error
-        return NOK; 
-    }
+    if (HAL_OK != HAL_I2C_Init(&I2cHandle1))
+        return NOK; // Initialization Error
+
 
     // NVIC for I2C1
     //HAL_NVIC_SetPriority(I2C1_ER_IRQn, 1, 0);
@@ -54,7 +54,7 @@ int i2c1_write_byte(uint8_t _addr, uint8_t _data)
                 1, I2C1_TIMEOUT);
     //uint8_t res = HAL_I2C_Master_Transmit_IT(&I2cHandle1, (uint16_t)_addr, 
     //        &_data, 1, I2C1_TIMEOUT);
-    if (res != HAL_OK)
+    if (HAL_OK != res)
         return NOK;
     
     // Wait for the end of the transfer
@@ -70,7 +70,7 @@ int i2c1_read_byte(uint8_t _addr, uint8_t* _data)
                 1, I2C1_TIMEOUT);
     //uint8_t res = HAL_I2C_Master_Receive_IT(&I2cHandle1, (uint16_t)_addr, 
     //            _data, 1, I2C1_TIMEOUT);
-    if (res != HAL_OK)
+    if (HAL_OK != res)
         return NOK;
 
     //while (HAL_I2C_GetError(&I2cHandle1) == HAL_I2C_ERROR_AF);
@@ -85,7 +85,7 @@ int i2c1_write_bytes(uint8_t _addr, uint8_t* _data, uint8_t _len)
                 _len, I2C1_TIMEOUT);
     //uint8_t res = HAL_I2C_Master_Transmit_IT(&I2cHandle1, (uint16_t)_addr, 
     //        _data, _len, I2C1_TIMEOUT);
-    if (res != HAL_OK)
+    if (HAL_OK != res)
         return NOK;
     
     // Wait for the end of the transfer
@@ -101,7 +101,7 @@ int i2c1_read_bytes(uint8_t _addr, uint8_t* _data, uint8_t _len)
                 _len, I2C1_TIMEOUT);
     //uint8_t res = HAL_I2C_Master_Receive_IT(&I2cHandle1, (uint16_t)_addr, 
     //            _data, _len, I2C1_TIMEOUT);
-    if (res != HAL_OK)
+    if (HAL_OK != res)
         return NOK;
 
     //while (HAL_I2C_GetError(&I2cHandle1) == HAL_I2C_ERROR_AF);

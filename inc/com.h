@@ -1,3 +1,11 @@
+/**
+ * \file com.h
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Communication functions to exchange data with other device
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -29,7 +37,8 @@ typedef enum {
 #define PWM_MODE            (0)
 #define RPM_MODE            (1)
 
-typedef enum {
+typedef enum
+{
     EMERGENCY_STOP=1,
 
     SET_MOTORS_REF_RPM, // RPM
@@ -91,7 +100,8 @@ typedef enum {
 } Commands_t;
 
 
-typedef struct {
+typedef struct
+{
     uint8_t headers[N_HEADERS];
     uint8_t cmd;
     uint8_t size;
@@ -99,7 +109,8 @@ typedef struct {
     uint8_t cheksum;
 } Packet_t;
 
-typedef struct {
+typedef struct
+{
     uint8_t startChar;
     uint16_t imot[N_MOTORS]; // in [mA]
     int16_t ticks[N_MOTORS]; // Encoder counts
@@ -121,12 +132,14 @@ typedef struct {
     uint8_t endChar[2];
 } DataPacket_t;
 
-typedef union {
+typedef union
+{
     DataPacket_t packet;
     uint8_t bytes[PACKET_SIZE];
 } DataPacket_u;
 
-typedef struct {
+typedef struct
+{
     int16_t rpm[N_MOTORS]; // [RPM]
     uint8_t newRpm[N_MOTORS];
     int16_t pwm[N_MOTORS];

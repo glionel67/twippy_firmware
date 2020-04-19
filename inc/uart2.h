@@ -1,3 +1,11 @@
+/**
+ * \file uart2.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief UART2 functions
+ */
+
 #pragma once
 
 #include <stdint.h>

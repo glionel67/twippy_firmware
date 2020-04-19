@@ -1,3 +1,11 @@
+/**
+ * \file spi.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief SPI1 functions
+ */
+
 #pragma once
 
 #include <stdint.h>

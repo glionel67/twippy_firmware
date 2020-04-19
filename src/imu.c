@@ -22,7 +22,7 @@ static Mpu9250_t mpu9250;
 
 uint8_t init_imu(void)
 {
-    uint8_t ret = 0; 
+    uint8_t ret = NOK; 
 
     ret = mpu9250_init(&mpu9250);
     if (!ret)
@@ -77,7 +77,7 @@ uint8_t init_imu(void)
     HAL_NVIC_EnableIRQ(IMU_INT_IRQ);
 
     return OK;
-}
+} // init_imu
 
 uint8_t test_imu(void)
 {
@@ -119,7 +119,7 @@ void imu_test_task(void* _params)
     {
         if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY))
         {
-            // Read data
+            // Read data registers from sensor
             vTaskSuspendAll();
             ret = mpu9250_read_data_register(&mpu9250);
             xTaskResumeAll();
@@ -133,7 +133,7 @@ void imu_test_task(void* _params)
                 mpu9250_extract_data_register(&mpu9250);
 
                 // Copy data
-                for (i=0;i<N_AXES;i++)
+                for (i = 0; i < N_AXES; i++)
                 {
                     imu9.a[i] = mpu9250.a_raw[i];
                     imu9.g[i] = mpu9250.g_raw[i];
@@ -179,12 +179,12 @@ void imu_task(void* _params)
     {
         if (pdTRUE == xSemaphoreTake(imuDataReady, portMAX_DELAY))
         {
-            // Read data
+            // Read data registers from sensor
             vTaskSuspendAll();
             ret = mpu9250_read_data_register(&mpu9250);
             xTaskResumeAll();
 
-            if (ret)
+            if (ret) // Read success
             {
                 // Get timestamp
                 imu9.timestamp = (float)get_us_time() * (float)1e-6;
@@ -196,7 +196,7 @@ void imu_task(void* _params)
                 // Copy data
                 if (mpu9250.isCalibrated)
                 {
-                    for (i=0;i<N_AXES;i++)
+                    for (i = 0; i < N_AXES; i++)
                     {
                         imu9.a[i] = mpu9250.a_raw[i];
                         imu9.g[i] = mpu9250.g_raw[i] - mpu9250.bg[i];
@@ -207,7 +207,7 @@ void imu_task(void* _params)
                 }
                 else
                 {
-                    for (i=0;i<N_AXES;i++)
+                    for (i = 0; i < N_AXES; i++)
                     {
                         imu9.a[i] = mpu9250.a_raw[i];
                         imu9.g[i] = mpu9250.g_raw[i];
@@ -217,11 +217,11 @@ void imu_task(void* _params)
                     }
                 }
 
-                // Send it over the queue
+                // Send it over the queues
                 xQueueOverwrite(imu6Queue, &imu6);
                 xQueueOverwrite(imu9Queue, &imu9);
             }
-            else
+            else // Read failure
             {
                 if (!mpu9250.isImuInit)
                 {
@@ -253,29 +253,30 @@ uint8_t is_imu_calibrated(void)
 void get_imu9_data(Imu9_t* imu)
 {
     uint8_t i = 0;
-    for (i=0;i<N_AXES;i++)
+    for (i = 0; i < N_AXES; i++)
     {
         imu->a[i] = mpu9250.a[i];
         imu->g[i] = mpu9250.g[i];
         imu->m[i] = mpu9250.m[i];
     }
-}
+} // get_imu9_data
 
  void get_imu6_data(Imu6_t* imu)
  {
     uint8_t i = 0;
-    for (i=0;i<N_AXES;i++)
+    for (i = 0; i < N_AXES; i++)
     {
         imu->a[i] = mpu9250.a[i];
         imu->g[i] = mpu9250.g[i];
     }
-}
+} // get_imu6_data
 
 uint8_t imu_calibrate_gyro_bias(void)
 {
     if (!(pdPASS == xTaskCreate(imu_calibrate_gyro_bias_task, 
             (const char*)"imu_calibrate_gyro_bias_task",
-            IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL))) {
+            IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL)))
+    {
         printf("Failed to create imu_calibrate_gyro_bias_task\r\n");
         return 0;
     }
@@ -283,13 +284,15 @@ uint8_t imu_calibrate_gyro_bias(void)
         return 1;
     else
         return 0;
-}
+} // imu_calibrate_gyro_bias
 
 void imu_calibrate_gyro_bias_task(void* _params)
 {
     uint8_t i = 0;
+    uint8_t nErrors = 0;
+    const uint8_t nMaxErrors = 50;
     Imu6_t imu6;
-    float nSamples = 1000;
+    float nSamples = 1000.f;
     float count = 0.f;
     float sum[N_AXES] = { 0.f };
     float sumSquares[N_AXES] = { 0.f, };
@@ -302,20 +305,34 @@ void imu_calibrate_gyro_bias_task(void* _params)
 
     printf("Starting gyro bias calibration...\r\n");
 
-    while (count < nSamples) {
-        if (pdTRUE == xQueuePeek(imu6Queue, &imu6, pdMS_TO_TICKS(100))) {
-            for (i=0;i<N_AXES;i++) {
+    while (count < nSamples && nErrors < nMaxErrors)
+    {
+        if (pdTRUE == xQueuePeek(imu6Queue, &imu6, pdMS_TO_TICKS(100)))
+        {
+            for (i = 0; i < N_AXES; i++)
+            {
                 sum[i] += imu6.g[i];
                 sumSquares[i] += imu6.g[i] * imu6.g[i];
             }
             count += 1.f;
         }
-        else {
+        else
+        {
+            nErrors++;
             printf("Timeout while waiting for gyro measurement, aborting gyro bias calib!\r\n");
         }
     }
 
-    for (i=0;i<N_AXES;i++) {
+    if (nErrors >= nMaxErrors)
+    {
+        printf("Gyro bias calibration failure...\r\n");
+        mpu9250.isCalibrated = 0;
+        vTaskDelete(NULL);
+        return;
+    }
+
+    for (i = 0; i < N_AXES; i++)
+    {
         mpu9250.bg[i] = mean[i] = sum[i] / count;
         mpu9250.vg[i] = variance[i] = sumSquares[i] / count - mean[i] * mean[i];
         mpu9250.sg[i] = sqrtf(mpu9250.vg[i]);
@@ -328,11 +345,12 @@ void imu_calibrate_gyro_bias_task(void* _params)
     mpu9250.isCalibrated = 1;
 
     vTaskDelete(NULL);
-}
+} // imu_calibrate_gyro_bias_task
 
 void __attribute__((used)) EXTI2_IRQHandler(void)
 {
-    if (__HAL_GPIO_EXTI_GET_IT(IMU_INT_PIN) != RESET) {
+    if (__HAL_GPIO_EXTI_GET_IT(IMU_INT_PIN) != RESET)
+    {
         __HAL_GPIO_EXTI_CLEAR_IT(IMU_INT_PIN);
         portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(imuDataReady, &xHigherPriorityTaskWoken);

@@ -1,3 +1,11 @@
+/**
+ * \file ahrs.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief AHRS functions
+ */
+
 #pragma once
 
 //

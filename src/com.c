@@ -1,13 +1,25 @@
+/**
+ * \file com.c
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Communication functions to exchange data with other device
+ */
+
 #include "comm.h"
 #include "uart.h"
 #include "odometry.h"
 
 Inputs_t inputs;
 
-int decode_msg(uint8_t* buf, uint8_t len) {
+int decode_msg(uint8_t* buf, uint8_t len)
+{
     uint8_t data[DEBUGSIZE] = { 0, };
-    if (buf[0] == MSG_HEADER1 && buf[1] == MSG_HEADER2) {
-        switch (buf[2]) {
+
+    if (buf[0] == MSG_HEADER1 && buf[1] == MSG_HEADER2)
+    {
+        switch (buf[2])
+        {
         case 0x00: {
             uint8_t str[] = "Unknown msg";
             uart2_write(str, sizeof(str));
@@ -203,13 +215,15 @@ int decode_msg(uint8_t* buf, uint8_t len) {
             return -1;
         }
     }
-    else {
+    else
+    {
         return -1;
     }
     return 0;
 }
 
-int send_info(DataPacket_t* dataPacket, uint8_t output) {
+int send_info(DataPacket_t* dataPacket, uint8_t output)
+{
     uint8_t debug[DEBUGSIZE] = { 0, };
     int ret = 0;
 
@@ -298,9 +312,10 @@ int send_info(DataPacket_t* dataPacket, uint8_t output) {
         ret = uart2_write_it(debug, DEBUGSIZE);
 
     return ret;
-}
+} // send_info
 
-int send_packet(DataPacket_u* packet, uint8_t output) {
+int send_packet(DataPacket_u* packet, uint8_t output)
+{
     int ret = 0;
     // Send debug over UART1
     if (output & 0x01)
@@ -310,4 +325,4 @@ int send_packet(DataPacket_u* packet, uint8_t output) {
         ret = uart2_write_it(packet->bytes, PACKET_SIZE);
 
     return ret;
-}
+} // send_packet

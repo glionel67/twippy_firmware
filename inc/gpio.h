@@ -12,7 +12,7 @@
 
 /**
  * \fn init_gpios
- * \brief Initialize the GPIO
+ * \brief Initialize the GPIOs
  * \return OK if success, NOK if error
  */
 int init_gpios(void);

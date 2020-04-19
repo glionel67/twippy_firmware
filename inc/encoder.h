@@ -1,3 +1,11 @@
+/**
+ * \file encoder.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief Encoder functions used to measure the motor/wheel speed
+ */
+
 #pragma once
 
 // -------------------------------------------------------------------------- //
@@ -19,20 +27,23 @@
 // -------------------------------------------------------------------------- //
 // --- Structs/enums
 // -------------------------------------------------------------------------- //
-typedef struct Encoder_s {
+typedef struct Encoder_s
+{
     int32_t tick;
-    int32_t rpm;
+    int32_t rpm; // [RPM]
 } Encoder_t;
 
-typedef struct Encoders_s {
-    //uint32_t timestamp;
+typedef struct Encoders_s
+{
+    //uint32_t timestamp; // in [ms]
     float timestamp; // [s]
     Encoder_t encoders[N_MOTORS];
 } Encoders_t;
 
-typedef struct MotorMeasuredSpeed_s {
+typedef struct MotorMeasuredSpeed_s
+{
     float timestamp; // in [s]
-    float speed[N_MOTORS]; // in [rpm] or [rad/s]
+    float speed[N_MOTORS]; // in [rpm] (or [rad/s])
 } MotorMeasuredSpeed_t;
 
 // -------------------------------------------------------------------------- //

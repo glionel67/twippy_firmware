@@ -1,3 +1,11 @@
+/**
+ * \file motor_control.c
+ * \author Lionel GENEVE
+ * \date 12/04/2020
+ * \version 1.0
+ * \brief Motor control functions
+ */
+
 #include <stdio.h>
 #include <string.h>
 
@@ -14,6 +22,7 @@
 
 #define DEBUG_MODULE "motor_ctrl"
 
+// PID controller parameters
 #define PID_MOTOR1_KP (.5f)
 #define PID_MOTOR1_KI (5.f)
 #define PID_MOTOR1_KD (.01f)
@@ -31,13 +40,12 @@
 #define LOW_SPEED_SAT_RPM (5.f) // in RPM
 #define RPM_PER_VOLT (17.f)
 
-static Pid_t pidMotors[N_MOTORS];
+static Pid_t pidMotors[N_MOTORS]; // PID structure for each motor
 //PidParams_t pidParamsMotors[N_MOTORS];
 static uint8_t isInit = 0;
 static float desiredWheelSpeed[N_MOTORS] = { 0, };
 //static xQueueHandle motorControlQueue = 0;
 static xQueueHandle motorDesiredVoltageQueue = 0;
-
 
 uint8_t motor_control_init(void)
 {
@@ -57,7 +65,7 @@ uint8_t motor_control_init(void)
     }
     */
     motorDesiredVoltageQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorDesiredVoltage_t));
-    if (motorDesiredVoltageQueue == 0)
+    if (0 == motorDesiredVoltageQueue)
     {
         printf("motors_control_init: motorDesiredVoltageQueue creation NOK\r\n");
         return NOK;
@@ -65,13 +73,28 @@ uint8_t motor_control_init(void)
     else
         printf("motors_control_init: motorDesiredVoltageQueue creation OK\r\n");
 
-    // Init. motor 1 PID
+    // Init PID controller for each motor
     float dt = (float)MOTOR_CONTROL_PERIOD_MS / 1000.f;
-    pid_init(&pidMotors[MOTOR1], PID_MOTOR1_KP, PID_MOTOR1_KI, PID_MOTOR1_KD,
-            PID_MOTOR1_KFFWD, PID_MOTOR1_SAT, PID_MOTOR1_ISAT, dt);
-    // Init. motor 2 PID
-    pid_init(&pidMotors[MOTOR2], PID_MOTOR2_KP, PID_MOTOR2_KI, PID_MOTOR2_KD,
-            PID_MOTOR2_KFFWD, PID_MOTOR2_SAT, PID_MOTOR2_ISAT, dt);
+    PidParams_t pidParams;
+    pidParams.dt = dt;
+
+    // Motor 1
+    pidParams.kffwd = PID_MOTOR1_KFFWD;
+    pidParams.kp = PID_MOTOR1_KP;
+    pidParams.ki = PID_MOTOR1_KI;
+    pidParams.kd = PID_MOTOR1_KD;
+    pidParams.sat = PID_MOTOR1_SAT;
+    pidParams.isat = PID_MOTOR1_ISAT;
+    pid_init(&pidMotors[MOTOR1], &pidParams);
+
+    // Motor 2
+    pidParams.kffwd = PID_MOTOR2_KFFWD;
+    pidParams.kp = PID_MOTOR2_KP;
+    pidParams.ki = PID_MOTOR2_KI;
+    pidParams.kd = PID_MOTOR2_KD;
+    pidParams.sat = PID_MOTOR2_SAT;
+    pidParams.isat = PID_MOTOR2_ISAT;
+    pid_init(&pidMotors[MOTOR2], &pidParams);
 
     isInit = 1;
     return OK;
@@ -94,6 +117,7 @@ void motor_control_task(void* _params)
     MotorMeasuredSpeed_t measuredSpeeds;
     MotorDesiredVoltage_t desiredVoltages;
     MotorControl_t motorControls;
+
     float dt = 0, told = (float)get_us_time() * (float)1e-6;
 
     if (_params != 0) { }
@@ -113,7 +137,8 @@ void motor_control_task(void* _params)
             motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
             motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
         }
-        else {
+        else
+        {
             //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
         }
 
@@ -129,7 +154,8 @@ void motor_control_task(void* _params)
         told = motorControls.timestamp;
 
         if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM) {
+            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM)
+        {
             motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR1]);
         }
@@ -141,7 +167,8 @@ void motor_control_task(void* _params)
         }
 
         if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM) {
+            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM)
+        {
             motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR2]);
         }
@@ -168,7 +195,7 @@ void motor_control_task(void* _params)
     }
 
     vTaskDelete(NULL);
-}
+} // motor_control_task
 
 void motor_control_test_task(void* _params)
 {
@@ -192,12 +219,14 @@ void motor_control_test_task(void* _params)
         // 1. Get encoder data
         ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
                 pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
-        if (ret) {
+        if (ret)
+        {
             //motorControls.timestamp = measuredSpeeds.timestamp;
             motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
             motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
         }
-        else {
+        else
+        {
             //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
         }
 
@@ -220,22 +249,26 @@ void motor_control_test_task(void* _params)
         //    pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des, motorControls.controlState[MOTOR2].mes, dt);
 
         if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM) {
+            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM)
+        {
             motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR1]);
         }
-        else {
+        else 
+        {
             motorControls.controlState[MOTOR1].out = 
                 pid_update(&pidMotors[MOTOR1], motorControls.controlState[MOTOR1].des,
                            motorControls.controlState[MOTOR1].mes, dt);
         }
 
         if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM) {
+            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM)
+        {
             motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
             //pid_reset(&pidMotors[MOTOR2]);
         }
-        else {
+        else
+        {
             motorControls.controlState[MOTOR2].out = 
                 pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des,
                            motorControls.controlState[MOTOR2].mes, dt);
