@@ -15,8 +15,6 @@
 
 #include "FreeRTOS.h"
 
-#include "mpu9250.h"
-
 // -------------------------------------------------------------------------- //
 // --- Defines
 // -------------------------------------------------------------------------- //
@@ -24,20 +22,26 @@
 
 #define IMU_QUEUE_SIZE 1
 
+#ifndef N_AXES
+#define N_AXES 3
+#endif
+
 // -------------------------------------------------------------------------- //
 // --- Structs/enums
 // -------------------------------------------------------------------------- //
-typedef struct Imu6_s {
-    float timestamp;
-    float a[N_AXES]; // accelerometer
-    float g[N_AXES]; // gyroscope
+typedef struct Imu6_s
+{
+    float timestamp; // Timestamp of the measurement [ms] or [us] ?
+    float a[N_AXES]; // accelerometer [g] or [m/s2]
+    float g[N_AXES]; // gyroscope [rad/s] or [deg/s]
 } Imu6_t;
 
-typedef struct Imu9_s {
-    float timestamp;
-    float a[N_AXES]; // accelerometer
-    float g[N_AXES]; // gyroscope
-    float m[N_AXES]; // magnetometer
+typedef struct Imu9_s
+{
+    float timestamp; // Timestamp of the measurement [ms] or [us] ?
+    float a[N_AXES]; // accelerometer [g] or [m/s2]
+    float g[N_AXES]; // gyroscope [rad/s] or [deg/s]
+    float m[N_AXES]; // magnetometer [mT] ?
 } Imu9_t;
 
 // -------------------------------------------------------------------------- //

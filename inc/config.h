@@ -1,3 +1,11 @@
+/**
+ * \file config.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief FreeRTOS task configurations 
+ */
+ 
 #pragma once
 
 /******************************************************************************/

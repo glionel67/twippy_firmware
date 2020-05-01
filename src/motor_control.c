@@ -6,20 +6,30 @@
  * \brief Motor control functions
  */
 
+// -------------------------------------------------------------------------- //
+// --- Includes
+// -------------------------------------------------------------------------- //
+// libC
 #include <stdio.h>
 #include <string.h>
 
+// FreeRTOS
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 
+// Project
 #include "main.h"
-#include "pid_controller.h"
+#include "adc.h"
 #include "motor.h"
 #include "motor_control.h"
+#include "pid_controller.h"
 #include "encoder.h"
 #include "usTimer.h"
 
+// -------------------------------------------------------------------------- //
+// --- Defines
+// -------------------------------------------------------------------------- //
 #define DEBUG_MODULE "motor_ctrl"
 
 // PID controller parameters
@@ -40,38 +50,42 @@
 #define LOW_SPEED_SAT_RPM (5.f) // in RPM
 #define RPM_PER_VOLT (17.f)
 
+// Motor/encoder parameters
+static const int32_t gear_ratio = 50; // Motor reductor gear ratio
+static const int32_t ppt = 64; // Encoder resolution (Number of point per turn)
+
+// Motor control parameters
 static Pid_t pidMotors[N_MOTORS]; // PID structure for each motor
 //PidParams_t pidParamsMotors[N_MOTORS];
-static uint8_t isInit = 0;
-static float desiredWheelSpeed[N_MOTORS] = { 0, };
-//static xQueueHandle motorControlQueue = 0;
-static xQueueHandle motorDesiredVoltageQueue = 0;
+
+static uint8_t motorControlMode = MOTOR_CTRL_MODE_MANU;
+static int16_t refCtrl[N_MOTORS] = { 0, };
+
+// FreeRTOS queues
+static xQueueHandle encoderDataQueue = 0;
+static xQueueHandle motorDataQueue = 0;
 
 uint8_t motor_control_init(void)
 {
-    if (isInit)
-        return OK;
-
-    /*
-    motorControlQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorControls_t));
-    if (motorControlQueue == 0) {
-        char str[] = "motors_control_init: motorControlQueue creation NOK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
-        return -1;
-    }
-    else {
-        char str[] = "motors_control_init: motorControlQueue creation OK\r\n";
-        print_msg((uint8_t*)str, strlen(str));
-    }
-    */
-    motorDesiredVoltageQueue = xQueueCreate(MOTOR_CONTROL_QUEUE_SIZE, sizeof(MotorDesiredVoltage_t));
-    if (0 == motorDesiredVoltageQueue)
+    // Create encoder queue
+    encoderDataQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));
+    if (0 == encoderDataQueue)
     {
-        printf("motors_control_init: motorDesiredVoltageQueue creation NOK\r\n");
+        printf("motor_control_init: encoderDataQueue creation NOK\r\n");
         return NOK;
     }
     else
-        printf("motors_control_init: motorDesiredVoltageQueue creation OK\r\n");
+        printf("motor_control_init: encoderDataQueue creation OK\r\n");
+
+    // Create motor queue
+    motorDataQueue = xQueueCreate(MOTOR_QUEUE_SIZE, sizeof(Motor_t));
+    if (0 == motorDataQueue)
+    {
+        printf("motor_control_init: motorDataQueue creation NOK\r\n");
+        return NOK;
+    }
+    else
+        printf("motor_control_init: motorDataQueue creation OK\r\n");
 
     // Init PID controller for each motor
     float dt = (float)MOTOR_CONTROL_PERIOD_MS / 1000.f;
@@ -96,218 +110,179 @@ uint8_t motor_control_init(void)
     pidParams.isat = PID_MOTOR2_ISAT;
     pid_init(&pidMotors[MOTOR2], &pidParams);
 
-    isInit = 1;
     return OK;
-}
-
-uint8_t motor_control_test(void)
-{
-    return isInit;
-}
+} // motor_control_init
 
 void motor_control_reset(void)
 {
     pid_reset(&pidMotors[MOTOR1]);
     pid_reset(&pidMotors[MOTOR2]);
-}
+} // motor_control_reset
 
 void motor_control_task(void* _params)
 {
-    uint8_t ret = 0;
-    MotorMeasuredSpeed_t measuredSpeeds;
-    MotorDesiredVoltage_t desiredVoltages;
-    MotorControl_t motorControls;
-
-    float dt = 0, told = (float)get_us_time() * (float)1e-6;
-
     if (_params != 0) { }
 
-    memset((void*)&measuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));
-    memset((void*)&desiredVoltages, 0, sizeof(MotorDesiredVoltage_t));
-    memset((void*)&motorControls, 0, sizeof(MotorControl_t));
+    int32_t den = 0, num = 0;
+    uint64_t usTime = get_us_time();
+    float told = (float)usTime * 0.000001f;
+    float dt = 0.f;
+    uint8_t brakeState = BRAKE_OFF;
+    float refVolt[N_MOTORS] = {0, };
+    int32_t refPwm[N_MOTORS] = {0, };
+    float vbat = 0.f;
+    
+    Encoders_t encoders;
+    Motor_t motors;
+
+    // Reset queues
+    memset((void*)&encoders, 0, sizeof(Encoders_t));
+    memset((void*)&motors, 0, sizeof(Motor_t));
+
+    // Periodic task
+    TickType_t xLastWakeTime;
+    const TickType_t xPeriod = pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS);
+    xLastWakeTime = xTaskGetTickCount();
 
     while (1)
     {
-        // 1. Get encoder data
-        ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
-                pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
-        if (ret)
-        {
-            //motorControls.timestamp = measuredSpeeds.timestamp;
-            motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
-            motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
-        }
-        else
-        {
-            //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
-        }
+        // Get timestamp
+        usTime = get_us_time();
+        encoders.timestamp = (float)usTime * 0.000001f;
+        motors.timestamp = encoders.timestamp;
 
-        // 2. Get reference speeds
-        // ... read from a queue without blocking
-        //ret = read_desired_wheel_speed(&desiredWheelSpeeds, 0);
-        motorControls.controlState[MOTOR1].des = desiredWheelSpeed[MOTOR1];
-        motorControls.controlState[MOTOR2].des = desiredWheelSpeed[MOTOR2];
+        // ---------------------------
+        // --- 1. Get encoder data ---
+        // ---------------------------
 
-        // 3. PID control
-        motorControls.timestamp = (float)get_us_time() * (float)1e-6;
-        dt = motorControls.timestamp - told;
-        told = motorControls.timestamp;
+        // Read ticks and compute RPM
+        taskENTER_CRITICAL();
+        encoder_get_counts(&encoders.encoders[MOTOR1].counts, 
+                            &encoders.encoders[MOTOR2].counts);
+        taskEXIT_CRITICAL();
 
-        if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM)
-        {
-            motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
-            //pid_reset(&pidMotors[MOTOR1]);
-        }
-        else
-        {
-            motorControls.controlState[MOTOR1].out = 
-                pid_update(&pidMotors[MOTOR1], motorControls.controlState[MOTOR1].des,
-                           motorControls.controlState[MOTOR1].mes, dt);
-        }
+        // Get time difference
+        dt = encoders.timestamp - told;
+        told = encoders.timestamp;
 
-        if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM)
-        {
-            motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
-            //pid_reset(&pidMotors[MOTOR2]);
-        }
-        else
-        {
-            motorControls.controlState[MOTOR2].out = 
-                pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des,
-                           motorControls.controlState[MOTOR2].mes, dt);
-        }
+        // Convert ticks to RPM
+        den = (int32_t)((int32_t)dt * gear_ratio);
 
-        if (desiredWheelSpeed[MOTOR1] * motorControls.controlState[MOTOR1].out < 0.f)
-            motorControls.controlState[MOTOR1].out = 0.f;
+        num = (encoders.encoders[MOTOR1].counts * 60000) / ppt;
+        encoders.encoders[MOTOR1].rpm = (int16_t)(num / den);
+        motors.motors[MOTOR1].encRpm = encoders.encoders[MOTOR1].rpm;
+
+        num = (encoders.encoders[MOTOR2].counts * 60000) / ppt;
+        encoders.encoders[MOTOR2].rpm = (int16_t)(num / den);
+        motors.motors[MOTOR2].encRpm = encoders.encoders[MOTOR2].rpm;
+
+        // Send encoder data
+        xQueueOverwrite(encoderDataQueue, &encoders);
+
+        // -----------------------------
+        // --- 2. Get motor currents ---
+        // -----------------------------
+        get_adc_imot12_ma(&motors.motors[MOTOR1].current, 
+                            &motors.motors[MOTOR2].current);
+
+        // ---------------------------
+        // --- 3. Get motor faults ---
+        // ---------------------------
+        motors.motors[MOTOR1].fault = get_fault(MOTOR1);
+        motors.motors[MOTOR2].fault = get_fault(MOTOR2);
+
+        // ---------------------------------
+        // --- 4. Get control references ---
+        // ---------------------------------
+        // ... refCtrl[MOTOR1], refCtrl[MOTOR2], motorControlMode
+
+        // -----------------
+        // --- 5 control ---
+        // -----------------
+        if (MOTOR_CTRL_MODE_MANU == motorControlMode)
+        {
+            // -----------------------
+            // --- 5a. PID control ---
+            // -----------------------
+            brakeState = BRAKE_OFF;
+
+            motors.motors[MOTOR1].refRpm = refCtrl[MOTOR1];
+            motors.motors[MOTOR2].refRpm = refCtrl[MOTOR2];
+
+            refVolt[MOTOR1] = pid_update(&pidMotors[MOTOR1], 
+                                (float)motors.motors[MOTOR1].refRpm,
+                                (float)motors.motors[MOTOR1].encRpm, dt);
+
+            refVolt[MOTOR2] = pid_update(&pidMotors[MOTOR2], 
+                                (float)motors.motors[MOTOR2].refRpm,
+                                (float)motors.motors[MOTOR2].encRpm, dt);
+        }
+        else if (MOTOR_CTRL_MODE_AUTO == motorControlMode)
+        {
+            // --------------------------
+            // --- 5b. Direct control ---
+            // --------------------------
+            brakeState = BRAKE_OFF;
+            motors.motors[MOTOR1].refRpm = 0;
+            motors.motors[MOTOR2].refRpm = 0;
+            // Convert [mV] to [V]
+            refVolt[MOTOR1] = (float)(refCtrl[MOTOR1] / 1000.f);
+            refVolt[MOTOR2] = (float)(refCtrl[MOTOR2] / 1000.f);
+        }
+        else // MOTOR_CTRL_MODE_BRAKE == motorControlMode and other
+        {
+            brakeState = BRAKE_ON;
+            motors.motors[MOTOR1].refRpm = 0;
+            motors.motors[MOTOR2].refRpm = 0;
+            // Convert [mV] to [V]
+            refVolt[MOTOR1] = (float)(refCtrl[MOTOR1] / 1000.f);
+            refVolt[MOTOR2] = (float)(refCtrl[MOTOR2] / 1000.f);
+        } 
+
+        // ----------------------------------
+        // --- 6. Send commands to motors ---
+        // ----------------------------------
+
+        motors.motors[MOTOR1].refVoltage = (int16_t)(refVolt[MOTOR1] * 1000.f);
+        motors.motors[MOTOR2].refVoltage = (int16_t)(refVolt[MOTOR2] * 1000.f);
+
+        // Get current battery voltage [V]
+        vbat = get_vbat_volt();
+
+        // Convert voltage to PWM 
+        refPwm[MOTOR1] = voltageToPwm(refVolt[MOTOR1], vbat);
+        refPwm[MOTOR2] = voltageToPwm(refVolt[MOTOR2], vbat);
+
+        // Set motor PWM and direction
+        set_speed(MOTOR1, refPwm[MOTOR1], brakeState, &motors.motors[MOTOR1]);
+        set_speed(MOTOR2, refPwm[MOTOR2], brakeState, &motors.motors[MOTOR2]);
+
+        // Send motor data
+        xQueueOverwrite(motorDataQueue, &motors);
         
-        if (desiredWheelSpeed[MOTOR2] * motorControls.controlState[MOTOR2].out < 0.f)
-            motorControls.controlState[MOTOR2].out = 0.f;
-
-        //xQueueOverwrite(motorControlQueue, &motorControls); // Send debug data
-
-        // 4. Send voltage commands to motors
-        desiredVoltages.timestamp = motorControls.timestamp;
-        desiredVoltages.voltage[MOTOR1] = motorControls.controlState[MOTOR1].out;
-        desiredVoltages.voltage[MOTOR2] = motorControls.controlState[MOTOR2].out;
-        xQueueOverwrite(motorDesiredVoltageQueue, &desiredVoltages);
+        vTaskDelayUntil(&xLastWakeTime, xPeriod);
     }
 
     vTaskDelete(NULL);
 } // motor_control_task
 
-void motor_control_test_task(void* _params)
+void motor_control_set_references(int16_t ref1, int16_t ref2, uint8_t mode)
 {
-    uint8_t ret = 0;
-    MotorMeasuredSpeed_t measuredSpeeds;
-    MotorDesiredVoltage_t desiredVoltages;
-    MotorControl_t motorControls;
-    float dt = 0, told = (float)get_us_time() * (float)1e-6;
+    refCtrl[MOTOR1] = ref1; // [rpm] or [mV]
+    refCtrl[MOTOR2] = ref2; // [rpm] or [mV]
 
-    if (_params != 0) { }
+    if (MOTOR_CTRL_MODE_MANU == mode || MOTOR_CTRL_MODE_AUTO == mode)
+        motorControlMode = mode;
+    else
+        motorControlMode = MOTOR_CTRL_MODE_BRAKE; // Default mode is brake
+} // motor_control_set_references
 
-    memset((void*)&measuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));
-    memset((void*)&desiredVoltages, 0, sizeof(MotorDesiredVoltage_t));
-    memset((void*)&motorControls, 0, sizeof(MotorControl_t));
-
-    vTaskDelay(3000);
-    float t0 = (float)get_us_time() * (float)1e-6;
-
-    while (1)
-    {
-        // 1. Get encoder data
-        ret = encoder_read_motor_measured_speed(&measuredSpeeds, 
-                pdMS_TO_TICKS(MOTOR_CONTROL_PERIOD_MS));
-        if (ret)
-        {
-            //motorControls.timestamp = measuredSpeeds.timestamp;
-            motorControls.controlState[MOTOR1].mes = measuredSpeeds.speed[MOTOR1];
-            motorControls.controlState[MOTOR2].mes = measuredSpeeds.speed[MOTOR2];
-        }
-        else
-        {
-            //motorControls.timestamp = (float)get_us_time() * (float)1e-6;
-        }
-
-        motorControls.timestamp = (float)get_us_time() * (float)1e-6;
-
-        // 2. Get reference speeds
-        desiredWheelSpeed[MOTOR1] = triangularSignal(.1, 200.f, motorControls.timestamp-t0);
-        //desiredWheelSpeed[MOTOR1] = squareSignal(.1, 150.f, motorControls.timestamp-t0);
-        //desiredWheelSpeed[MOTOR1] = sinusoidSignal(40.f, motorControls.timestamp-t0);
-        desiredWheelSpeed[MOTOR2] = desiredWheelSpeed[MOTOR1];
-        motorControls.controlState[MOTOR1].des = desiredWheelSpeed[MOTOR1];
-        motorControls.controlState[MOTOR2].des = desiredWheelSpeed[MOTOR2];
-
-        // 3. PID control
-        dt = motorControls.timestamp - told;
-        told = motorControls.timestamp;
-        //motorControls.controlState[MOTOR1].out = 
-        //    pid_update(&pidMotors[MOTOR1], motorControls.controlState[MOTOR1].des, motorControls.controlState[MOTOR1].mes, dt);
-        //motorControls.controlState[MOTOR2].out = 
-        //    pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des, motorControls.controlState[MOTOR2].mes, dt);
-
-        if (desiredWheelSpeed[MOTOR1] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR1] > -LOW_SPEED_SAT_RPM)
-        {
-            motorControls.controlState[MOTOR1].out = desiredWheelSpeed[MOTOR1] / RPM_PER_VOLT;
-            //pid_reset(&pidMotors[MOTOR1]);
-        }
-        else 
-        {
-            motorControls.controlState[MOTOR1].out = 
-                pid_update(&pidMotors[MOTOR1], motorControls.controlState[MOTOR1].des,
-                           motorControls.controlState[MOTOR1].mes, dt);
-        }
-
-        if (desiredWheelSpeed[MOTOR2] < LOW_SPEED_SAT_RPM && 
-            desiredWheelSpeed[MOTOR2] > -LOW_SPEED_SAT_RPM)
-        {
-            motorControls.controlState[MOTOR2].out = desiredWheelSpeed[MOTOR2] / RPM_PER_VOLT;
-            //pid_reset(&pidMotors[MOTOR2]);
-        }
-        else
-        {
-            motorControls.controlState[MOTOR2].out = 
-                pid_update(&pidMotors[MOTOR2], motorControls.controlState[MOTOR2].des,
-                           motorControls.controlState[MOTOR2].mes, dt);
-        }
-
-        if (desiredWheelSpeed[MOTOR1] * motorControls.controlState[MOTOR1].out < 0)
-            motorControls.controlState[MOTOR1].out = 0.f;
-        
-        if (desiredWheelSpeed[MOTOR2] * motorControls.controlState[MOTOR2].out < 0)
-            motorControls.controlState[MOTOR2].out = 0.f;
-
-        //xQueueOverwrite(motorControlQueue, &motorControls); // Send debug data
-
-        // 4. Send voltage commands to motors
-        desiredVoltages.timestamp = motorControls.timestamp;
-        desiredVoltages.voltage[MOTOR1] = motorControls.controlState[MOTOR1].out;
-        desiredVoltages.voltage[MOTOR2] = motorControls.controlState[MOTOR2].out;
-        xQueueOverwrite(motorDesiredVoltageQueue, &desiredVoltages);
-
-        printf("%3.3f,%3.3f,%3.3f\r\n",
-            desiredWheelSpeed[MOTOR1], desiredVoltages.voltage[MOTOR1],
-            measuredSpeeds.speed[MOTOR1]);
-    }
-
-    vTaskDelete(NULL);
-}
-
-void motor_control_set_desired_wheel_speeds(float _speed1, float _speed2)
+uint8_t get_encoder_data(Encoders_t* data, TickType_t xTicksToWait)
 {
-    desiredWheelSpeed[MOTOR1] = _speed1;
-    desiredWheelSpeed[MOTOR2] = _speed2;
-}
+  return (pdTRUE == xQueueReceive(encoderDataQueue, data, xTicksToWait));
+} // get_encoder_data
 
-//uint8_t motor_control_read_data(MotorControl_t* data, TickType_t xTicksToWait) {
-//    return (pdTRUE == xQueueReceive(motorControlQueue, data, xTicksToWait));
-//}
-
-uint8_t motor_control_read_desired_voltage(MotorDesiredVoltage_t* data, 
-        TickType_t xTicksToWait)
+uint8_t get_motor_data(Motor_t* data, TickType_t xTicksToWait)
 {
-    return (pdTRUE == xQueueReceive(motorDesiredVoltageQueue, data, xTicksToWait));
-}
+    return (pdTRUE == xQueueReceive(motorDataQueue, data, xTicksToWait));
+} // get_motor_data

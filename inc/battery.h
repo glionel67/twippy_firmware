@@ -18,7 +18,10 @@
  */
 enum
 {
-    BAT_OK=0, BAT_VLOW, BAT_VCRITIC, BAT_IMAX
+    BAT_OK = 0,
+    BAT_VLOW,
+    BAT_VCRITIC,
+    BAT_IMAX
 } BatteryState_e;
 
 /**

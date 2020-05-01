@@ -1,3 +1,11 @@
+/**
+ * \file ahrs.c
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief AHRS (Attitude Heading Reference System) functions
+ */
+ 
 #include <stdio.h>
 #include <string.h>
 #include <math.h>

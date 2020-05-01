@@ -4,6 +4,18 @@
 		"selected_items":
 		[
 			[
+				"uint",
+				"uint8_t"
+			],
+			[
+				"prev",
+				"prevVbat"
+			],
+			[
+				"Ba",
+				"BatteryParams_t"
+			],
+			[
 				"Batt",
 				"BatteryInfos_t"
 			],
@@ -18,10 +30,6 @@
 			[
 				"out",
 				"outP"
-			],
-			[
-				"uint",
-				"uint32_t"
 			],
 			[
 				"uit",
@@ -392,10 +400,6 @@
 				"end"
 			],
 			[
-				"prev",
-				"_prevState"
-			],
-			[
 				"tempo",
 				"temporalWindow_"
 			],
@@ -510,10 +514,6 @@
 			[
 				"nex",
 				"nextState_"
-			],
-			[
-				"end",
-				"endl"
 			]
 		]
 	},
@@ -523,45 +523,52 @@
 			"file": "src/main.c",
 			"settings":
 			{
-				"buffer_size": 12190,
+				"buffer_size": 12467,
+				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "inc/battery.h",
+			"file": "inc/encoder.h",
 			"settings":
 			{
-				"buffer_size": 1747,
+				"buffer_size": 2146,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
+				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "src/battery.c",
-			"settings":
-			{
-				"buffer_size": 4322,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "/**\n * \\file encoder.c\n * \\author Lionel GENEVE\n * \\date 22/02/2019\n * \\version 1.0\n * \\brief Encoder functions used to measure the motor/wheel speed\n */\n\n#include <string.h>\n\n#include \"FreeRTOS.h\"\n#include \"task.h\"\n#include \"queue.h\"\n\n#include \"encoder.h\"\n#include \"main.h\"\n#include \"usTimer.h\"\n\n#define DEBUB_MODULE \"encoder\"\n\n// Timer handler declaration\nTIM_HandleTypeDef TimHandleEnc1;\nTIM_HandleTypeDef TimHandleEnc2;\n\nTIM_Encoder_InitTypeDef enc1;\nTIM_Encoder_InitTypeDef enc2;\n\nstatic const int32_t gear_ratio = 50;\nstatic const int32_t ppt = 64; // Encoder resolution (Number of point per turn)\n//static const int32_t ct_to_rpm = (60000/64); // = 60000/64\n\nstatic int32_t enc1_sum = 0, enc2_sum = 0;\nstatic int32_t enc1_diff = 0, enc2_diff = 0;\nstatic uint16_t enc1_now = 32000, enc2_now = 32000;\nstatic uint16_t enc1_old = 32000, enc2_old = 32000;\nstatic int32_t num = 0, den = 0;\nstatic int32_t enc1_rpm = 0, enc2_rpm = 0;\nstatic uint32_t t1_old = 0, t2_old = 0;\nstatic uint32_t t1_now = 0, t2_now = 0;\nstatic uint32_t dt = 0;\n\n//static xQueueHandle encoderQueue = 0;\nstatic xQueueHandle motorMeasuredSpeedQueue = 0;\n\nint init_encoders(void) \n{\n    int ret = NOK;\n    /*\n    encoderQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(Encoders_t));\n    if (encoderQueue == 0) {\n        printf(\"init_encoders: encoderQueue creation NOK\\r\\n\");\n        return -1;\n    }\n    else {\n        printf(\"init_encoders: encoderQueue creation OK\\r\\n\");\n    }\n    */\n    motorMeasuredSpeedQueue = xQueueCreate(ENCODER_QUEUE_SIZE, sizeof(MotorMeasuredSpeed_t));\n    if (motorMeasuredSpeedQueue == 0)\n    {\n        printf(\"init_encoders: motorMeasuredSpeedQueue creation NOK\\r\\n\");\n        return NOK;\n    }\n    else\n        printf(\"init_encoders: motorMeasuredSpeedQueue creation OK\\r\\n\");\n\n    // Init. encoders timers\n    // TIM3\n    TIM_ENC1_CLK_ENABLE();\n    TimHandleEnc1.Instance                  = TIM_ENC1;\n    TimHandleEnc1.Init.Prescaler            = 0;\n    TimHandleEnc1.Init.Period               = 0xFFFF;\n    TimHandleEnc1.Init.ClockDivision        = TIM_CLOCKDIVISION_DIV1;\n    TimHandleEnc1.Init.CounterMode          = TIM_COUNTERMODE_UP;\n    TimHandleEnc1.Init.RepetitionCounter    = 0;\n\n    enc1.EncoderMode    = TIM_ENCODERMODE_TI12;\n    enc1.IC1Polarity    = TIM_ICPOLARITY_RISING; //TIM_ICPolarity_BothEdge\n    enc1.IC1Selection   = TIM_ICSELECTION_DIRECTTI;\n    enc1.IC1Prescaler   = TIM_ICPSC_DIV1;\n    enc1.IC1Filter      = 0x00;\n    enc1.IC2Polarity    = TIM_ICPOLARITY_RISING;\n    enc1.IC2Selection   = TIM_ICSELECTION_DIRECTTI;\n    enc1.IC2Prescaler   = TIM_ICPSC_DIV1;\n    enc1.IC2Filter      = 0x00;\n\n    if (HAL_OK != HAL_TIM_Encoder_Init(&TimHandleEnc1, &enc1))\n        return NOK;\n\n    TIM_ENC1->CNT = enc1_now = enc1_old;\n    t1_old = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    ret = HAL_TIM_Encoder_Start(&TimHandleEnc1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL\n    //ret = HAL_TIM_Encoder_Start_IT(TimHandleEnc1, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL\n    if (HAL_OK != ret)\n        return NOK;\n\n    // TIM4\n    TIM_ENC2_CLK_ENABLE();\n    TimHandleEnc2.Instance                  = TIM_ENC2;\n    TimHandleEnc2.Init.Prescaler            = 0;\n    TimHandleEnc2.Init.Period               = 0xFFFF;\n    TimHandleEnc2.Init.ClockDivision        = TIM_CLOCKDIVISION_DIV1;\n    TimHandleEnc2.Init.CounterMode          = TIM_COUNTERMODE_UP;\n    TimHandleEnc2.Init.RepetitionCounter    = 0;\n\n    enc2.EncoderMode    = TIM_ENCODERMODE_TI12;\n    enc2.IC1Polarity    = TIM_ICPOLARITY_RISING; //TIM_ICPOLARITY_BOTHEDGE;\n    enc2.IC1Selection   = TIM_ICSELECTION_DIRECTTI;\n    enc2.IC1Prescaler   = TIM_ICPSC_DIV1;\n    enc2.IC1Filter      = 0x00;\n    enc2.IC2Polarity    = TIM_ICPOLARITY_RISING; //TIM_ICPOLARITY_BOTHEDGE;\n    enc2.IC2Selection   = TIM_ICSELECTION_DIRECTTI;\n    enc2.IC2Prescaler   = TIM_ICPSC_DIV1;\n    enc2.IC2Filter      = 0x00;\n\n    if (HAL_OK != HAL_TIM_Encoder_Init(&TimHandleEnc2, &enc2))\n        return NOK;\n\n    TIM_ENC2->CNT = enc2_now = enc2_old;\n    t2_old = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    ret = HAL_TIM_Encoder_Start(&TimHandleEnc2, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL\n    //ret = HAL_TIM_Encoder_Start_IT(TimHandleEnc2, TIM_CHANNEL_1 | TIM_CHANNEL_2); // TIM_CHANNEL_ALL\n    if (HAL_OK != ret)\n        return NOK;\n\n    enc1_sum = 0, enc2_sum = 0;\n    \n    return OK;\n} // init_encoders\n\nuint32_t enc1_get_direction(void)\n{\n    return !__HAL_TIM_IS_TIM_COUNTING_DOWN(&TimHandleEnc1);\n}\n\nuint32_t enc2_get_direction(void)\n{\n    return !__HAL_TIM_IS_TIM_COUNTING_DOWN(&TimHandleEnc2);\n}\n\nint32_t enc1_get_counts(void)\n{\n    enc1_now = TIM_ENC1->CNT;\n    TIM_ENC1->CNT = enc1_old;\n    enc1_diff = (int32_t)(enc1_now - enc1_old);\n    enc1_sum += enc1_diff;\n    return enc1_sum;\n}\n\nint32_t enc2_get_counts(void)\n{\n    enc2_now = TIM_ENC2->CNT;\n    TIM_ENC2->CNT = enc2_old;\n    enc2_diff = (int32_t)(enc2_now - enc2_old);\n    enc2_sum += enc2_diff;\n    return enc2_sum;\n}\n\nint32_t enc1_get_rpm(void)\n{\n    enc1_now = TIM_ENC1->CNT;\n    TIM_ENC1->CNT = enc1_old;\n    t1_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    enc1_diff = enc1_now - enc1_old;\n\n    dt = t1_now - t1_old;\n    t1_old = t1_now;\n\n    den = (int32_t)((int32_t)dt * gear_ratio);\n    num = (enc1_diff * 60000) / ppt;\n    enc1_rpm = num / den;\n    return enc1_rpm;\n}\n\nint32_t enc2_get_rpm(void)\n{\n    enc2_now = TIM_ENC2->CNT;\n    TIM_ENC2->CNT = enc2_old;\n    t2_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    enc2_diff = enc2_now - enc2_old;\n\n    dt = t2_now - t2_old;\n    t2_old = t2_now;\n\n    den = (int32_t)((int32_t)dt * gear_ratio);\n    num = (enc2_diff * 60000) / ppt;\n    enc2_rpm = num / den;\n    return enc2_rpm;\n}\n\nvoid enc1_get_cts_and_rpm(int32_t* cts, int32_t* rpm)\n{\n    enc1_now = TIM_ENC1->CNT;\n    TIM_ENC1->CNT = enc1_old;\n    t1_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    (*cts) = enc1_now - enc1_old;\n\n    dt = t1_now - t1_old;\n    t1_old = t1_now;\n\n    den = (int32_t)((int32_t)dt * gear_ratio);\n    num = ((*cts) * 60000) / ppt;\n    (*rpm) = num / den;\n}\n\nvoid enc2_get_cts_and_rpm(int32_t* cts, int32_t* rpm)\n{\n    enc2_now = TIM_ENC2->CNT;\n    TIM_ENC2->CNT = enc2_old;\n    t2_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n    (*cts) = enc2_now - enc2_old;\n\n    dt = t2_now - t2_old;\n    t2_old = t2_now;\n\n    den = (int32_t)((int32_t)dt * gear_ratio);\n    num = ((*cts) * 60000) / ppt;\n    (*rpm) = num / den;\n}\n\nvoid enc_get_cts_and_rpm(int32_t* cts1, int32_t* rpm1, \n        int32_t* cts2, int32_t* rpm2)\n{\n    enc1_now = TIM_ENC1->CNT;\n    enc2_now = TIM_ENC2->CNT;\n    TIM_ENC1->CNT = enc1_old;\n    TIM_ENC2->CNT = enc2_old;\n\n    t1_now = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n\n    (*cts1) = (int32_t)(enc1_now - enc1_old);\n    (*cts2) = (int32_t)(enc2_now - enc2_old);\n\n    dt = t1_now - t1_old;\n    t1_old = t1_now;\n\n    den = (int32_t)((int32_t)dt * gear_ratio);\n    num = ((*cts1) * 60000) / ppt;\n    enc1_rpm = num / den;\n    num = ((*cts2) * 60000) / ppt;\n    enc2_rpm = num / den;\n\n    (*rpm1) = (int16_t)enc1_rpm;\n    (*rpm2) = (int16_t)enc2_rpm;\n}\n\nvoid enc_test_task(void* _params)\n{\n    uint32_t ticks = 0;\n    int32_t enc1 = 0, enc2 = 0;\n\n    if (_params != 0) { }\n\n    while (1)\n    {\n        enc1 = enc1_get_counts();\n        enc2 = enc2_get_counts();\n        ticks = (uint32_t)(get_us_time() / 1000); //HAL_GetTick();\n        printf(\"%lu,enc1=%ld,enc2=%ld\\r\\n\", ticks, enc1, enc2);\n        vTaskDelay(500/portTICK_RATE_MS);\n    }\n\n    vTaskDelete(NULL);\n}\n\nvoid encoder_task(void* _params)\n{\n    uint8_t count = 0;\n    //Encoders_t encoders;\n    MotorMeasuredSpeed_t motorMeasuredSpeeds;\n    int32_t ticks[N_MOTORS] = { 0, };\n    TickType_t xLastWakeTime;\n    const TickType_t xPeriod = pdMS_TO_TICKS(ENCODER_MEASUREMENT_PERIOD_MS);\n\n    if (_params != 0) { }\n\n    //memset((void*)&encoders, 0, sizeof(Encoders_t));\n    memset((void*)&motorMeasuredSpeeds, 0, sizeof(MotorMeasuredSpeed_t));\n\n    xLastWakeTime = xTaskGetTickCount();\n\n    while (1)\n    {\n        // Get timestamp\n        //encoders.timestamp = (float)get_us_time() * (float)1e-6;\n        motorMeasuredSpeeds.timestamp = (float)get_us_time() * (float)1e-6;\n        \n        // Read ticks and compute RPM\n        taskENTER_CRITICAL();\n        enc1_now = TIM_ENC1->CNT;\n        enc2_now = TIM_ENC2->CNT;\n        TIM_ENC1->CNT = enc1_old;\n        TIM_ENC2->CNT = enc2_old;\n        taskEXIT_CRITICAL();\n\n        t1_now = HAL_GetTick(); // (uint32_t)(get_us_time() / 1000);\n\n        // Compute tick difference\n        //encoders.encoders[MOTOR1].tick = (int32_t)(enc1_now - enc1_old);\n        //encoders.encoders[MOTOR2].tick = (int32_t)(enc2_now - enc2_old);\n        ticks[MOTOR1] = (int32_t)(enc1_now - enc1_old);\n        ticks[MOTOR2] = (int32_t)(enc2_now - enc2_old);\n\n        dt = t1_now - t1_old;\n        t1_old = t1_now;\n\n        // Convert ticks to RPM\n        den = (int32_t)((int32_t)dt * gear_ratio);\n        //num = (encoders.encoders[MOTOR1].tick * 60000) / ppt;\n        num = (ticks[MOTOR1] * 60000) / ppt;\n        //encoders.encoders[MOTOR1].rpm = num / den;\n        motorMeasuredSpeeds.speed[MOTOR1] = (float)num / (float)den;\n        //num = (encoders.encoders[MOTOR2].tick * 60000) / ppt;\n        num = (ticks[MOTOR2] * 60000) / ppt;\n        //encoders.encoders[MOTOR2].rpm = num / den;\n        motorMeasuredSpeeds.speed[MOTOR2] = (float)num / (float)den;\n\n        // Send encoder data\n        //xQueueOverwrite(encoderQueue, &encoders);\n        xQueueOverwrite(motorMeasuredSpeedQueue, &motorMeasuredSpeeds);\n\n        count++;\n        //if (count >= ENCODER_MEASUREMENT_PERIOD_MS/2)\n        if (count >= 1)\n        {\n            count = 0;\n            // printf(\"%3.3f,%3.3f\\r\\n\",\n            //  motorMeasuredSpeeds.speed[MOTOR1],\n            //  motorMeasuredSpeeds.speed[MOTOR2]);\n        }\n\n        vTaskDelayUntil(&xLastWakeTime, xPeriod);\n    }\n\n    vTaskDelete(NULL);\n} // encoder_task\n\n//uint8_t encoder_read_data(Encoders_t* enc, TickType_t xTicksToWait) {\n//  return (pdTRUE == xQueueReceive(encoderQueue, enc, xTicksToWait));\n//}\n\nuint8_t encoder_read_motor_measured_speed(MotorMeasuredSpeed_t* data, TickType_t xTicksToWait)\n{\n    return (pdTRUE == xQueueReceive(motorMeasuredSpeedQueue, data, xTicksToWait));\n}",
 			"file": "src/encoder.c",
-			"file_size": 10631,
-			"file_write_time": 132317652158220959,
 			"settings":
 			{
-				"buffer_size": 10288,
+				"buffer_size": 10239,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
 		},
 		{
-			"file": "Makefile",
+			"file": "inc/motor.h",
 			"settings":
 			{
-				"buffer_size": 7573,
+				"buffer_size": 2868,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/motor.c",
+			"settings":
+			{
+				"buffer_size": 10471,
+				"encoding": "UTF-8",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "src/motor_control.c",
+			"settings":
+			{
+				"buffer_size": 10965,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -605,19 +612,27 @@
 	],
 	"file_history":
 	[
-		"/home/ellion/Workspace/twippy_firmware/inc/encoder.h",
-		"/home/ellion/Workspace/twippy_firmware/src/uart1.c",
-		"/home/ellion/Workspace/twippy_firmware/src/gpio.c",
+		"/home/ellion/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_tim.h",
+		"/home/ellion/Workspace/twippy_firmware/inc/main.h",
+		"/home/ellion/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_gpio.c",
+		"/home/ellion/Workspace/twippy_firmware/src/usTimer.c",
+		"/home/ellion/Workspace/twippy_firmware/FreeRTOS/inc/task.h",
+		"/home/ellion/Workspace/twippy_firmware/Makefile",
+		"/home/ellion/Workspace/twippy_firmware/inc/battery.h",
+		"/home/ellion/Workspace/twippy_firmware/src/battery.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/adc.h",
 		"/home/ellion/Workspace/twippy_firmware/src/adc.c",
-		"/home/ellion/Workspace/twippy_firmware/inc/main.h",
+		"/home/ellion/Workspace/twippy_firmware/src/encoder.c",
+		"/home/ellion/Workspace/twippy_firmware/inc/encoder.h",
+		"/home/ellion/Workspace/twippy_firmware/inc/config.h",
+		"/home/ellion/Workspace/twippy_firmware/inc/imu.h",
+		"/home/ellion/Workspace/twippy_firmware/src/uart1.c",
+		"/home/ellion/Workspace/twippy_firmware/src/gpio.c",
 		"/home/ellion/Workspace/twippy_firmware/src/main.c",
 		"/home/ellion/Workspace/twippy_firmware/src/uart2.c",
 		"/home/ellion/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_uart.h",
-		"/home/ellion/Workspace/twippy_firmware/src/usTimer.c",
 		"/home/ellion/Workspace/twippy_firmware/src/pid_controller.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/com.h",
-		"/home/ellion/Workspace/twippy_firmware/inc/config.h",
 		"/home/ellion/Workspace/twippy_firmware/src/com.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/pid_controller.h",
 		"/home/ellion/Workspace/twippy_firmware/src/motor_control.c",
@@ -631,18 +646,14 @@
 		"/home/ellion/Workspace/twippy_firmware/inc/mpu9250.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/motor.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/gpio.h",
-		"/home/ellion/Workspace/twippy_firmware/inc/imu.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/led.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/i2c1.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/i2c2.h",
 		"/home/ellion/Workspace/twippy_firmware/src/i2c1.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/gps.h",
-		"/home/ellion/Workspace/twippy_firmware/inc/battery.h",
 		"/home/ellion/Workspace/twippy_firmware/inc/buzzer.h",
-		"/home/ellion/Workspace/twippy_firmware/src/battery.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/ahrs.h",
 		"/home/ellion/Workspace/twippy_firmware/src/imu.c",
-		"/home/ellion/Workspace/twippy_firmware/src/encoder.c",
 		"/home/ellion/Workspace/twippy_firmware/src/led.c",
 		"/home/ellion/Workspace/twippy_firmware/inc/uart1.h",
 		"/home/ellion/Workspace/twippy_firmware/src/uart3.c",
@@ -656,7 +667,6 @@
 		"/home/ellion/Workspace/twippy_firmware/src/buzzer.c",
 		"/home/ellion/Workspace/twippy_firmware/README.md",
 		"/home/ellion/Workspace/twippy_firmware/src/spi.c",
-		"/home/ellion/Workspace/twippy_firmware/Makefile",
 		"/home/user/Workspace/twippy_firmware/src/motor.c",
 		"/home/user/Workspace/twippy_firmware/inc/servo.h",
 		"/home/user/Workspace/twippy_firmware/src/servo.c",
@@ -729,14 +739,11 @@
 		"/home/user/Workspace/twippy_firmware/hal/src/stm32f4xx_hal_cortex.c",
 		"/home/user/Workspace/twippy_firmware/inc/stm32f4xx_hal_conf.h",
 		"/home/user/Workspace/twippy_firmware/hal/inc/stm32f4xx_hal_conf_template.h",
-		"/home/user/Workspace/twippy_firmware/inc/FreeRTOSConfig.h",
-		"/home/user/Workspace/twippy_firmware/FreeRTOS/src/queue.c",
-		"/home/user/Workspace/twippy_firmware/CMSIS/inc/core_cm4.h",
-		"/home/user/Workspace/twippy_firmware/src/mavlink_interface.cpp"
+		"/home/user/Workspace/twippy_firmware/inc/FreeRTOSConfig.h"
 	],
 	"find":
 	{
-		"height": 81.0
+		"height": 56.0
 	},
 	"find_in_files":
 	{
@@ -751,6 +758,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"test_motor",
+			"set_pwm12",
+			"set_pwm1",
+			"motorQueue",
+			"motorMeasuredSpeedQueue",
 			"process_battery",
 			"LED1",
 			"imuDataReady",
@@ -873,12 +885,7 @@
 			"NB_AXES",
 			"buffer",
 			"wheel_max_accel_",
-			"rangeBiasVar",
-			"stamp",
-			"addDeltaErrors",
-			"finalizeUpdate",
-			"PBxn",
-			"x"
+			"rangeBiasVar"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -886,6 +893,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"encoderSpeedQueue",
 			"battery.",
 			"i2c2",
 			"I2cHandle2",
@@ -911,7 +919,7 @@
 	"groups":
 	[
 		{
-			"selected": 2,
+			"selected": 4,
 			"sheets":
 			[
 				{
@@ -920,15 +928,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 12190,
+						"buffer_size": 12467,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								6971,
+								6971
 							]
 						],
 						"settings":
@@ -938,27 +946,85 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 7801.0,
+						"translation.y": 11382.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 4,
 					"type": "text"
 				},
 				{
 					"buffer": 1,
-					"file": "inc/battery.h",
+					"file": "inc/encoder.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1747,
+						"buffer_size": 2146,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1681,
-								1681
+								2092,
+								2092
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 1503.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "src/encoder.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10239,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								10079,
+								10105
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 7405.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "inc/motor.h",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2868,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2487,
+								2487
 							]
 						],
 						"settings":
@@ -968,27 +1034,56 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1560.0,
+						"translation.y": 3000.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "src/battery.c",
+					"buffer": 4,
+					"file": "src/motor.c",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 4322,
+						"buffer_size": 10471,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4322,
-								4322
+								9550,
+								9550
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C.sublime-syntax",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 9063.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "src/motor_control.c",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10965,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6954,
+								6954
 							]
 						],
 						"settings":
@@ -998,67 +1093,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2057.0,
+						"translation.y": 7823.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "src/encoder.c",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 10288,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								10200,
-								10149
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C.sublime-syntax",
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 12086.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "Makefile",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7573,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Makefile/Makefile.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 3120.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
+					"stack_index": 5,
 					"type": "text"
 				}
 			]

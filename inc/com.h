@@ -99,7 +99,6 @@ typedef enum
     GET_US_RANGE // cm
 } Commands_t;
 
-
 typedef struct
 {
     uint8_t headers[N_HEADERS];

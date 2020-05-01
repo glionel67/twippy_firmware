@@ -13,6 +13,7 @@
 // -------------------------------------------------------------------------- //
 #include <stdint.h>
 
+#include "encoder.h"
 #include "motor.h"
 
 // -------------------------------------------------------------------------- //
@@ -22,43 +23,66 @@
 
 #define MOTOR_CONTROL_QUEUE_SIZE (1)
 
+#define ENCODER_QUEUE_SIZE (1)
+
+#define MOTOR_QUEUE_SIZE (1)
+
 // -------------------------------------------------------------------------- //
 // --- Structs/enums
 // -------------------------------------------------------------------------- //
-typedef struct ControlState_s
-{
-    float des; // in [rpm] or [rad/s] ?
-    float mes; // in [rpm] or [rad/s] ?
-    float out; // Output of the PID
-} ControlState_t;
 
-typedef struct MotorControl_s
-{
-    float timestamp;
-    ControlState_t controlState[N_MOTORS];
-} MotorControl_t;
+/**
+ * \enum MotorContolMode_e
+ * \brief Choices of motor control
+ */
+enum
+{ 
+	MOTOR_CTRL_MODE_MANU = 0,
+	MOTOR_CTRL_MODE_AUTO,
+	MOTOR_CTRL_MODE_BRAKE
+} MotorContolMode_e;
 
-typedef struct MotorDesiredVoltage_s
-{
-    float timestamp;
-    float voltage[N_MOTORS];
-} MotorDesiredVoltage_t;
 
 // -------------------------------------------------------------------------- //
 // --- Prototypes
 // -------------------------------------------------------------------------- //
+
+/**
+ * \fn motor_control_init
+ * \brief Initialize the motor control
+ * \return OK if success, NOK otherwise
+ */
 uint8_t motor_control_init(void);
 
-uint8_t motor_control_test(void);
-
+/**
+ * \fn motor_control_reset
+ * \brief Reset the PID controller
+ */
 void motor_control_reset(void);
 
+/**
+ * \fn motor_control_task
+ * \brief Task for motor control
+ */
 void motor_control_task(void* _params);
 
-void motor_control_test_task(void* _params);
+/**
+ * \fn motor_control_set_references
+ * \brief Set the motor control input references
+ * \param ref1: reference for left motor either [rpm] for AUTO or [mV] for MANU
+ * \param ref2: reference for right motor either [rpm] for AUTO or [mV] for MANU
+ * \param mode: either MANU = 0, AUTO = 1, BRAKE = 2
+ */
+void motor_control_set_references(int16_t ref1, int16_t ref2, uint8_t mode);
 
-void motor_control_set_desired_wheel_speeds(float _rpm1, float _rpm2);
+/**
+ * \fn get_encoder_data
+ * \brief Get the encoder data from the get_encoder_data queue
+ */
+uint8_t get_encoder_data(Encoders_t* enc, TickType_t xTicksToWait);
 
-uint8_t motor_control_read_data(MotorControl_t* data, TickType_t xTicksToWait);
-
-uint8_t motor_control_read_desired_voltage(MotorDesiredVoltage_t* data, TickType_t xTicksToWait);
+/**
+ * \fn get_motor_data
+ * \brief Get the motor data from the get_motor_data queue
+ */
+uint8_t get_motor_data(Motor_t* mot, TickType_t xTicksToWait);

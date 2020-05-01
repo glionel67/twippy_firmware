@@ -124,7 +124,7 @@ void get_adc_imot12(uint16_t* _i1, uint16_t* _i2)
     (*_i2) = get_adc_value(ADC_IMOT2_CHANNEL);
 }
 
-void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2)
+void get_adc_imot12_ma(int16_t* _i1, int16_t* _i2)
 {
     uint16_t adc = 0;
     uint32_t volt = 0;
@@ -136,7 +136,7 @@ void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2)
     {
         volt = ((uint32_t)adc*(uint32_t)ADC_IMOT_VREF) / ((uint32_t)ADC_IMOT_RESOLUTION);
         ma = (volt * IMOT_RATIO_NUM) / IMOT_RATIO_DEN;
-        (*_i1) = (uint16_t)ma;
+        (*_i1) = (int16_t)ma;
     }
     else
         (*_i1) = 0;
@@ -147,7 +147,7 @@ void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2)
     {
         volt = ((uint32_t)adc*(uint32_t)ADC_IMOT_VREF) / ((uint32_t)ADC_IMOT_RESOLUTION);
         ma = (volt * IMOT_RATIO_NUM) / IMOT_RATIO_DEN;
-        (*_i2) = (uint16_t)ma;
+        (*_i2) = (int16_t)ma;
     }
     else
         (*_i2) = 0;

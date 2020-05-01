@@ -1,3 +1,11 @@
+/**
+ * \file spi.c
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief SPI1 functions
+ */
+ 
 #include "spi.h"
 #include "main.h"
 

@@ -26,7 +26,7 @@ uint16_t get_adc_value(uint32_t _channel);
 uint16_t get_adc_imot1(void);
 uint16_t get_adc_imot2(void);
 void get_adc_imot12(uint16_t* _i1, uint16_t* _i2);
-void get_adc_imot12_ma(uint16_t* _i1, uint16_t* _i2);
+void get_adc_imot12_ma(int16_t* _i1, int16_t* _i2);
 
 // Functions related to the battery voltage + current ADC
 uint16_t get_adc_vbat(void);

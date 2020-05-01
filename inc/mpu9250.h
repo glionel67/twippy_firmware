@@ -1,12 +1,19 @@
+/**
+ * \file mpu9250.h
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief MPU9250 API functions
+ */
+ 
 #pragma once
 
 #include <stdint.h>
 
-
 //#define MPU9250_I2C_ADDRESS 0xD0 //(pin AD0/SD0 is logic low) (0x68)
 //#define MPU9250_I2C_ADDRESS 0xD2 // (pin AD0/SD0 is logic high) (0x69)
 //#define MPU9250_I2C_ADDRESS 0x68 //(pin AD0/SD0 is logic low) (0x68)
-//#define MPU9250_I2C_ADDRESS 0x69  // (pin AD0/SD0 is logic high) (0x69)
+//#define MPU9250_I2C_ADDRESS 0x69 // (pin AD0/SD0 is logic high) (0x69)
 
 /*******************************************************************************
  *** MPU 9250 registers
@@ -236,8 +243,8 @@
 #define IMU_UPDATE_DT       ((float)(1./IMU_UPDATE_FREQ)) // [s]
 
 
-typedef struct Mpu9250_s {
-    
+typedef struct Mpu9250_s
+{    
     uint8_t register_data[REG_DATA_SIZE]; /*!< Raw register data */
 
     /// Raw register values

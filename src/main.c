@@ -6,7 +6,11 @@
  * \brief main file
  */
 
-// Includes
+// -------------------------------------------------------------------------- //
+// --- Includes
+// -------------------------------------------------------------------------- //
+
+// Project
 #include "main.h"
 #include "config.h"
 #include "gpio.h"
@@ -16,11 +20,9 @@
 #include "i2c1.h"
 #include "i2c2.h"
 #include "spi.h"
-#include "encoder.h"
 #include "usTimer.h"
 #include "imu.h"
 #include "ahrs.h"
-#include "motor.h"
 #include "motor_control.h"
 #include "adc.h"
 #include "servo.h"
@@ -31,26 +33,23 @@
 #include "battery.h"
 #include "state_machine.h"
 
-// libc
+// libC
 #include <stdio.h>
 #include <string.h>
 
 // FreeRTOS
 #include "FreeRTOS.h"
 #include "task.h"
-//#include "queue.h"
-//#include "timers.h"
-//#include "semphr.h"
 
-// Function prototypes
+// -------------------------------------------------------------------------- //
+// --- Prototypes
+// -------------------------------------------------------------------------- //
+
 /**
  * \fn SystemClock_Config
  * \brief Configure system clock to 180 MHz
  */
 void SystemClock_Config(void);
-
-//static uint8_t current_state = INIT_LL;
-//static uint8_t previous_state = INIT_LL;
 
 // ---------------------------------------------------------------------------//
 // --- Main
@@ -59,24 +58,9 @@ int main(void)
 {
   int ret = 0;
 
-  /*switch (current_state)
-  {
-    case INIT_LL:
-      break;
-    case INIT_HL:
-      break;
-    case WAITING:
-      break;
-    case BALANCING:
-      break;
-    case DEBUG:
-      break;
-    case DEFAULT:
-      break;
-    default:
-      break;
-  }*/
-
+  // ------------------------------------------------------------------------ //
+  // --- Init HAL
+  // ------------------------------------------------------------------------ //
   ret = HAL_Init(); // Init systick
   if (HAL_OK != ret)
     Error_Handler();
@@ -101,13 +85,13 @@ int main(void)
   // ------------------------------------------------------------------------ //
   // --- Init UART
   // ------------------------------------------------------------------------ //
-  ret = uart2_init();
+  ret = uart2_init(); // USB COM with PC/RPi
   if (OK != ret)
     Error_Handler();
 
   HAL_Delay(5000);
 
-  ret = uart1_init();
+  ret = uart1_init(); // GPS
   if (OK != ret)
   {
     printf("uart1_init NOK\r\n");
@@ -116,7 +100,7 @@ int main(void)
   else
     printf("uart1_init OK\r\n");
 
-  ret = uart3_init();
+  ret = uart3_init(); // RF COM Bluetooth/WiFi
   if (OK != ret)
   {
     printf("uart3_init NOK\r\n");
@@ -130,7 +114,7 @@ int main(void)
   // ------------------------------------------------------------------------ //
   // --- Init I2C
   // ------------------------------------------------------------------------ //
-  ret = i2c1_init();
+  ret = i2c1_init(); // RPi
   if (OK != ret)
   {
     printf("i2c1_init NOK\r\n");
@@ -139,7 +123,7 @@ int main(void)
   else
     printf("i2c1_init OK\r\n");
 
-  ret = i2c2_init();
+  ret = i2c2_init(); // Distance sensor
   if (OK != ret)
   {
     printf("i2c2_init NOK\r\n");
@@ -151,7 +135,7 @@ int main(void)
   // ------------------------------------------------------------------------ //
   // --- Init SPI
   // ------------------------------------------------------------------------ //
-  ret = spi1_init();
+  ret = spi1_init(); // IMU MPU9250
   if (OK != ret)
   {
     printf("spi1_init NOK\r\n");
@@ -293,20 +277,6 @@ int main(void)
   uint32_t pclk2Freq = HAL_RCC_GetPCLK2Freq();
   printf("hclkFreq=%lu, pclk1Freq=%lu, pclk2Freq=%lu\r\n", hclkFreq, pclk1Freq, pclk2Freq);
 
-  ret = set_dc_pwm1(.5);
-  if (ret == -1)
-  {
-    printf("set_dc_pwm1 NOK\r\n");
-    Error_Handler();
-  }
-
-  ret = set_buzzer_dutyCycle(50);
-  if (OK != ret)
-  {
-    printf("set_buzzer_dutyCycle NOK\r\n");
-    Error_Handler();
-  }
-
   // ------------------------------------------------------------------------ //
   // --- Create FreeRTOS tasks
   // ------------------------------------------------------------------------ //
@@ -342,13 +312,6 @@ int main(void)
     goto hell;
   }
 
-  if (!(pdPASS == xTaskCreate(encoder_task, (const char*)"encoder_task",
-    ENCODER_TASK_STACK_SIZE, NULL, ENCODER_TASK_PRIORITY, NULL)))
-  {
-    printf("Failed to create encoder_task\r\n");
-    goto hell;
-  }
-
   if (!(pdPASS == xTaskCreate(imu_task, (const char*)"imu_task",
     IMU_TASK_STACK_SIZE, NULL, IMU_TASK_PRIORITY, NULL)))
   {
@@ -370,33 +333,14 @@ int main(void)
     printf("Failed to create ahrs_task\r\n");
     goto hell;
   }
-/*
-  if (!(pdPASS == xTaskCreate(motor_ident_task, (const char*)"motor_ident_task",
-    MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
-    printf("Failed to create motor_ident_task\r\n");
-    goto hell;
-  }
-*/
-/*
-  if (!(pdPASS == xTaskCreate(motor_task, (const char*)"motor_task",
-    MOTOR_TASK_STACK_SIZE, NULL, MOTOR_TASK_PRIORITY, NULL))) {
-    printf("Failed to create motor_task\r\n");
-    goto hell;
-  }
-*/
-/*
+
   if (!(pdPASS == xTaskCreate(motor_control_task, (const char*)"motor_control_task",
-    MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
+    MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL)))
+  {
     printf("Failed to create motor_control_task\r\n");
     goto hell;
   }
 
-  if (!(pdPASS == xTaskCreate(motor_control_test_task, (const char*)"motor_control_test_task",
-    MOTOR_CONTROL_TASK_STACK_SIZE, NULL, MOTOR_CONTROL_TASK_PRIORITY, NULL))) {
-    printf("Failed to create motor_control_test_task\r\n");
-    goto hell;
-  }
-*/
   /*
   if (!(pdPASS == xTaskCreate(servo_task, (const char*)"servo_task",
     SERVO_TASK_STACK_SIZE, NULL, SERVO_TASK_STACK_SIZE, NULL))) {

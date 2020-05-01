@@ -1,3 +1,11 @@
+/**
+ * \file imu.c
+ * \author Lionel GENEVE
+ * \date 22/02/2019
+ * \version 1.0
+ * \brief IMU MPU9250 functions
+ */
+ 
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -7,6 +15,7 @@
 #include "queue.h"
 #include "semphr.h"
 
+#include "mpu9250.h"
 #include "config.h"
 #include "imu.h"
 #include "spi.h"
