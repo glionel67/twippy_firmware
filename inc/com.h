@@ -17,7 +17,7 @@
 #define PACKET_SIZE         85
 
 #define N_HEADERS           2
-#define MAX_DATA            255
+#define MAX_DATA            100
 
 #define MSG_HEADER1         (0xAC)
 #define MSG_HEADER2         (0xDC)
@@ -27,6 +27,10 @@
 
 #define TX_MSG_HEADER1      (0xAB)
 #define TX_MSG_HEADER2      (0xBA)
+
+#define N_FOOTERS           (2)
+#define MSG_FOOTER1         (0x0D) // carriage return '\r'
+#define MSG_FOOTER2         (0x0A) // line feed '\n'
 
 /*
 typedef enum {
@@ -99,35 +103,39 @@ typedef enum
     GET_US_RANGE // cm
 } Commands_t;
 
-typedef struct
+/**
+ * \struct Packet_t
+ * \brief Structure containing the information of packet
+ * */
+typedef struct Packet_s
 {
-    uint8_t headers[N_HEADERS];
-    uint8_t cmd;
-    uint8_t size;
-    uint8_t data[MAX_DATA];
-    uint8_t cheksum;
+    uint8_t headers[N_HEADERS]; //! Header of the packet
+    uint8_t msgId; //! Message identifier
+    uint8_t size; //! Length of the data/payload
+    uint8_t data[MAX_DATA]; //! Data of the message
+    uint8_t cheksum; //! Checksum
 } Packet_t;
 
 typedef struct
 {
     uint8_t startChar;
-    uint16_t imot[N_MOTORS]; // in [mA]
-    int16_t ticks[N_MOTORS]; // Encoder counts
-    int16_t wref[N_MOTORS]; // in [RPM]
-    int16_t wmes[N_MOTORS]; // in [RPM]
+    uint16_t imot[N_MOTORS]; //! in [mA]
+    int16_t ticks[N_MOTORS]; //! Encoder counts
+    int16_t wref[N_MOTORS]; //! in [RPM]
+    int16_t wmes[N_MOTORS]; //! in [RPM]
     uint16_t pwm[N_MOTORS];
-    uint16_t vbat; // in [mV]
-    uint16_t ibat; // in [mA]
-    uint16_t ir[N_IR]; // in [cm]
-    uint16_t us[N_US]; // in [cm]
-    int16_t servo[N_SERVOS]; // Angular position in [degree]
-    int16_t acc[N_AXIS]; // mg
-    int16_t gyro[N_AXIS]; // mrad/s
-    int16_t mag[N_AXIS]; // muT ?
-    int16_t attitude[4]; // 1/1000
-    int16_t pose[3]; // cm,cm,mrad
-    int16_t v; // mm/s
-    int16_t w; // mrad/s
+    uint16_t vbat; //! in [mV]
+    uint16_t ibat; //! in [mA]
+    uint16_t ir[N_IR]; //! in [cm]
+    uint16_t us[N_US]; //! in [cm]
+    int16_t servo[N_SERVOS]; //! Angular position in [degree]
+    int16_t acc[N_AXIS]; //! mg
+    int16_t gyro[N_AXIS]; //! mrad/s
+    int16_t mag[N_AXIS]; //! muT ?
+    int16_t attitude[4]; //! 1/1000
+    int16_t pose[3]; //! cm,cm,mrad
+    int16_t v; //! mm/s
+    int16_t w; //! mrad/s
     uint8_t endChar[2];
 } DataPacket_t;
 
@@ -153,4 +161,10 @@ typedef struct
 
 int decode_msg(uint8_t* buf, uint8_t len);
 int send_info(DataPacket_t* dataPacket, uint8_t output);
-int send_packet(DataPacket_u* packet, uint8_t output);
+int send_packet(Packet_t* packet, uint8_t output);
+
+/**
+ * \fn com_task
+ * \brief FreeRTOS task handling the RX/TX of packets for communication
+ * */
+void com_task(void* params);

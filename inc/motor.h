@@ -35,7 +35,7 @@
  */
 enum
 {
-    REVERSE_DIR=0,
+    REVERSE_DIR = 0,
     FORWARD_DIR,
     BRAKE_DIR
 } Dirs_e;
@@ -46,7 +46,7 @@ enum
  */
 enum
 {
-    MOTOR1=0,
+    MOTOR1 = 0,
     MOTOR2,
     N_MOTORS
 } Motors_e;
@@ -57,10 +57,10 @@ enum
  */
 typedef struct MotorConfig_s
 {
-    uint32_t channel; // PWM channel output
-    uint16_t gpioInA; // GPIO number for INA
-    uint16_t gpioInB; // GPIO number for INB
-    uint16_t gpioEn; // GPIO number for enable
+    uint32_t channel; //! PWM channel output
+    uint16_t gpioInA; //! GPIO number for INA
+    uint16_t gpioInB; //! GPIO number for INB
+    uint16_t gpioEn; //! GPIO number for enable
 } MotorConfig_t;
 
 /**
@@ -69,15 +69,15 @@ typedef struct MotorConfig_s
  */
 typedef struct MotorState_s
 {
-    int16_t encRpm; // Measured speed from encoder [RPM]
-    int16_t refRpm; // Reference speed [RPM]
-    int16_t refVoltage; // Applied voltage [mV]
-    uint8_t direction; // = FORWARD_DIR, REVERSE_DIR or BRAKE_DIR
+    int16_t encRpm; //! Measured speed from encoder [RPM]
+    int16_t refRpm; //! Reference speed [RPM]
+    int16_t refVoltage; //! Applied voltage [mV]
+    uint8_t direction; //! = FORWARD_DIR, REVERSE_DIR or BRAKE_DIR
     uint16_t pwm;
-    uint16_t dutyCycle; // Between 0-MOTORS_PWM_PERIOD <-> 0-100 %
-    //uint8_t brake; // = BRAKE_ON or BRAKE_OFF
-    int16_t current; // [mA]
-    uint8_t fault; // 0 = no, 1 = yes
+    uint16_t dutyCycle; //! Between 0-MOTORS_PWM_PERIOD <-> 0-100 %
+    //uint8_t brake; //! = BRAKE_ON or BRAKE_OFF
+    int16_t current; //! [mA]
+    uint8_t fault; //! 0 = no, 1 = yes
 } MotorState_t;
 
 /**
@@ -86,8 +86,8 @@ typedef struct MotorState_s
  */
 typedef struct Motor_s
 {
-    float timestamp; // [s]
-    //uint32_t timestamp; // [ms]
+    float timestamp; //! [s]
+    //uint32_t timestamp; //! [ms]
     MotorState_t motors[N_MOTORS];
 } Motor_t;
 

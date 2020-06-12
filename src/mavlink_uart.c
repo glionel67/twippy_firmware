@@ -16,6 +16,7 @@
 #include "uart3.h"
 #include "imu.h"
 #include "ahrs.h"
+#include "mpu9250.h"
 
 #define UART_READ(__data__, __len__) uart3_read(__data__, __len__)
 #define UART_WRITE(__data__, __len__) uart3_write(__data__, __len__)
@@ -130,7 +131,8 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
 
     xSemaphoreGive(mutex);
 
-    if (res == OK) { // PARSE MESSAGE
+    if (res == OK)
+    { // PARSE MESSAGE
         printf("mavlinkReadMessage: c=%c\r\n", cp);
         // the parsing
         msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp, _msg, &status);
@@ -145,7 +147,8 @@ int mavlinkReadMessage(mavlink_message_t* _msg)
         //printf("mavlinkReadMessage: could not read\r\n");
     }
 
-    if (msgReceived) {
+    if (msgReceived)
+    {
         // Report info
         printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n", 
                 _msg->msgid, _msg->sysid, _msg->compid);
@@ -183,11 +186,13 @@ void mavlinkReadMessages(void)
     resetTimestamps(&timestamps);
 
     // Blocking wait for new data
-    while (!receivedAll && !timeToExit) {
+    while (!receivedAll && !timeToExit)
+    {
         mavlink_message_t message;
         success = mavlinkReadMessage(&message);
 
-        if (success) {
+        if (success)
+        {
             // Store message sysid and compid.
             // Note this doesn't handle multiple message sources.
             mavlinkMessages.systemId  = message.sysid;

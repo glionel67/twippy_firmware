@@ -6,9 +6,10 @@
  * \brief Communication functions to exchange data with other device
  */
 
-#include "comm.h"
-#include "uart.h"
-#include "odometry.h"
+#include "com.h"
+#include "uart1.h"
+#include "uart2.h"
+//#include "odometry.h"
 
 Inputs_t inputs;
 
@@ -314,15 +315,77 @@ int send_info(DataPacket_t* dataPacket, uint8_t output)
     return ret;
 } // send_info
 
-int send_packet(DataPacket_u* packet, uint8_t output)
+int send_packet(Packet_t* packet, uint8_t output)
 {
     int ret = 0;
+    uint8_t i = 0; 
+    uint8_t buf[MAX_DATA] = {0, };
+
+    buf[0] = packet->headers[0];
+    buf[1] = packet->headers[1];
+    buf[2] = packet->cmd;
+    buf[3] = packet->size;
+    packet->cheksum = 0;
+    for (i = 0; i < packet->size; i++)
+    {
+        buf[4+i] = packet->data[i];
+        packet->cheksum ^= buf[4+i];
+    }
+    i += 4;
+    buf[i++] = packet->cheksum;
+    buf[i++] = packet->footers[0];
+    buf[i++] = packet->footers[1];
+
     // Send debug over UART1
     if (output & 0x01)
-        ret = uart1_write_it(packet->bytes, PACKET_SIZE);
+        ret = uart1_write(buf, i);
     // Send debug over UART2
     if (output & 0x02)
-        ret = uart2_write_it(packet->bytes, PACKET_SIZE);
+        ret = uart2_write(buf, i);
 
     return ret;
 } // send_packet
+
+void com_task(void* params)
+{
+    /*uint8_t i = 0;
+    Imu9_t imu9;
+    memset((void*)&imu9, 0, sizeof(Imu9_t));
+    ImuDataPacket_u imuDataPacket;
+    Packet_t packet;
+    packet.headers[0] = MSG_HEADER1;
+    packet.headers[1] = MSG_HEADER2;
+    packet.footers[0] = MSG_FOOTER1;
+    packet.footers[1] = MSG_FOOTER2;*/
+
+    if (params != 0) { }
+
+    printf("com_task\r\n");
+
+    vTaskDelay(1000);
+
+    while (1)
+    {
+        /*if (imu_read_imu9_data(&imu9, (TickType_t)10))
+        {
+            for (i = 0; i < N_AXES; i++)
+            {
+                //imuDataPacket.packet.acc[i] = (int16_t)(imu9.a[i] * 1000.0);
+                //imuDataPacket.packet.gyr[i] = (int16_t)(imu9.g[i] * 1000.0);
+                //imuDataPacket.packet.mag[i] = (int16_t)(imu9.m[i] * 1000.0);
+            }
+            packet.cmd = 0x01;
+            packet.size = 18;
+            for (i = 0; i < packet.size; i++)
+                packet.data[i] = imuDataPacket.data[i];
+            send_packet(&packet, 0x03);
+        }*/
+
+        //printf("com_task: %ld\r\n", HAL_GetTick());
+        printf("com_task2\r\n");
+
+        vTaskDelay(100);
+    }
+
+    vTaskDelete(NULL);
+} // com_task

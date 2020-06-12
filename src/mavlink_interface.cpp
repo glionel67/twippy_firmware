@@ -51,7 +51,8 @@ void MavlinkInterface::readMessages(void)
     Timestamps timestamps;
 
     // Blocking wait for new data
-    while (!receivedAll and !timeToExit_) {
+    while (!receivedAll and !timeToExit_)
+    {
         mavlink_message_t message;
         //success = port_->read_message(message);
 
@@ -277,7 +278,8 @@ void MavlinkInterface::readTask(void)
 {
     readingStatus_ = 1;
 
-    while (!timeToExit_) {
+    while (!timeToExit_)
+    {
         readMessages();
         vTaskDelay(10/portTICK_RATE_MS);
     }
@@ -297,7 +299,8 @@ void MavlinkInterface::writeTask(void)
     mavlink_message_t msg;
     int len = 0;
 
-    while (!timeToExit_) {
+    while (!timeToExit_)
+    {
         // Read queue
         if (pdTRUE == xQueueReceive(mavlinkMsgQueue, &msg, 1)) {
             len = writeMessage(msg);
